@@ -45,7 +45,7 @@ LENGTH_3 = 0.4
 
 # Parameters for algebra component
 # This is the integer constant in calculations like "x operator y operator z = constant"
-INTEGER_VALUES = range(5, 95)
+INTEGER_VALUES = list(range(5, 95))
 INTEGER_MAX = len(INTEGER_VALUES)-1
 INTEGER_MIN = 0
 
@@ -68,10 +68,10 @@ ANALYTICAL_MIN = 0
 PANEL_SIZE = 80
 DATASET2 = False
 
-CENTER = (PANEL_SIZE/2, PANEL_SIZE/2)
+CENTER = (PANEL_SIZE // 2, PANEL_SIZE // 2)
 # Centers for geometrical objects in combination problem
-CENTER_1_1 = (int(PANEL_SIZE/2 - LENGTH_1 * PANEL_SIZE/2), PANEL_SIZE/2)
-CENTER_1_2 = (int(PANEL_SIZE/2 + LENGTH_1 * PANEL_SIZE/2), PANEL_SIZE/2)
+CENTER_1_1 = (int(PANEL_SIZE // 2 - LENGTH_1 * PANEL_SIZE // 2), PANEL_SIZE // 2)
+CENTER_1_2 = (int(PANEL_SIZE // 2 + LENGTH_1 * PANEL_SIZE // 2), PANEL_SIZE // 2)
 # DEFAULT_WIDTH = 2 # Default value
 DEFAULT_WIDTH = 1
 

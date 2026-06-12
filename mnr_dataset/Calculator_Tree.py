@@ -20,7 +20,7 @@ class CTNode(object):
         self.visit = False
 
     def sample(self, min_level, max_level):
-        self.value = np.random.choice(range(min_level, max_level + 1))
+        self.value = np.random.choice(list(range(min_level, max_level + 1)))
 
     def set_level(self, level):
         self.level = level
@@ -147,7 +147,7 @@ def number_sampler(node_list, constant, levels):
     error = False
     error_num = 0
     while k < levels:
-        pairs = (level_start[k + 1] - level_start[k])/2
+        pairs = (level_start[k + 1] - level_start[k]) // 2
         for i in range(pairs):
             node_1 = node_list[2*i + level_start[k]]
             node_2 = node_list[2*i + level_start[k] + 1]
@@ -184,7 +184,7 @@ def number_sampler(node_list, constant, levels):
                 if error:
                     break
                 value_1 = node_1.get_value()
-                value_2 = result / value_1
+                value_2 = result // value_1
                 node_2.set_value(value_2)
             if node_1.parent.get_operator() == "/":
                 result = node_1.parent.get_value()
@@ -199,7 +199,7 @@ def number_sampler(node_list, constant, levels):
                 if error:
                     break
                 value_1 = node_1.get_value()
-                value_2 = value_1 / result
+                value_2 = value_1 // result
                 node_2.set_value(value_2)
 
         if error_num > 10:

@@ -45,3 +45,21 @@ If you find this repo useful in your research, please consider citing our paper 
 ## Acknowledgement
 We sincerely appreciate the following github repos a lot for their valuable code base:
 https://github.com/zwh1999anne/Machine-Number-Sense-Dataset
+
+
+## Python 3 Compatibility Update
+
+This version updates the original `mnr_dataset` generation code to run under Python 3.12.
+
+Main changes include:
+
+- Migrated Python 2 syntax to Python 3 syntax.
+- Replaced Python 2-style tuple parameter unpacking in function definitions.
+- Updated `range(...)` usages for compatibility with `numpy.random.choice`.
+- Fixed integer division issues caused by Python 3’s `/` behavior.
+- Ensured array slicing, loop ranges, and index calculations use integer values.
+- Fixed OpenCV drawing errors by converting generated coordinates to integers.
+- Updated constants such as `CENTER` to avoid float coordinates.
+- Verified that the dataset generation script can run successfully under Python 3.12.
+
+This update focuses only on compatibility and does not intentionally change the original dataset generation logic.

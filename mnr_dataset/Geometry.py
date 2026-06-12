@@ -43,7 +43,7 @@ class Type(GAttribute):
     def sample(self, min_level=TYPES_MIN, max_level=TYPES_MAX):
         min_level = max(self.min_level, min_level)
         max_level = min(self.max_level, max_level)
-        self.value_level = np.random.choice(range(min_level, max_level + 1))
+        self.value_level = np.random.choice(list(range(min_level, max_level + 1)))
 
     def get_value_level(self):
         return self.value_level
@@ -69,7 +69,7 @@ class GRelation(GAttribute):
     def sample(self, min_level=RELATION_MIN, max_level=RELATION_MAX):
         min_level = max(self.min_level, min_level)
         max_level = min(self.max_level, max_level)
-        self.value_level = np.random.choice(range(min_level, max_level + 1))
+        self.value_level = np.random.choice(list(range(min_level, max_level + 1)))
 
     def get_value_level(self):
         return self.value_level
@@ -95,7 +95,7 @@ class Format(GAttribute):
     def sample(self, min_level=FORMAT_MIN, max_level=FORMAT_MAX):
         min_level = max(self.min_level, min_level)
         max_level = min(self.max_level, max_level)
-        self.value_level = np.random.choice(range(min_level, max_level + 1))
+        self.value_level = np.random.choice(list(range(min_level, max_level + 1)))
 
     def get_value_level(self):
         return self.value_level
@@ -121,7 +121,7 @@ class Part(GAttribute):
     def sample(self, min_level=PART_MIN, max_level=PART_MAX):
         min_level = max(self.min_level, min_level)
         max_level = min(self.max_level, max_level)
-        self.value_level = np.random.choice(range(min_level, max_level + 1))
+        self.value_level = np.random.choice(list(range(min_level, max_level + 1)))
 
     def get_value_level(self):
         return self.value_level

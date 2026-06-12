@@ -104,7 +104,7 @@ def math_parser(math_conditions, geom_conditions, prob_type, positions, show_cen
         Analytical mode
         """
         analytical_part = condition_2.analytical.get_value()
-        while (num_pos % analytical_part != 0) or (num_pos / analytical_part < 2):
+        while (num_pos % analytical_part != 0) or (num_pos // analytical_part < 2):
             condition_2.analytical.sample()
             analytical_part = condition_2.analytical.get_value()
 
@@ -344,7 +344,7 @@ def holistic_parser(num_pos, const_value, operator_value, reshuffled_operator_va
 
 # generate the numbers and operational relations for analytical problem
 def analytical_parser(num_pos, const_value, operator_value, reshuffled_operator_value, analytical_part):
-    num_blanks = num_pos/analytical_part - 1
+    num_blanks = num_pos // analytical_part - 1
     operator_list = operator_prune(num_blanks, operator_value)
     reshuffled_operator_list = [] # ! THIS IS ALSO NOT NEEDED, initialiazed as empty value
     # reshuffled_operator_list = operator_prune(num_blanks, reshuffled_operator_value)
@@ -785,8 +785,8 @@ def mutated_operator_prune(num_blanks, context_pruned_operator_list, chosen_muta
     """
     verbose = False
     if verbose:
-        print("1. In mutated_operator_prune: Chosen_mutate_type:", chosen_mutate_type)                        # ! For debugging
-        print("2. In mutated_operator_prune: context_pruned_operator_list:", context_pruned_operator_list)    # ! For debugging
+        print(("1. In mutated_operator_prune: Chosen_mutate_type:", chosen_mutate_type))                        # ! For debugging
+        print(("2. In mutated_operator_prune: context_pruned_operator_list:", context_pruned_operator_list))    # ! For debugging
 
     assert chosen_mutate_type in ['MutOp', 'MutPar', 'MutBoth', 'MutFalse'], "Invalid mutate type"
     if chosen_mutate_type == 'MutOp' or chosen_mutate_type == 'MutBoth' or chosen_mutate_type == 'MutPar':
@@ -815,7 +815,7 @@ def mutated_operator_prune(num_blanks, context_pruned_operator_list, chosen_muta
 
             if verbose:
                 print("3. From mutate_type == 'MutOp'")                      # ! For debugging
-                print("4. Mutated_operator_list:", mutated_operator_list)    # ! For debugging
+                print(("4. Mutated_operator_list:", mutated_operator_list))    # ! For debugging
 
             assert context_pruned_operator_list != mutated_operator_list, "No mutation has been made"
             return mutated_operator_list
@@ -844,7 +844,7 @@ def mutated_operator_prune(num_blanks, context_pruned_operator_list, chosen_muta
 
                         if verbose:
                             print("3. MutPar is carried out")                            # ! For debugging
-                            print("4. mutated_operator_list:", mutated_operator_list)    # ! For debugging
+                            print(("4. mutated_operator_list:", mutated_operator_list))    # ! For debugging
                     
                     else: # There is already parentheses, thereful MutOp is needed to be executed
                         # Randomly mutate one operator that is not a parentheses
@@ -856,7 +856,7 @@ def mutated_operator_prune(num_blanks, context_pruned_operator_list, chosen_muta
                         
                         if verbose:
                             print("3. MutPar not applicable, already have parentheses, MutOp is carried out")    # ! For debugging
-                            print("4. mutated_operator_list:", mutated_operator_list)                            # ! For debugging
+                            print(("4. mutated_operator_list:", mutated_operator_list))                            # ! For debugging
                     
                 if num_blanks > 2 and (context_pruned_operator_list.count('+') + context_pruned_operator_list.count('-') == 2):
                     if not ('(' in context_pruned_operator_list and ')' in context_pruned_operator_list):
@@ -883,8 +883,8 @@ def mutated_operator_prune(num_blanks, context_pruned_operator_list, chosen_muta
                                     break
 
                         if (num_parentheses == parentheses_added) and verbose:
-                            print("3. MutPar with", parentheses_added)                  # ! For debugging
-                            print("4. mutated_operator_list:", mutated_operator_list)   # ! For debugging
+                            print(("3. MutPar with", parentheses_added))                  # ! For debugging
+                            print(("4. mutated_operator_list:", mutated_operator_list))   # ! For debugging
 
                         if num_parentheses == 2:
                             """
@@ -928,8 +928,8 @@ def mutated_operator_prune(num_blanks, context_pruned_operator_list, chosen_muta
                             mutated_operator_list = temp_mutated_operator_list
                             
                             if (num_parentheses == parentheses_added) and verbose:
-                                print("3. MutPar with", parentheses_added)                  # ! For debugging
-                                print("4. mutated_operator_list:", mutated_operator_list)   # ! For debugging
+                                print(("3. MutPar with", parentheses_added))                  # ! For debugging
+                                print(("4. mutated_operator_list:", mutated_operator_list))   # ! For debugging
                         
                         assert parentheses_added == num_parentheses, "Number of parentheses added does not match the randomly chosen number of parentheses to add"
 
@@ -973,7 +973,7 @@ def mutated_operator_prune(num_blanks, context_pruned_operator_list, chosen_muta
                                         mutated_operator_list.insert(i + 2, ')')
                         if verbose:
                             print("3. MutPar for +1 pair is carried out")                # ! For debugging
-                            print("4. mutated_operator_list:", mutated_operator_list)    # ! For debugging
+                            print(("4. mutated_operator_list:", mutated_operator_list))    # ! For debugging
 
                 # Check if that the total number of + and - is more than 2
                 if num_blanks > 2 and (context_pruned_operator_list.count('+') + context_pruned_operator_list.count('-') > 2):
@@ -996,14 +996,14 @@ def mutated_operator_prune(num_blanks, context_pruned_operator_list, chosen_muta
 
                     while parentheses_added < num_parentheses:
                         if verbose:
-                            print("len(mutated_operator_list):", len(mutated_operator_list))    # ! For debugging
+                            print(("len(mutated_operator_list):", len(mutated_operator_list)))    # ! For debugging
                         
                         i = 0
                         while i <= len(mutated_operator_list) - 1:
                             if verbose:
-                                print("context_pruned_operator_list: ", mutated_operator_list)
-                                print("context_pruned_operator_list[i]", mutated_operator_list[i])
-                                print("context_pruned_operator_list[i-1]", mutated_operator_list[i-1])
+                                print(("context_pruned_operator_list: ", mutated_operator_list))
+                                print(("context_pruned_operator_list[i]", mutated_operator_list[i]))
+                                print(("context_pruned_operator_list[i-1]", mutated_operator_list[i-1]))
 
                             if ((mutated_operator_list[i] == '+' or mutated_operator_list[i] == '-') \
                                 and (i == 0 or i == (len(mutated_operator_list) - 1) or \
@@ -1115,7 +1115,7 @@ def mutated_operator_prune(num_blanks, context_pruned_operator_list, chosen_muta
                                         break
                             i += 1
                     if verbose:
-                        print("3a1. mutated_operator_list after add parenthesis:", mutated_operator_list)    # ! For debugging
+                        print(("3a1. mutated_operator_list after add parenthesis:", mutated_operator_list))    # ! For debugging
             
                 if chosen_mutate_type == 'MutBoth':
                     """
@@ -1146,9 +1146,9 @@ def mutated_operator_prune(num_blanks, context_pruned_operator_list, chosen_muta
 
                     if verbose:
                         # NOTE here mutated_operator_list is still a copy of original context_pruned_operator_list
-                        print("Context pruned operator list:", context_pruned_operator_list)    # ! For debugging
-                        print("Temp mutated operator list:", temp_mutated_operator_list)        # ! For debugging
-                        print("Original mutated operator list:", mutated_operator_list)         # ! For debugging
+                        print(("Context pruned operator list:", context_pruned_operator_list))    # ! For debugging
+                        print(("Temp mutated operator list:", temp_mutated_operator_list))        # ! For debugging
+                        print(("Original mutated operator list:", mutated_operator_list))         # ! For debugging
 
                     # Replace the operator in mutated_operator_list with the operator in temp_mutated_operator_list ignoring the added parenthesis
                     temp_index = 0
@@ -1160,16 +1160,16 @@ def mutated_operator_prune(num_blanks, context_pruned_operator_list, chosen_muta
                             temp_index += 1
                     
                     if verbose:
-                        print("Mutated operator list after replacing with mutated operator:", mutated_operator_list)    # ! For debugging
+                        print(("Mutated operator list after replacing with mutated operator:", mutated_operator_list))    # ! For debugging
                         print("3. From mutate_type == 'MutBoth'")                    # ! For debugging
-                        print("4. mutated_operator_list:", mutated_operator_list)    # ! For debugging
+                        print(("4. mutated_operator_list:", mutated_operator_list))    # ! For debugging
 
                     assert context_pruned_operator_list != mutated_operator_list, "No mutation has been made"
                     return mutated_operator_list
                 
                 if verbose:
                     print("3. From mutate_type == 'MutPar'")
-                    print("4. mutated_operator_list:", mutated_operator_list)    # ! For debugging
+                    print(("4. mutated_operator_list:", mutated_operator_list))    # ! For debugging
 
                 assert context_pruned_operator_list != mutated_operator_list, "No mutation has been made"
                 return mutated_operator_list
@@ -1185,9 +1185,9 @@ def mutated_operator_prune(num_blanks, context_pruned_operator_list, chosen_muta
                 permutation_combinations = list(itertools.product(operators, repeat=len(opreator_indices_to_mutate)))
 
                 if verbose:
-                    print("len(opreator_indices_to_mutate):", len(opreator_indices_to_mutate))    # ! For debugging
-                    print("permutation_combinations:", permutation_combinations)                  # ! For debugging
-                    print("opreator_indices_to_mutate:", opreator_indices_to_mutate)              # ! For debugging
+                    print(("len(opreator_indices_to_mutate):", len(opreator_indices_to_mutate)))    # ! For debugging
+                    print(("permutation_combinations:", permutation_combinations))                  # ! For debugging
+                    print(("opreator_indices_to_mutate:", opreator_indices_to_mutate))              # ! For debugging
 
                 operators_to_mutate = [context_pruned_operator_list[i] for i in opreator_indices_to_mutate]
 
@@ -1206,14 +1206,14 @@ def mutated_operator_prune(num_blanks, context_pruned_operator_list, chosen_muta
                 
                 if verbose:
                     print("3. From mutate_type == 'Default to MutOp'")            # ! For debugging
-                    print("4. mutated_operator_list:", mutated_operator_list)     # ! For debugging
+                    print(("4. mutated_operator_list:", mutated_operator_list))     # ! For debugging
 
                 assert context_pruned_operator_list != mutated_operator_list, "No mutation has been made"
                 return mutated_operator_list
 
         if verbose:
             print("3. From mutate_type == 'FAILED'. IT SHOULD NOT REACH HERE")    # ! For debugging
-            print("4. mutated_operator_list:", mutated_operator_list)             # ! For debugging
+            print(("4. mutated_operator_list:", mutated_operator_list))             # ! For debugging
 
         raise RuntimeError("Unexpected state: mutate_type == 'FAILED'. Execution should not reach here.")
         assert context_pruned_operator_list != mutated_operator_list, "No mutation has been made"
@@ -1255,8 +1255,8 @@ def int_generator(operator_list, const_value):
 
     verbose = False
     if verbose:
-        print("In int_generator func, Final expression:", final_expression)    # ! For debugging
-        print("In int_generator func, Qualified:", qualified)                  # ! For debugging
+        print(("In int_generator func, Final expression:", final_expression))    # ! For debugging
+        print(("In int_generator func, Qualified:", qualified))                  # ! For debugging
     
     return integer_list, qualified
 
@@ -1289,13 +1289,13 @@ def disp_num(img, int_list, pos_list, blank, font_size, show_center, chosen_muta
         if show_center:
             # If center is shown, exclude the center position from the random choice
             #NOTE: if center is shown you need to consider wheter to mutate centre or not
-            mark = np.random.choice(range(0, num_pos - 1)) # OR             mark = np.random.choice(range(0, num_pos))
+            mark = np.random.choice(list(range(0, num_pos - 1))) # OR             mark = np.random.choice(range(0, num_pos))
             mark_position = mark
         else:
             if chosen_mutate_type == 'MutFalse':
                 # If the mutation type is MutFalse, randomly choose the number of position and position to mutate
                 num_to_mutate = np.random.choice([1, 2])        # Choose whether to mutate 1 or 2 positions.
-                marks = np.random.choice(range(0, num_pos), size=num_to_mutate, replace=False)  # Randomly select positions.
+                marks = np.random.choice(list(range(0, num_pos)), size=num_to_mutate, replace=False)  # Randomly select positions.
                 mark_positions = marks.tolist()  # Convert NumPy array to Python list
 
 
@@ -1351,20 +1351,20 @@ def reverse_arrange(int_list, mode, part):
     new_list = []
     if mode == 2:
         if part == 2:
-            list_1_1, list_1_2 = int_list[0: num / 2], int_list[num / 2: num]
+            list_1_1, list_1_2 = int_list[0: num // 2], int_list[num // 2: num]
             for i in range(len(list_1_1)):
                 new_list.extend([list_1_1[i], list_1_2[i]])
         elif part == 3:
-            list_1_1, list_1_2, list_1_3 = int_list[0: num / 3], int_list[num / 3: 2 * num / 3], int_list[2 * num / 3: num]
+            list_1_1, list_1_2, list_1_3 = int_list[0: num // 3], int_list[num // 3: 2 * num // 3], int_list[2 * num // 3: num]
             for i in range(len(list_1_1)):
                 new_list.extend([list_1_1[i], list_1_2[i], list_1_3[i]])
         elif part == 4:
-            list_1_1, list_1_2 = int_list[0: num / 4], int_list[num / 4: num / 2]
-            list_1_3, list_1_4 = int_list[num / 2: 3 * num / 4], int_list[3 * num / 4: num]
+            list_1_1, list_1_2 = int_list[0: num // 4], int_list[num // 4: num // 2]
+            list_1_3, list_1_4 = int_list[num // 2: 3 * num // 4], int_list[3 * num // 4: num]
             for i in range(len(list_1_1)):
                 new_list.extend([list_1_1[i], list_1_2[i], list_1_3[i], list_1_4[i]])
     elif mode == 3:
-        new_list, list_1_2 = int_list[0: num / 2], int_list[num / 2: num]
+        new_list, list_1_2 = int_list[0: num // 2], int_list[num // 2: num]
         if num == 8:
             new_list.extend([list_1_2[3], list_1_2[2], list_1_2[1], list_1_2[0]])
         elif num == 6:
@@ -1372,7 +1372,7 @@ def reverse_arrange(int_list, mode, part):
         elif num == 4:
             new_list.extend([list_1_2[1], list_1_2[0]])
     elif mode == 4 and num == 8:
-        list_1_1, list_1_2 = int_list[0: num / 2], int_list[num / 2: num]
+        list_1_1, list_1_2 = int_list[0: num // 2], int_list[num // 2: num]
         new_list = [list_1_1[0], list_1_2[0], list_1_1[3], list_1_2[3], list_1_1[1], list_1_2[1], list_1_1[2], list_1_2[2]]
 
     return new_list

@@ -421,7 +421,8 @@ def draw_tangent(img, geom_type):
     return posit
 
 
-def line_pos((x, y), L, L2):
+def line_pos(xxx_todo_changeme, L, L2):
+    (x, y) = xxx_todo_changeme
     c1 = (int(x), int(y - 1.8 * L2 - L))
     c2 = (int(x), int(y + 1.8 * L2 + L))
     c3 = (int(x), int(y - 0.25 * L2 - L))
@@ -431,7 +432,8 @@ def line_pos((x, y), L, L2):
 
 
 # Cross_pos value after making it more compact
-def cross_pos((x, y), L, L2):
+def cross_pos(xxx_todo_changeme1, L, L2):
+    (x, y) = xxx_todo_changeme1
     c1 = (int(x - 1.9 * L2 - L), y)
     c2 = (x, int(y - 1.9 * L2 - L))
     c3 = (int(x + 1.9 * L2 + L), y)
@@ -443,7 +445,8 @@ def cross_pos((x, y), L, L2):
     posit = [c1, c2, c3, c4, c5, c6, c7, c8]
     return posit
 
-def triangle_pos((x, y), L, L2):
+def triangle_pos(xxx_todo_changeme2, L, L2):
+    (x, y) = xxx_todo_changeme2
     c1 = (int(x - 2 * L2), int(y + 2 * math.sqrt(3) * L2 / 3))
     c2 = (int(x - L2), int(y - math.sqrt(3) * L2 / 3))
     c3 = (int(x), int(y - 4 * math.sqrt(3) * L2 / 3))
@@ -454,7 +457,8 @@ def triangle_pos((x, y), L, L2):
     return posit
 
 
-def square_pos((x, y), L, L2):
+def square_pos(xxx_todo_changeme3, L, L2):
+    (x, y) = xxx_todo_changeme3
     c1 = (int(x - 2 * L2), int(y - 2 * L2))
     c2 = (x, int(y - 2 * L2))
     c3 = (int(x + 2 * L2), int(y - 2 * L2))
@@ -467,7 +471,8 @@ def square_pos((x, y), L, L2):
     return posit
 
 
-def circle_pos((x, y), L, L2):
+def circle_pos(xxx_todo_changeme4, L, L2):
+    (x, y) = xxx_todo_changeme4
     c1 = (int(x - 2 * math.sqrt(2) * L2), int(y))
     c2 = (int(x - 2 * L2), int(y - 2 * L2))
     c3 = (int(x), int(y - 2 * math.sqrt(2) * L2))
@@ -480,7 +485,8 @@ def circle_pos((x, y), L, L2):
     return posit
 
 
-def partition_square(img, (x, y), l, part, thickness):
+def partition_square(img, xxx_todo_changeme5, l, part, thickness):
+    (x, y) = xxx_todo_changeme5
     draw_rectangle(img, (x, y), l, 0, thickness)
     p1 = (int(x - l/2), int(y - l/2))
     p2 = (int(x + l/2), int(y + l/2))
@@ -514,7 +520,8 @@ def partition_square(img, (x, y), l, part, thickness):
         posit = partition_pos(8, (x, y), math.sqrt(2)*l/4)
     return posit
 
-def partition_rectangle(img, (x, y), l, part, thickness):
+def partition_rectangle(img, xxx_todo_changeme6, l, part, thickness):
+    (x, y) = xxx_todo_changeme6
     draw_rectangle(img, (x, y), l, 1, thickness)
     p1 = (int(x - l), int(y - l/2))
     p2 = (int(x + l), int(y + l/2))
@@ -580,7 +587,8 @@ def partition_rectangle(img, (x, y), l, part, thickness):
         posit[6] = (x * 0.95, y * 0.99)
     return posit
 
-def partition_hexagon(img, (x, y), l, part, thickness):
+def partition_hexagon(img, xxx_todo_changeme7, l, part, thickness):
+    (x, y) = xxx_todo_changeme7
     draw_hexagon(img, (x, y), l, thickness)
     p1 = (int(x - l), int(y))
     p2 = (int(x + l), int(y))
@@ -614,7 +622,8 @@ def partition_hexagon(img, (x, y), l, part, thickness):
     return posit
 
 
-def partition_circle(img, (x, y), l, part, thickness):
+def partition_circle(img, xxx_todo_changeme8, l, part, thickness):
+    (x, y) = xxx_todo_changeme8
     draw_circle(img, (x, y), l, thickness)
     p1 = (int(x - math.sqrt(2)*l/2), int(y - math.sqrt(2)*l/2))
     p2 = (int(x + math.sqrt(2)*l/2), int(y + math.sqrt(2)*l/2))
@@ -648,7 +657,8 @@ def partition_circle(img, (x, y), l, part, thickness):
         posit = partition_pos(8, (x, y), l/2)
     return posit
 
-def partition_triangle(img, (x, y), l, part, thickness):
+def partition_triangle(img, xxx_todo_changeme9, l, part, thickness):
+    (x, y) = xxx_todo_changeme9
     draw_triangle(img, (x, y), l * 2.1, False, thickness)
     p1 = (int(x - l/2), int(y - math.sqrt(3)*l/6))
     p2 = (int(x + l), int(y + math.sqrt(3)*l/3))
@@ -660,42 +670,42 @@ def partition_triangle(img, (x, y), l, part, thickness):
     p8 = (int(x), int(y + l/1.7))
 
     # Calculate midpoint between p1 and p3
-    midpoint_p1_p3 = ((p1[0] + p3[0]) / 2, (p1[1] + p3[1]) / 2)
+    midpoint_p1_p3 = ((p1[0] + p3[0]) // 2, (p1[1] + p3[1]) // 2)
 
     if part == 2:
         cv2.line(img, p7, p8, (0, 0, 0), thickness) # Vertical line
         posit = partition_pos(2, (x, y), l/2)
         x, y = posit[0]
-        posit[0] = (x * 0.75, y * 2)
+        posit[0] = (int(x * 0.75), int(y * 2))
         x, y1 = posit[1]
-        posit[1] = (x * 1.25, y * 2)
+        posit[1] = (int(x * 1.25), int(y * 2))
     if part == 4:
         cv2.line(img, p1, p2, (0, 0, 0), thickness)
         cv2.line(img, p3, p4, (0, 0, 0), thickness)
         posit = partition_pos(4, (x, y), l/2)
         x, y = posit[0]
-        posit[0] = (x * 1.1, y)
+        posit[0] = (int(x * 1.1), int(y))
         x, y = posit[2]
-        posit[2] = (x * 0.95, y)
+        posit[2] = (int(x * 0.95), int(y))
         x, y = posit[3]
-        posit[3] = (x, y * 0.9)
+        posit[3] = (int(x), int(y * 0.9))
     if part == 6:
         cv2.line(img, p7, p8, (0, 0, 0), thickness)
         cv2.line(img, p1, p2, (0, 0, 0), thickness)
         cv2.line(img, p3, p4, (0, 0, 0), thickness)
         posit = partition_pos(6, (x, y), l/2)
         x, y = posit[0]
-        posit[0] = (x * 1.25, y * 1.4)
+        posit[0] = (int(x * 1.25), int(y * 1.4))
         x1, y1 = posit[1]
-        posit[1] = (x1 * 0.84, y1 * 1.5)
+        posit[1] = (int(x1 * 0.84), int(y1 * 1.5))
         x2, y2 = posit[2]
-        posit[2] = (x2 * 0.82, y1 * 1.5)
+        posit[2] = (int(x2 * 0.82), int(y1 * 1.5))
         x3, y3 = posit[3]
-        posit[3] = (x3 * 0.93, y * 1.4)
+        posit[3] = (int(x3 * 0.93), int(y * 1.4))
         x4, y4 = posit[4]
-        posit[4] = (x2 * 0.82, y4 * 0.85)
+        posit[4] = (int(x2 * 0.82), int(y4 * 0.85))
         x5, y5 = posit[5]
-        posit[5] = (x1 * 0.84, y5 * 1.025)
+        posit[5] = (int(x1 * 0.84), int(y5 * 1.025))
     if part == 8:
         cv2.line(img, p7, p8, (0, 0, 0), thickness) # Vertical line
         # Calculate positions for horizontal lines to split into 4 levels
@@ -719,26 +729,27 @@ def partition_triangle(img, (x, y), l, part, thickness):
         # cv2.line(img, p11, p12, (0, 0, 0), thickness)
         posit = partition_pos(8, (x, y), l/2)
         x1, y1 = posit[1]
-        posit[1] = (x1, y1 * 1.1)
+        posit[1] = (int(x1), int(y1 * 1.1))
         x2, y2 = posit[2]
-        posit[2] = (x2, y1 * 1.1)
+        posit[2] = (int(x2), int(y1 * 1.1))
         x, y = posit[0]
-        posit[0] = (x1, y * 1.075)
+        posit[0] = (int(x1), int(y * 1.075))
         x3, y3 = posit[3]
-        posit[3] = (x2, y * 1.075)
+        posit[3] = (int(x2), int(y * 1.075))
         x4, y4 = posit[4]
-        posit[4] = (x2, y4 * 0.95)
+        posit[4] = (int(x2), int(y4 * 0.95))
         x5, y5 = posit[5]
-        posit[5] = (x2, y5 * 0.945)
+        posit[5] = (int(x2), int(y5 * 0.945))
         x6, y6 = posit[6]
-        posit[6] = (x1, y4 * 0.95)
+        posit[6] = (int(x1), int(y4 * 0.95))
         x7, y7 = posit[7]
-        posit[7] = (x1, y5 * 0.945)
+        posit[7] = (int(x1), int(y5 * 0.945))
     return posit
 
-def partition_pos(part, (x, y), r):
+def partition_pos(part, xxx_todo_changeme10, r):
     # Compute the integer positions after partition.
     # These positions are on a circle with te same center as the partitioned geometrical shape.
+    (x, y) = xxx_todo_changeme10
     posit = []
     if part == 2:
         pos_1 = (int(x), int(y - r))
@@ -776,9 +787,10 @@ def partition_pos(part, (x, y), r):
     return posit
 
 
-def draw_triangle(img, (x, y), l, inverse, thickness):
+def draw_triangle(img, xxx_todo_changeme11, l, inverse, thickness):
     # Parameter "inverse" indicates the orientation of triangle.
     # Draw upward triangle if parameter "inverse" is False, and draw downward triangle if parameter "inverse" is True.
+    (x, y) = xxx_todo_changeme11
     if inverse:
         p1 = (int(x - l/2), int(y - math.sqrt(3)*l/6))
         p2 = (int(x + l/2), int(y - math.sqrt(3)*l/6))
@@ -799,9 +811,10 @@ def draw_triangle(img, (x, y), l, inverse, thickness):
     return pos_1, pos_2, pos_3
 
 
-def draw_rectangle(img, (x, y), l, shape, thickness):
+def draw_rectangle(img, xxx_todo_changeme12, l, shape, thickness):
     # Parameter "shape" == 0 indicates a square
     # Parameter "shape" == 1 or 2 indicates the orientation of rectangle
+    (x, y) = xxx_todo_changeme12
     if shape == 0:
         p1 = (int(x - l/2), int(y - l/2))
         p2 = (int(x + l/2), int(y + l/2))
@@ -827,7 +840,8 @@ def draw_rectangle(img, (x, y), l, shape, thickness):
     return pos_1, pos_2, pos_3, pos_4
 
 
-def draw_circle(img, (x, y), l, thickness):
+def draw_circle(img, xxx_todo_changeme13, l, thickness):
+    (x, y) = xxx_todo_changeme13
     center = (int(x), int(y))
     pos_1 = (int(x - 3*l/2), int(y))
     pos_2 = (int(x), int(y - 3*l/2))
@@ -837,7 +851,8 @@ def draw_circle(img, (x, y), l, thickness):
     return pos_1, pos_2, pos_3, pos_4
 
 
-def draw_hexagon(img, (x, y), l, thickness):
+def draw_hexagon(img, xxx_todo_changeme14, l, thickness):
+    (x, y) = xxx_todo_changeme14
     p1 = (int(x - l/2), int(y - math.sqrt(3)*l/2))
     p2 = (int(x + l/2), int(y - math.sqrt(3)*l/2))
     p3 = (int(x + l), int(y))

@@ -48,7 +48,7 @@ class Integer(MAttribute):
         min_level = max(self.min_level, min_level)
         max_level = min(self.max_level, max_level)
         for i in range(n_sample):
-            n = np.random.choice(range(min_level, max_level + 1)) # Randomly sample an integer value
+            n = np.random.choice(list(range(min_level, max_level + 1))) # Randomly sample an integer value
             self.value_level.append(n)
 
     def get_value_level(self):
@@ -88,7 +88,7 @@ class Operator(MAttribute):
         min_level = max(self.min_level, min_level)
         max_level = min(self.max_level, max_level)
         for i in range(n_sample):
-            n = np.random.choice(range(min_level, max_level + 1)) # Randomly sample an operator value
+            n = np.random.choice(list(range(min_level, max_level + 1))) # Randomly sample an operator value
             self.value_level.append(n)
 
     def get_value_level(self):
@@ -131,7 +131,7 @@ class Interpret(MAttribute):
     def sample(self, min_level=INTERPRET_MIN, max_level=INTERPRET_MAX):
         min_level = max(self.min_level, min_level)
         max_level = min(self.max_level, max_level)
-        self.value_level = np.random.choice(range(min_level, max_level + 1))
+        self.value_level = np.random.choice(list(range(min_level, max_level + 1)))
 
     def get_value_level(self):
         return self.value_level
@@ -163,7 +163,7 @@ class Analytical(MAttribute):
     def sample(self, min_level=ANALYTICAL_MIN, max_level=ANALYTICAL_MAX):
         min_level = max(self.min_level, min_level)
         max_level = min(self.max_level, max_level)
-        self.value_level = np.random.choice(range(min_level, max_level + 1))
+        self.value_level = np.random.choice(list(range(min_level, max_level + 1)))
 
     def get_value_level(self):
         return self.value_level

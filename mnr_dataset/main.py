@@ -75,10 +75,10 @@ def generate_problem(problem_configs, num_of_problem, key, geom_type, geom_condi
         random_selection = True
         if(random_selection):
             # Randomly choose 7 wrong panels and add into wrong answer_set_images list
-            random_index_list = np.random.choice(range(0, len(wrong_answer_set_images)), 7, replace=False)
+            random_index_list = np.random.choice(list(range(0, len(wrong_answer_set_images))), 7, replace=False)
 
             if VERBOSE:
-                print("random_index_list: %s" % random_index_list)  # For debugging purpose
+                print(("random_index_list: %s" % random_index_list))  # For debugging purpose
             
             # Select the wrong images based on the random indices generated
             answer_set_images = [wrong_answer_set_images[i] for i in random_index_list]
@@ -93,7 +93,7 @@ def generate_problem(problem_configs, num_of_problem, key, geom_type, geom_condi
             correct_answer_image_index = answer_set_images.index(correct_image_panel)
 
             if VERBOSE:
-                print("correct_index: %s" % correct_answer_image_index)  # For debugging purpose
+                print(("correct_index: %s" % correct_answer_image_index))  # For debugging purpose
                                 
         else:
             answer_set_images = [wrong_answer_set_images[0],
@@ -117,7 +117,7 @@ def generate_problem(problem_configs, num_of_problem, key, geom_type, geom_condi
         
         gestalt_law = "none"
         if VERBOSE:
-            print("In main.py, mode: %s" % mode)
+            print(("In main.py, mode: %s" % mode))
 
         if mode == 1:
             gestalt_law = "proximity"
@@ -142,7 +142,7 @@ def generate_problem(problem_configs, num_of_problem, key, geom_type, geom_condi
                     raise
         
         if VERBOSE:
-            print("In main.py, File_path: %s" % file_path) # For debugging purpose
+            print(("In main.py, File_path: %s" % file_path)) # For debugging purpose
 
         # Save the problem panel, answer set panel and other attributes into a .npz file
         np.savez(file_path,
@@ -167,14 +167,14 @@ def generate_problem(problem_configs, num_of_problem, key, geom_type, geom_condi
 
 # generate the dataset containing equal amount of problems on all possible conditions
 def generation(problem_configs, num_of_problem):
-    for key in problem_configs.keys():
+    for key in list(problem_configs.keys()):
         pruned_types = ["circle", "square", "triangle", "rectangle", "hexagon"] # geometric shape types = ["circle", "square", "triangle", "rectangle", "hexagon"]
         if key == "combination_problem":
             geom_conditions = ["overlap", "include", "tangent"]
             for geom_condition in geom_conditions:
                 for pr_type in pruned_types:
                     if VERBOSE:
-                        print("pr_type: %s" % pr_type)
+                        print(("pr_type: %s" % pr_type))
 
                     if geom_condition == "include" or (geom_condition == "overlap" and pr_type in ["rectangle", "triangle", "hexagon", "circle", "square"]):
                         interpretations = ["holistic", "analytical"]
@@ -202,7 +202,7 @@ def generation(problem_configs, num_of_problem):
             for geom_condition in geom_conditions:
                 for pr_type in pruned_types:
                     if VERBOSE:
-                        print("pr_type: %s" % pr_type)
+                        print(("pr_type: %s" % pr_type))
 
                     interpretations = ["holistic", "analytical"]
                     for interpretation in interpretations:
@@ -223,7 +223,7 @@ def generation(problem_configs, num_of_problem):
             for geom_condition in geom_conditions:
                 for pr_type in pruned_types:
                     if VERBOSE:
-                        print("pr_type: %s" % pr_type)
+                        print(("pr_type: %s" % pr_type))
 
                     if geom_condition == 2:
                         interpretations = ["holistic"]

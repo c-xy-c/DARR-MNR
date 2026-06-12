@@ -1,0 +1,14 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Generated dataset
+ProbSet/
+
+# 2to3 backup files
+*.bak
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
