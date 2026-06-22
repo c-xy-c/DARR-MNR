@@ -47,6 +47,10 @@ NEGATIVE_MUTATIONS = (
 )
 
 PANEL_SIZE = 224
+PANEL_CONTENT_MIN = 14
+PANEL_CONTENT_MAX = 210
+REGION_LAYOUT_BOX_SIZE = 42
+MIN_ENTITY_RADIUS = 8
 SCHEMA_VERSION = "vqexpr_1_5_avr_1x3_v8_dynamic_boundary"
 PRESENTATION_LAYOUT = "1x3_context_row"
 STRIP_SEMANTICS = "three_context_panels_plus_eight_full_panel_candidates"
@@ -88,17 +92,31 @@ class VQExprDatasetGenerator(object):
         if rule_family not in RULE_FAMILIES:
             raise ValueError("Unknown rule family: {0}".format(rule_family))
 
-        black_digit = VALUE_MAX if self.rng.randint(0, 1) == 0 else 0
-        calibration = make_calibration_context(sample_id=sample_id, seed=self.rng.randint(0, 10**7), black_digit=black_digit)
+        calibration = make_calibration_context(sample_id=sample_id, seed=self.rng.randint(0, 10**7))
         visual_quantity_family = visual_quantity_family or self.rng.choice(QUANTITY_FAMILIES)
         if visual_quantity_family not in QUANTITY_FAMILIES:
             raise ValueError("Unknown visual quantity family: {0}".format(visual_quantity_family))
         expression_schema = expression_schema or self.rng.choice(list(EXPRESSION_SCHEMAS_BY_FAMILY[rule_family].keys()))
         if expression_schema not in EXPRESSION_SCHEMAS_BY_FAMILY[rule_family]:
             raise ValueError("Unknown expression schema for {0}: {1}".format(rule_family, expression_schema))
-        query = self._make_panel_program(sample_id + "_query", rule_family, calibration, visual_quantity_family, expression_schema)
+        split_axis = self.rng.choice(["horizontal", "vertical"])
+        query = self._make_panel_program(
+            sample_id + "_query",
+            rule_family,
+            calibration,
+            visual_quantity_family,
+            expression_schema,
+            split_axis,
+        )
         contexts = [
-            self._make_panel_program("{0}_ctx{1}".format(sample_id, idx), rule_family, calibration, visual_quantity_family, expression_schema)
+            self._make_panel_program(
+                "{0}_ctx{1}".format(sample_id, idx),
+                rule_family,
+                calibration,
+                visual_quantity_family,
+                expression_schema,
+                split_axis,
+            )
             for idx in range(3)
         ]
         candidates = self._make_candidates(query, calibration, visual_quantity_family)
@@ -116,6 +134,7 @@ class VQExprDatasetGenerator(object):
             "t_norm": self.t_norm,
             "rule_family": rule_family,
             "expression_schema": expression_schema,
+            "boundary_split_axis": split_axis,
             "thresholds": dict(self.thresholds),
             "calibration_context": calibration,
             "presentation_layout": PRESENTATION_LAYOUT,
@@ -272,6 +291,7 @@ class VQExprDatasetGenerator(object):
         calibration: Mapping[str, object],
         visual_quantity_family: str,
         expression_schema: str,
+        split_axis: str,
     ) -> Dict[str, object]:
         leaf_values = reverse_sample_leaf_values(rule_family, self.rng, expression_schema=expression_schema)
         quantity_families = {
@@ -284,6 +304,7 @@ class VQExprDatasetGenerator(object):
             rule_family=rule_family,
             operand_roles=sorted(leaf_values),
             rng=self.rng,
+            split_axis=split_axis,
         )
         quantities = {
             qid: render_quantity(
@@ -716,13 +737,9 @@ def _surface_family_for_panel(
 
 
 def _surface_family_for_quantity_family(quantity_family: str) -> str:
-    return {
-        "local_place_value_codebook": "gray_level",
-        "calibrated_metric_scale": "size_level",
-        "calibrated_area_grid": "count",
-        "chunked_path_topology": "position_set",
-        "part_ratio_dial": "gray_level",
-    }[str(quantity_family)]
+    if str(quantity_family) not in QUANTITY_FAMILIES:
+        raise ValueError("Unknown VQ-Expr quantity family: {0}".format(quantity_family))
+    return str(quantity_family)
 
 
 def _build_visual_scene_graph(
@@ -791,8 +808,9 @@ def _make_layout_blueprint(
     rule_family: str,
     operand_roles: Sequence[str],
     rng: random.Random,
+    split_axis: Optional[str] = None,
 ) -> Dict[str, object]:
-    return _make_in_out_layout_blueprint(panel_id, rule_family, operand_roles, rng)
+    return _make_in_out_layout_blueprint(panel_id, rule_family, operand_roles, rng, split_axis=split_axis)
 
 
 def _make_in_out_layout_blueprint(
@@ -800,12 +818,15 @@ def _make_in_out_layout_blueprint(
     rule_family: str,
     operand_roles: Sequence[str],
     rng: random.Random,
+    split_axis: Optional[str] = None,
 ) -> Dict[str, object]:
     if set(operand_roles) != {"q1", "q2", "q3", "q4"}:
         raise ValueError("In/out boundary layouts require q1..q4 operands, got {0}".format(sorted(operand_roles)))
 
     boundary_id = "boundary_main"
-    split_axis = rng.choice(["horizontal", "vertical"])
+    split_axis = split_axis or rng.choice(["horizontal", "vertical"])
+    if split_axis not in {"horizontal", "vertical"}:
+        raise ValueError("Unsupported split axis: {0}".format(split_axis))
     center = (rng.randint(110, 114), rng.randint(110, 114))
     radius = rng.randint(46, 49)
     boundary_shape = rng.choice(["circle", "square", "diamond", "hexagon"])
@@ -858,7 +879,7 @@ def _make_in_out_layout_blueprint(
         "role_regions": dict(role_regions),
         "region_groups": region_groups,
     }
-    layout_specs = _in_out_layout_specs(center, radius, split_axis, boundary_id, role_regions)
+    layout_specs = _in_out_layout_specs(center, radius, split_axis, boundary_id, boundary_shape, role_regions, rng)
     group = _structure_group(
         "{0}_out_to_in_boundary".format(rule_family),
         ["q1", "q2", "q3", "q4", "target"],
@@ -883,49 +904,268 @@ def _in_out_layout_specs(
     radius: int,
     split_axis: str,
     boundary_id: str,
+    boundary_shape: str,
     role_regions: Mapping[str, str],
+    rng: random.Random,
 ) -> List[Dict[str, object]]:
-    cx, cy = center
-    jitter = 0
+    sampled = _sample_in_out_role_centers(center, radius, split_axis, rng)
     if split_axis == "horizontal":
-        centers = {
-            "q1": (cx + jitter, cy - radius - 25),
-            "q2": (cx - jitter, cy + radius + 25),
-            "q3": (cx - 22, cy - 20),
-            "q4": (cx - 22, cy + 20),
-            "target": (cx + 26, cy),
-        }
         layout_family = "BoundaryHorizontalSplit"
     else:
-        centers = {
-            "q1": (cx - radius - 25, cy + jitter),
-            "q2": (cx + radius + 25, cy - jitter),
-            "q3": (cx - 22, cy - 22),
-            "q4": (cx + 22, cy - 22),
-            "target": (cx, cy + 26),
-        }
         layout_family = "BoundaryVerticalSplit"
     specs = []
     for role in ["q1", "q2", "q3", "q4", "target"]:
         region_id = str(role_regions[role])
         region = "answer" if role == "target" else ("outer" if region_id.startswith("outer") else "inner")
+        sample_info = sampled[role]
+        role_center = sample_info["center"]
         specs.append(
             _center_layout(
                 role,
                 layout_family,
-                _bbox_from_center(centers[role][0], centers[role][1], 34),
+                _bbox_from_center(role_center[0], role_center[1], REGION_LAYOUT_BOX_SIZE),
                 region,
                 z_order=3 if role == "target" else 2,
                 extra={
-                    "center": [int(centers[role][0]), int(centers[role][1])],
+                    "center": [int(role_center[0]), int(role_center[1])],
                     "region": region,
                     "region_id": region_id,
                     "boundary_id": boundary_id,
                     "split_axis": split_axis,
+                    "position_sampling": "sampled_within_region",
+                    "role_binding_source": "boundary_region",
+                    "sampling_boundary_shape": boundary_shape,
+                    "sampling_side": sample_info["side"],
+                    "sampling_domain": sample_info["domain"],
                 },
             )
         )
     return specs
+
+
+def _sample_in_out_role_centers(
+    center: Tuple[int, int],
+    radius: int,
+    split_axis: str,
+    rng: random.Random,
+) -> Dict[str, Dict[str, object]]:
+    cx, cy = center
+    answer_side = rng.choice(["left", "right"]) if split_axis == "horizontal" else rng.choice(["top", "bottom"])
+    if split_axis == "horizontal":
+        outer_locked = {"x": rng.randint(cx - 28, cx + 28)}
+        inner_locked = {"x": rng.randint(cx - 10, cx + 10)}
+        answer_locked = {"y": rng.randint(cy - 20, cy + 20)}
+    else:
+        outer_locked = {"y": rng.randint(cy - 28, cy + 28)}
+        inner_locked = {"y": rng.randint(cy - 10, cy + 10)}
+        answer_locked = {"x": rng.randint(cx - 20, cx + 20)}
+    role_specs = {
+        "q1": ("outer", "top" if split_axis == "horizontal" else "left", outer_locked),
+        "q2": ("outer", "bottom" if split_axis == "horizontal" else "right", outer_locked),
+        "q3": ("inner", "top" if split_axis == "horizontal" else "left", inner_locked),
+        "q4": ("inner", "bottom" if split_axis == "horizontal" else "right", inner_locked),
+        "target": ("answer", answer_side, answer_locked),
+    }
+    occupied: List[Tuple[int, int]] = []
+    sampled: Dict[str, Dict[str, object]] = {}
+    for role in ["q1", "q2", "q3", "q4", "target"]:
+        region, side, locked_axis = role_specs[role]
+        role_center, domain = _sample_region_center(center, radius, region, side, rng, occupied, locked_axis)
+        occupied.append(role_center)
+        sampled[role] = {
+            "center": role_center,
+            "side": side,
+            "domain": domain,
+        }
+    return sampled
+
+
+def _sample_region_center(
+    boundary_center: Tuple[int, int],
+    boundary_radius: int,
+    region: str,
+    side: str,
+    rng: random.Random,
+    occupied: Sequence[Tuple[int, int]],
+    locked_axis: Optional[Mapping[str, int]] = None,
+) -> Tuple[Tuple[int, int], Dict[str, object]]:
+    domain = _region_sampling_domain(boundary_center, boundary_radius, region, side)
+    locked_axis = locked_axis or {}
+    locked_x = _locked_coordinate(locked_axis.get("x"), domain["x_range"])
+    locked_y = _locked_coordinate(locked_axis.get("y"), domain["y_range"])
+    for _ in range(128):
+        x = locked_x if locked_x is not None else rng.randint(domain["x_range"][0], domain["x_range"][1])
+        y = locked_y if locked_y is not None else rng.randint(domain["y_range"][0], domain["y_range"][1])
+        candidate = (int(x), int(y))
+        if _sampled_region_center_is_valid(candidate, boundary_center, boundary_radius, region, side, occupied):
+            return candidate, domain
+    fallback = _fallback_region_center(boundary_center, boundary_radius, region, side)
+    if locked_x is not None:
+        fallback = (locked_x, fallback[1])
+    if locked_y is not None:
+        fallback = (fallback[0], locked_y)
+    return fallback, domain
+
+
+def _region_sampling_domain(
+    boundary_center: Tuple[int, int],
+    boundary_radius: int,
+    region: str,
+    side: str,
+) -> Dict[str, object]:
+    cx, cy = boundary_center
+    half = REGION_LAYOUT_BOX_SIZE // 2
+    low = PANEL_CONTENT_MIN + half + 3
+    high = PANEL_CONTENT_MAX - half - 3
+    outer_gap = boundary_radius + 26
+    inner_span = 20
+    inner_gap = 18
+    answer_span = max(24, boundary_radius - 10)
+
+    if region == "inner":
+        x_range = [cx - inner_span, cx + inner_span]
+        y_range = [cy - inner_span, cy + inner_span]
+        if side == "top":
+            y_range = [cy - inner_span, cy - inner_gap]
+        elif side == "bottom":
+            y_range = [cy + inner_gap, cy + inner_span]
+        elif side == "left":
+            x_range = [cx - inner_span, cx - inner_gap]
+        elif side == "right":
+            x_range = [cx + inner_gap, cx + inner_span]
+        else:
+            raise ValueError("Unsupported inner side: {0}".format(side))
+    elif region == "outer":
+        x_range = [low, high]
+        y_range = [low, high]
+        if side == "top":
+            y_range = [low, cy - outer_gap]
+        elif side == "bottom":
+            y_range = [cy + outer_gap, high]
+        elif side == "left":
+            x_range = [low, cx - outer_gap]
+        elif side == "right":
+            x_range = [cx + outer_gap, high]
+        else:
+            raise ValueError("Unsupported outer side: {0}".format(side))
+    elif region == "answer":
+        x_range = [cx - answer_span, cx + answer_span]
+        y_range = [cy - answer_span, cy + answer_span]
+        if side == "left":
+            x_range = [low, cx - outer_gap]
+        elif side == "right":
+            x_range = [cx + outer_gap, high]
+        elif side == "top":
+            y_range = [low, cy - outer_gap]
+        elif side == "bottom":
+            y_range = [cy + outer_gap, high]
+        else:
+            raise ValueError("Unsupported answer side: {0}".format(side))
+    else:
+        raise ValueError("Unsupported region: {0}".format(region))
+
+    x_range = _clamp_sampling_range(x_range, low, high)
+    y_range = _clamp_sampling_range(y_range, low, high)
+    return {
+        "coordinate_frame": "panel_pixels",
+        "region": region,
+        "side": side,
+        "x_range": x_range,
+        "y_range": y_range,
+        "boundary_center": [int(cx), int(cy)],
+        "boundary_radius": int(boundary_radius),
+    }
+
+
+def _sampled_region_center_is_valid(
+    point: Tuple[int, int],
+    boundary_center: Tuple[int, int],
+    boundary_radius: int,
+    region: str,
+    side: str,
+    occupied: Sequence[Tuple[int, int]],
+) -> bool:
+    x, y = point
+    cx, cy = boundary_center
+    distance = _point_distance(point, boundary_center)
+    if region == "inner":
+        if distance + 19.0 > float(boundary_radius) - 3.0:
+            return False
+        if side == "top" and not y < cy:
+            return False
+        if side == "bottom" and not y > cy:
+            return False
+        if side == "left" and not x < cx:
+            return False
+        if side == "right" and not x > cx:
+            return False
+    else:
+        clearance = 22.0
+        if distance - clearance < float(boundary_radius) + 3.0:
+            return False
+        if region == "outer":
+            if side == "top" and not y < cy:
+                return False
+            if side == "bottom" and not y > cy:
+                return False
+            if side == "left" and not x < cx:
+                return False
+            if side == "right" and not x > cx:
+                return False
+    for previous in occupied:
+        if _point_distance(point, previous) < 30.0:
+            return False
+    return True
+
+
+def _fallback_region_center(
+    boundary_center: Tuple[int, int],
+    boundary_radius: int,
+    region: str,
+    side: str,
+) -> Tuple[int, int]:
+    cx, cy = boundary_center
+    if region == "inner":
+        offset = max(18, min(24, boundary_radius - 20))
+        if side == "top":
+            return (cx, cy - offset)
+        if side == "bottom":
+            return (cx, cy + offset)
+        if side == "left":
+            return (cx - offset, cy)
+        return (cx + offset, cy)
+    offset = boundary_radius + 28
+    if side == "top":
+        return (cx, PANEL_CONTENT_MIN + REGION_LAYOUT_BOX_SIZE // 2)
+    if side == "bottom":
+        return (cx, PANEL_CONTENT_MAX - REGION_LAYOUT_BOX_SIZE // 2)
+    if side == "left":
+        return (PANEL_CONTENT_MIN + REGION_LAYOUT_BOX_SIZE // 2, cy)
+    if side == "right":
+        return (PANEL_CONTENT_MAX - REGION_LAYOUT_BOX_SIZE // 2, cy)
+    return (cx + offset, cy)
+
+
+def _clamp_sampling_range(values: Sequence[int], low: int, high: int) -> List[int]:
+    start = max(int(low), min(int(values[0]), int(values[1])))
+    end = min(int(high), max(int(values[0]), int(values[1])))
+    if start > end:
+        midpoint = int(round((float(values[0]) + float(values[1])) / 2.0))
+        midpoint = max(int(low), min(int(high), midpoint))
+        return [midpoint, midpoint]
+    return [start, end]
+
+
+def _locked_coordinate(value: Optional[int], valid_range: Sequence[int]) -> Optional[int]:
+    if value is None:
+        return None
+    return max(int(valid_range[0]), min(int(valid_range[1]), int(value)))
+
+
+def _point_distance(left: Tuple[int, int], right: Tuple[int, int]) -> float:
+    dx = float(left[0] - right[0])
+    dy = float(left[1] - right[1])
+    return float((dx * dx + dy * dy) ** 0.5)
 
 
 def _structure_groups_for_rule(rule_family: str) -> List[Dict[str, object]]:
@@ -1005,7 +1245,17 @@ def _build_scene_component(
         "number": _layout_number(surface_family, value),
         "uniformity": True,
     }
-    for key in ("region", "region_id", "boundary_id", "split_axis"):
+    for key in (
+        "region",
+        "region_id",
+        "boundary_id",
+        "split_axis",
+        "position_sampling",
+        "role_binding_source",
+        "sampling_boundary_shape",
+        "sampling_side",
+        "sampling_domain",
+    ):
         if key in layout_spec:
             layout[key] = layout_spec[key]
     entities = _entities_for_quantity(
@@ -1134,40 +1384,15 @@ def _entities_for_quantity(
     layout: Mapping[str, object],
     outer_scope: bool,
 ) -> List[Dict[str, object]]:
-    if surface_family == "gray_level":
-        return [_gray_entity(role, value, layout, outer_scope)]
     if surface_family == "size_level":
         return [_size_entity(role, value, layout, outer_scope)]
-    if surface_family == "count":
-        centers = _outer_ring_centers(layout["bbox"], value) if outer_scope else _first_grid_centers(layout["bbox"], value)
-        entities = [
-            _entity(
-                role=role,
-                value=value,
-                surface_family=surface_family,
-                center=center,
-                radius=max(3, int(_bbox_min_side(layout["bbox"]) * (0.042 if outer_scope else 0.065))),
-                fill=(76, 76, 76),
-                outline=(24, 24, 24),
-                outline_width=1,
-                index=index + (1 if outer_scope else 0),
-            )
-            for index, center in enumerate(centers)
-        ]
-        return entities
-    centers = _position_center(layout["bbox"], value, outer_scope)
-    entity = _entity(
-        role=role,
-        value=value,
-        surface_family=surface_family,
-        center=centers,
-        radius=max(5, int(_bbox_min_side(layout["bbox"]) * (0.14 if not outer_scope else 0.045))),
-        fill=(68, 68, 68),
-        outline=(24, 24, 24),
-        outline_width=2,
-        index=1 if outer_scope else 0,
-    )
-    return [entity]
+    if surface_family == "color_lightness":
+        return [_color_lightness_entity(role, value, layout, outer_scope)]
+    if surface_family == "stroke_width":
+        return [_stroke_width_entity(role, value, layout, outer_scope)]
+    if surface_family == "aspect_ratio":
+        return [_aspect_ratio_entity(role, value, layout, outer_scope)]
+    raise ValueError("Unknown surface family: {0}".format(surface_family))
 
 
 def _outer_structure_ring_entity(
@@ -1190,16 +1415,16 @@ def _outer_structure_ring_entity(
     )
 
 
-def _gray_entity(role: str, value: int, layout: Mapping[str, object], outer_scope: bool) -> Dict[str, object]:
+def _color_lightness_entity(role: str, value: int, layout: Mapping[str, object], outer_scope: bool) -> Dict[str, object]:
     bbox = layout["bbox"]
     center = _bbox_center(bbox)
     if outer_scope:
         return _entity(
             role=role,
             value=value,
-            surface_family="gray_level",
+            surface_family="color_lightness",
             center=center,
-            radius=int(_bbox_min_side(bbox) * 0.46),
+            radius=int(_bbox_min_side(bbox) * 0.44),
             fill=None,
             outline=_gray_for_value(value),
             outline_width=5,
@@ -1209,9 +1434,9 @@ def _gray_entity(role: str, value: int, layout: Mapping[str, object], outer_scop
     return _entity(
         role=role,
         value=value,
-        surface_family="gray_level",
+        surface_family="color_lightness",
         center=center,
-        radius=int(_bbox_min_side(bbox) * 0.30),
+        radius=int(_bbox_min_side(bbox) * 0.32),
         fill=_gray_for_value(value),
         outline=(28, 28, 28),
         outline_width=2,
@@ -1221,7 +1446,7 @@ def _gray_entity(role: str, value: int, layout: Mapping[str, object], outer_scop
 
 def _size_entity(role: str, value: int, layout: Mapping[str, object], outer_scope: bool) -> Dict[str, object]:
     bbox = layout["bbox"]
-    radius_ratio = 0.22 + 0.018 * value if outer_scope else 0.15 + 0.022 * value
+    radius_ratio = 0.24 + 0.018 * value if outer_scope else 0.18 + 0.024 * value
     return _entity(
         role=role,
         value=value,
@@ -1236,6 +1461,46 @@ def _size_entity(role: str, value: int, layout: Mapping[str, object], outer_scop
     )
 
 
+def _stroke_width_entity(role: str, value: int, layout: Mapping[str, object], outer_scope: bool) -> Dict[str, object]:
+    bbox = layout["bbox"]
+    radius_ratio = 0.36 if outer_scope else 0.29
+    return _entity(
+        role=role,
+        value=value,
+        surface_family="stroke_width",
+        center=_bbox_center(bbox),
+        radius=int(_bbox_min_side(bbox) * radius_ratio),
+        fill=None if outer_scope else (236, 236, 236),
+        outline=(28, 28, 28),
+        outline_width=1 + int(value),
+        index=0,
+        draw_mode="ring" if outer_scope else "filled",
+    )
+
+
+def _aspect_ratio_entity(role: str, value: int, layout: Mapping[str, object], outer_scope: bool) -> Dict[str, object]:
+    bbox = layout["bbox"]
+    base = int(_bbox_min_side(bbox) * (0.31 if outer_scope else 0.27))
+    ratio = 0.68 + (int(value) - VALUE_MIN) * (0.68 / float(VALUE_MAX - VALUE_MIN))
+    radius_x = max(MIN_ENTITY_RADIUS, int(round(base * ratio)))
+    radius_y = max(MIN_ENTITY_RADIUS, int(round(base)))
+    return _entity(
+        role=role,
+        value=value,
+        surface_family="aspect_ratio",
+        center=_bbox_center(bbox),
+        radius=max(radius_x, radius_y),
+        fill=None if outer_scope else (112, 112, 112),
+        outline=(28, 28, 28),
+        outline_width=3 if outer_scope else 2,
+        index=0,
+        draw_mode="ring" if outer_scope else "filled",
+        radius_x=radius_x,
+        radius_y=radius_y,
+        shape="ellipse",
+    )
+
+
 def _entity(
     role: str,
     value: int,
@@ -1247,22 +1512,29 @@ def _entity(
     outline_width: int,
     index: int,
     draw_mode: str = "filled",
+    radius_x: Optional[int] = None,
+    radius_y: Optional[int] = None,
+    shape: str = "circle",
 ) -> Dict[str, object]:
-    return {
+    row = {
         "entity_id": "{0}_entity_{1}".format(role, index),
         "level": "Entity",
         "role": role,
-        "shape": "circle",
+        "shape": shape,
         "attribute_family": surface_family,
         "quantity_value": int(value),
         "center": [int(center[0]), int(center[1])],
-        "radius": int(max(2, radius)),
+        "radius": int(max(MIN_ENTITY_RADIUS, radius)),
         "fill": None if fill is None else [int(v) for v in fill],
         "outline": [int(v) for v in outline],
         "outline_width": int(outline_width),
         "draw_mode": draw_mode,
         "z_order": int(index),
     }
+    if radius_x is not None and radius_y is not None:
+        row["radius_x"] = int(max(MIN_ENTITY_RADIUS, radius_x))
+        row["radius_y"] = int(max(MIN_ENTITY_RADIUS, radius_y))
+    return row
 
 
 def _draw_scene_graph(scene_graph: Mapping[str, object], debug: bool = False) -> Image.Image:
@@ -1325,8 +1597,10 @@ def _draw_structure_group(draw: ImageDraw.ImageDraw, group: Mapping[str, object]
 def _draw_scene_entity(draw: ImageDraw.ImageDraw, entity: Mapping[str, object]) -> None:
     center = entity["center"]
     radius = int(entity["radius"])
+    radius_x = int(entity.get("radius_x", radius))
+    radius_y = int(entity.get("radius_y", radius))
     x, y = int(center[0]), int(center[1])
-    bbox = (x - radius, y - radius, x + radius, y + radius)
+    bbox = (x - radius_x, y - radius_y, x + radius_x, y + radius_y)
     fill = None if entity.get("fill") is None else tuple(int(v) for v in entity["fill"])
     outline = tuple(int(v) for v in entity["outline"])
     width = int(entity.get("outline_width", 1))
@@ -1359,8 +1633,6 @@ def _drop_target_entities(scene_graph: Mapping[str, object]) -> Dict[str, object
 
 
 def _layout_number(surface_family: str, value: int) -> int:
-    if surface_family == "count":
-        return int(value)
     return 1
 
 
@@ -1376,44 +1648,6 @@ def _bbox_min_side(bbox: Sequence[int]) -> int:
     return min(int(bbox[2]) - int(bbox[0]), int(bbox[3]) - int(bbox[1]))
 
 
-def _first_grid_centers(bbox: Sequence[int], count: int) -> List[Tuple[int, int]]:
-    centers = _micro_grid_centers(bbox)
-    return centers[: int(count)]
-
-
-def _position_center(bbox: Sequence[int], value: int, outer_scope: bool) -> Tuple[int, int]:
-    centers = _micro_grid_centers(bbox, pad_ratio=0.18 if not outer_scope else 0.12)
-    return centers[int(value) - 1]
-
-
-def _micro_grid_centers(bbox: Sequence[int], pad_ratio: float = 0.18) -> List[Tuple[int, int]]:
-    x0, y0, x1, y1 = [int(v) for v in bbox]
-    width = x1 - x0
-    height = y1 - y0
-    pad_x = width * pad_ratio
-    pad_y = height * pad_ratio
-    xs = [x0 + pad_x, (x0 + x1) / 2.0, x1 - pad_x]
-    ys = [y0 + pad_y, (y0 + y1) / 2.0, y1 - pad_y]
-    return [(int(round(x)), int(round(y))) for y in ys for x in xs]
-
-
-def _outer_ring_centers(bbox: Sequence[int], count: int) -> List[Tuple[int, int]]:
-    cx, cy = _bbox_center(bbox)
-    radius = int(_bbox_min_side(bbox) * 0.42)
-    anchors = [
-        (-0.00, -1.00),
-        (0.70, -0.70),
-        (1.00, 0.00),
-        (0.70, 0.70),
-        (0.00, 1.00),
-        (-0.70, 0.70),
-        (-1.00, 0.00),
-        (-0.70, -0.70),
-        (0.00, 0.00),
-    ]
-    return [(int(round(cx + dx * radius)), int(round(cy + dy * radius))) for dx, dy in anchors[: int(count)]]
-
-
 def _raven_structure_template(rule_family: str) -> str:
     return {
         "serial": "3x3Grid",
@@ -1424,127 +1658,9 @@ def _raven_structure_template(rule_family: str) -> str:
     }[str(rule_family)]
 
 
-def _raven_role_slots(rule_family: str) -> Dict[str, Tuple[int, int, int, int]]:
-    return {
-        "serial": {
-            "q1": (68, 66, 46, 46),
-            "q2": (124, 66, 46, 46),
-            "q3": (68, 122, 46, 46),
-            "q4": (68, 178, 46, 46),
-            "target": (124, 178, 46, 46),
-        },
-        "parallel": {
-            "q1": (72, 74, 48, 48),
-            "q2": (152, 74, 48, 48),
-            "q3": (72, 150, 48, 48),
-            "q4": (152, 150, 48, 48),
-            "target": (112, 112, 52, 52),
-        },
-        "nested": {
-            "q1": (112, 58, 52, 52),
-            "q2": (84, 124, 42, 42),
-            "q3": (140, 124, 42, 42),
-            "target": (112, 168, 46, 46),
-        },
-        "inverse": {
-            "q1": (66, 112, 48, 48),
-            "q2": (112, 66, 42, 42),
-            "q3": (112, 158, 42, 42),
-            "target": (112, 112, 50, 50),
-        },
-        "calibration": {
-            "q1": (76, 134, 48, 48),
-            "q2": (148, 134, 48, 48),
-            "target": (112, 80, 50, 50),
-        },
-    }[str(rule_family)]
-
-
-def _draw_raven_quantity(
-    draw: ImageDraw.ImageDraw,
-    quantity: Mapping[str, object],
-    slot: Tuple[int, int, int, int],
-    surface_family: str,
-    role: str,
-    debug: bool = False,
-) -> None:
-    value = max(VALUE_MIN, min(VALUE_MAX, int(quantity["numeric_value"])))
-    if surface_family == "gray_level":
-        _draw_gray_level_quantity(draw, slot, value, role)
-    elif surface_family == "size_level":
-        _draw_size_level_quantity(draw, slot, value, role)
-    elif surface_family == "count":
-        _draw_count_quantity(draw, slot, value, role)
-    else:
-        _draw_position_set_quantity(draw, slot, value, role)
-    if debug:
-        x, y, _, h = slot
-        draw.text((x - 8, y + h // 2 + 2), str(quantity["numeric_value"]), fill=(20, 20, 20), font=ImageFont.load_default())
-
-
-def _draw_empty_raven_role(
-    draw: ImageDraw.ImageDraw,
-    slot: Tuple[int, int, int, int],
-    surface_family: str,
-    role: str,
-) -> None:
-    x, y, w, h = slot
-    radius = int(min(w, h) * 0.36)
-    _draw_mark(draw, (x, y), radius, fill=(255, 255, 255), outline=(188, 188, 188), width=1)
-
-
-def _draw_gray_level_quantity(draw: ImageDraw.ImageDraw, slot: Tuple[int, int, int, int], value: int, role: str) -> None:
-    x, y, w, h = slot
-    radius = int(min(w, h) * 0.34)
-    _draw_mark(draw, (x, y), radius, fill=_gray_for_value(value), outline=(28, 28, 28), width=2)
-
-
-def _draw_size_level_quantity(draw: ImageDraw.ImageDraw, slot: Tuple[int, int, int, int], value: int, role: str) -> None:
-    x, y, w, h = slot
-    radius = int(min(w, h) * (0.16 + 0.022 * value))
-    _draw_mark(draw, (x, y), radius, fill=(96, 96, 96), outline=(28, 28, 28), width=2)
-
-
-def _draw_count_quantity(draw: ImageDraw.ImageDraw, slot: Tuple[int, int, int, int], value: int, role: str) -> None:
-    x, y, w, h = slot
-    step_x = max(9, int(w / 3.2))
-    step_y = max(9, int(h / 3.2))
-    start_x = x - step_x
-    start_y = y - step_y
-    radius = max(3, int(min(w, h) * 0.075))
-    for index in range(value):
-        cx = start_x + (index % 3) * step_x
-        cy = start_y + (index // 3) * step_y
-        _draw_mark(draw, (cx, cy), radius, fill=(76, 76, 76), outline=(24, 24, 24), width=1)
-
-
-def _draw_position_set_quantity(draw: ImageDraw.ImageDraw, slot: Tuple[int, int, int, int], value: int, role: str) -> None:
-    x, y, w, h = slot
-    step_x = max(9, int(w / 3.0))
-    step_y = max(9, int(h / 3.0))
-    index = value - 1
-    cx = x - step_x + (index % 3) * step_x
-    cy = y - step_y + (index // 3) * step_y
-    radius = max(6, int(min(w, h) * 0.16))
-    _draw_mark(draw, (cx, cy), radius, fill=(68, 68, 68), outline=(24, 24, 24), width=2)
-
-
 def _gray_for_value(value: int) -> Tuple[int, int, int]:
     gray = int(round(226 - (value - VALUE_MIN) * (178.0 / float(VALUE_MAX - VALUE_MIN))))
     return (gray, gray, gray)
-
-
-def _draw_mark(
-    draw: ImageDraw.ImageDraw,
-    center: Tuple[int, int],
-    radius: int,
-    fill: Tuple[int, int, int],
-    outline: Tuple[int, int, int],
-    width: int = 2,
-) -> None:
-    x, y = center
-    radius = max(2, int(radius))
-    draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=fill, outline=outline, width=width)
 
 
 def main(argv: Optional[Sequence[str]] = None) -> None:

@@ -41,6 +41,8 @@ BOUNDARY_SHAPES = {"circle", "square", "diamond", "hexagon"}
 PANEL_CONTENT_MIN = 14
 PANEL_CONTENT_MAX = 210
 BOUNDARY_SPLIT_AXES = {"horizontal", "vertical"}
+CONTINUOUS_QUANTITY_FAMILIES = {"size_level", "color_lightness", "stroke_width", "aspect_ratio"}
+MIN_ENTITY_RADIUS = 8
 
 
 def _visible_text(primitives):
@@ -77,6 +79,7 @@ def _assert_scene_geometry_contract(testcase, graph):
     for component, entity in entities:
         cx, cy = [float(v) for v in entity["center"]]
         radius = float(entity["radius"])
+        testcase.assertGreaterEqual(radius, MIN_ENTITY_RADIUS, entity["entity_id"])
         testcase.assertGreaterEqual(cx - radius, PANEL_CONTENT_MIN, entity["entity_id"])
         testcase.assertGreaterEqual(cy - radius, PANEL_CONTENT_MIN, entity["entity_id"])
         testcase.assertLessEqual(cx + radius, PANEL_CONTENT_MAX, entity["entity_id"])
@@ -128,21 +131,21 @@ def _assert_scene_geometry_contract(testcase, graph):
                 float(boundary["radius"]) + 3.0,
                 "{0} crosses outer boundary".format(entity["entity_id"]),
             )
+        elif layout["region"] == "answer":
+            testcase.assertGreaterEqual(
+                distance - radius,
+                float(boundary["radius"]) + 3.0,
+                "{0} makes the answer look like an inner object".format(entity["entity_id"]),
+            )
 
 
 class TestVQExprQuantityAttributes(unittest.TestCase):
     def test_each_quantity_family_covers_1_to_5_with_continuous_fuzzy_interpolation(self):
         self.assertEqual(
             set(QUANTITY_FAMILIES),
-            {
-                "local_place_value_codebook",
-                "calibrated_metric_scale",
-                "calibrated_area_grid",
-                "chunked_path_topology",
-                "part_ratio_dial",
-            },
+            CONTINUOUS_QUANTITY_FAMILIES,
         )
-        context = make_calibration_context("coverage", seed=4, black_digit=5)
+        context = make_calibration_context("coverage", seed=4)
         for family in QUANTITY_FAMILIES:
             for value in [1, 2, 3, 4, 5]:
                 with self.subTest(family=family, value=value):
@@ -155,6 +158,8 @@ class TestVQExprQuantityAttributes(unittest.TestCase):
                     self.assertLessEqual(rendered.fuzzy_value["continuous_value"], 1.0)
                     self.assertIn("interpolation_sigma", rendered.fuzzy_value)
                     self.assertGreater(rendered.fuzzy_value["interpolation_sigma"], 0.0)
+                    self.assertIn("attribute_axis_value", rendered.observation)
+                    self.assertIn("continuous_attribute", {primitive["kind"] for primitive in rendered.primitives})
                     decoded = decode_observation(family, rendered.observation, context)
                     self.assertIn(str(value), decoded["membership"])
                     self.assertFalse(rendered.leakage_flags["contains_arabic_digit"])
@@ -163,29 +168,18 @@ class TestVQExprQuantityAttributes(unittest.TestCase):
                     self.assertIn("ink_area", rendered.visual_confounds)
                     self.assertIn("convex_hull_area", rendered.visual_confounds)
 
-    def test_same_black_token_maps_to_5_and_zero_digit_across_samples(self):
-        high_context = make_calibration_context("black_high", seed=1, black_digit=5)
-        low_context = make_calibration_context("black_low", seed=2, black_digit=0)
-
-        black_5 = render_quantity(
-            "local_place_value_codebook",
-            5,
-            object_id="q_black_high",
-            calibration_context=high_context,
-        )
-        self.assertEqual(black_5.observation["slot_tokens"]["slot_b"], "token_black")
-        self.assertEqual(decode_observation("local_place_value_codebook", black_5.observation, high_context)["membership"]["5"], 1.0)
-
-        black_zero_digit_value = render_quantity(
-            "local_place_value_codebook",
-            1,
-            object_id="q_black_low",
-            calibration_context=low_context,
-        )
-        self.assertEqual(low_context["token_to_digit"]["token_black"], 0)
-        self.assertEqual(black_zero_digit_value.observation["slot_tokens"]["slot_a"], "token_black")
-        decoded = decode_observation("local_place_value_codebook", black_zero_digit_value.observation, low_context)
-        self.assertEqual(decoded["membership"]["1"], 1.0)
+    def test_continuous_attributes_are_monotone_without_digit_codebook_shortcut(self):
+        context = make_calibration_context("continuous_axis", seed=8)
+        for family in QUANTITY_FAMILIES:
+            observations = [
+                render_quantity(family, value, object_id="q", calibration_context=context).observation
+                for value in [1, 2, 3, 4, 5]
+            ]
+            axis_values = [float(observation["attribute_axis_value"]) for observation in observations]
+            self.assertEqual(axis_values, sorted(axis_values))
+            self.assertNotIn("slot_tokens", observations[0])
+            self.assertNotIn("mean_count", observations[0])
+            self.assertNotIn("chunk_count", observations[0])
 
 
 class TestVQExprAoTAndCandidates(unittest.TestCase):
@@ -256,7 +250,7 @@ class TestVQExprAoTAndCandidates(unittest.TestCase):
         self.assertTrue(metadata["presentation_constraints"]["structured_scope_groups"])
         self.assertTrue(metadata["presentation_constraints"]["typed_boundary_shapes"])
         self.assertEqual(metadata["visual_surface"]["style"], "dynamic_boundary_expression_grayscale_a_sig_lite")
-        self.assertIn(metadata["visual_surface"]["attribute_family"], {"gray_level", "size_level", "count", "position_set"})
+        self.assertIn(metadata["visual_surface"]["attribute_family"], CONTINUOUS_QUANTITY_FAMILIES)
         self.assertIn(metadata["visual_surface"]["structure_template"], {"3x3Grid", "2x2Grid", "Out-InGrid", "Out-InCenter", "Left-Right"})
         self.assertEqual(metadata["visual_surface"]["scene_graph_schema"], "a_sig_lite_v4")
         self.assertEqual(_max_channel_delta(sample["context_images"]), 0)
@@ -359,7 +353,7 @@ class TestVQExprAoTAndCandidates(unittest.TestCase):
                     for entity in component["entities"]:
                         self.assertEqual(entity["level"], "Entity")
                         self.assertEqual(entity["role"], component["role"])
-                        self.assertIn(entity["attribute_family"], {"gray_level", "size_level", "count", "position_set"})
+                        self.assertIn(entity["attribute_family"], CONTINUOUS_QUANTITY_FAMILIES)
                         self.assertEqual(len(entity["center"]), 2)
                         self.assertGreater(entity["radius"], 0)
 
@@ -374,16 +368,18 @@ class TestVQExprAoTAndCandidates(unittest.TestCase):
                     self.assertEqual(len(target_components), 1)
                     self.assertEqual(target_components[0]["quantity_value"], candidate["output_value"])
 
-    def test_calibration_ood_breaks_global_attribute_shortcut_contract(self):
+    def test_calibration_context_uses_continuous_attribute_axes_without_digit_codebook(self):
         generator = VQExprDatasetGenerator(seed=13)
-        high = generator.generate_sample("black_high_sample", rule_family="calibration")["metadata"]["calibration_context"]
-        low = make_calibration_context("manual_low", seed=13, black_digit=0)
-        self.assertIn(high["token_to_digit"]["token_black"], [0, 5])
-        self.assertEqual(low["token_to_digit"]["token_black"], 0)
-        self.assertNotEqual(
-            make_calibration_context("manual_high", seed=13, black_digit=5)["token_to_digit"]["token_black"],
-            low["token_to_digit"]["token_black"],
-        )
+        context = generator.generate_sample("continuous_calibration_sample", rule_family="calibration")["metadata"]["calibration_context"]
+        self.assertNotIn("token_to_digit", context)
+        self.assertNotIn("digit_to_token", context)
+        self.assertNotIn("slot_decoder", context)
+        self.assertEqual(set(context["continuous_attributes"]), CONTINUOUS_QUANTITY_FAMILIES)
+        for family, spec in context["continuous_attributes"].items():
+            self.assertIn("low_value", spec)
+            self.assertIn("high_value", spec)
+            self.assertEqual(spec["low_value"], 1)
+            self.assertEqual(spec["high_value"], 5)
 
 
 class TestVQExprArtifacts(unittest.TestCase):
@@ -503,21 +499,109 @@ class TestVQExprArtifacts(unittest.TestCase):
             axes.add(axis)
         self.assertEqual(axes, BOUNDARY_SPLIT_AXES)
 
-    def test_size_level_objects_do_not_overlap_or_cross_regions(self):
-        generator = VQExprDatasetGenerator(seed=61)
-        for rule_family in RULE_FAMILIES:
+    def test_role_positions_are_sampled_inside_their_bound_regions(self):
+        generator = VQExprDatasetGenerator(seed=82)
+        offsets_by_axis_and_role = {
+            "horizontal": {role: set() for role in ["q1", "q2", "q3", "q4", "target"]},
+            "vertical": {role: set() for role in ["q1", "q2", "q3", "q4", "target"]},
+        }
+        seen_axes = set()
+        for index in range(48):
             sample = generator.generate_sample(
-                "unit_size_geometry_{0}".format(rule_family),
-                rule_family=rule_family,
-                visual_quantity_family="calibrated_metric_scale",
+                "unit_region_position_sampling_{0}".format(index),
+                rule_family="nested",
+                expression_schema="nested_outer_minus_sum",
             )
-            graphs = [sample["metadata"]["query_panel"]["visual_scene_graph"]]
-            graphs.extend(candidate["visual_scene_graph"] for candidate in sample["metadata"]["candidates"])
-            for graph in graphs:
-                self.assertTrue(
-                    any(entity["attribute_family"] == "size_level" for _, entity in _scene_entities(graph))
+            graph = sample["metadata"]["query_panel"]["visual_scene_graph"]
+            boundary = graph["boundary_instances"][0]
+            bx, by = [float(v) for v in boundary["center"]]
+            axis = graph["structure"]["in_out_regions"]["split_axis"]
+            seen_axes.add(axis)
+            for component in graph["components"]:
+                layout = component["layout"]
+                role = component["role"]
+                lx, ly = [float(v) for v in layout["center"]]
+                self.assertEqual(layout.get("position_sampling"), "sampled_within_region")
+                self.assertEqual(layout.get("role_binding_source"), "boundary_region")
+                self.assertEqual(layout.get("sampling_boundary_shape"), boundary["boundary_shape"])
+                offsets_by_axis_and_role[axis][role].add((int(round(lx - bx)), int(round(ly - by))))
+                if axis == "horizontal" and role in {"q1", "q3"}:
+                    self.assertLess(ly, by)
+                elif axis == "horizontal" and role in {"q2", "q4"}:
+                    self.assertGreater(ly, by)
+                elif axis == "vertical" and role in {"q1", "q3"}:
+                    self.assertLess(lx, bx)
+                elif axis == "vertical" and role in {"q2", "q4"}:
+                    self.assertGreater(lx, bx)
+            _assert_scene_geometry_contract(self, graph)
+            centers = {
+                component["role"]: component["layout"]["center"]
+                for component in graph["components"]
+            }
+            if axis == "horizontal":
+                self.assertEqual(centers["q1"][0], centers["q2"][0])
+                self.assertEqual(centers["q3"][0], centers["q4"][0])
+                self.assertGreater(abs(centers["q1"][1] - centers["q2"][1]), 80)
+                self.assertGreater(abs(centers["q3"][1] - centers["q4"][1]), 30)
+            else:
+                self.assertEqual(centers["q1"][1], centers["q2"][1])
+                self.assertEqual(centers["q3"][1], centers["q4"][1])
+                self.assertGreater(abs(centers["q1"][0] - centers["q2"][0]), 80)
+                self.assertGreater(abs(centers["q3"][0] - centers["q4"][0]), 30)
+
+        self.assertEqual(seen_axes, BOUNDARY_SPLIT_AXES)
+        for axis in seen_axes:
+            for role, offsets in offsets_by_axis_and_role[axis].items():
+                self.assertGreaterEqual(
+                    len(offsets),
+                    3,
+                    "{0} {1} keeps using a fixed in-region position".format(axis, role),
                 )
-                _assert_scene_geometry_contract(self, graph)
+
+    def test_split_axis_is_sample_level_while_positions_vary_by_panel(self):
+        generator = VQExprDatasetGenerator(seed=91)
+        observed_axes = set()
+        for index in range(16):
+            sample = generator.generate_sample(
+                "unit_sample_axis_contract_{0}".format(index),
+                rule_family="nested",
+                expression_schema="nested_outer_minus_sum",
+            )
+            metadata = sample["metadata"]
+            graphs = [metadata["query_panel"]["visual_scene_graph"]]
+            graphs.extend(panel["visual_scene_graph"] for panel in metadata["context_panels"])
+            graphs.extend(candidate["visual_scene_graph"] for candidate in metadata["candidates"])
+            axes = {graph["structure"]["in_out_regions"]["split_axis"] for graph in graphs}
+            self.assertEqual(len(axes), 1)
+            axis = next(iter(axes))
+            observed_axes.add(axis)
+            q3_centers = {
+                tuple(panel["visual_scene_graph"]["components"][2]["layout"]["center"])
+                for panel in metadata["context_panels"]
+            }
+            self.assertGreaterEqual(len(q3_centers), 2)
+        self.assertEqual(observed_axes, BOUNDARY_SPLIT_AXES)
+
+    def test_continuous_attribute_objects_do_not_overlap_or_cross_regions(self):
+        generator = VQExprDatasetGenerator(seed=61)
+        for visual_family in QUANTITY_FAMILIES:
+            for rule_family in RULE_FAMILIES:
+                sample = generator.generate_sample(
+                    "unit_continuous_geometry_{0}_{1}".format(visual_family, rule_family),
+                    rule_family=rule_family,
+                    visual_quantity_family=visual_family,
+                )
+                graphs = [sample["metadata"]["query_panel"]["visual_scene_graph"]]
+                graphs.extend(candidate["visual_scene_graph"] for candidate in sample["metadata"]["candidates"])
+                surface_family = sample["metadata"]["visual_surface"]["attribute_family"]
+                self.assertIn(surface_family, CONTINUOUS_QUANTITY_FAMILIES)
+                for graph in graphs:
+                    for component in graph["components"]:
+                        self.assertEqual(len(component["entities"]), 1)
+                    self.assertTrue(
+                        any(entity["attribute_family"] == surface_family for _, entity in _scene_entities(graph))
+                    )
+                    _assert_scene_geometry_contract(self, graph)
 
     def test_dataset_writer_balances_correct_answer_positions(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -530,8 +614,8 @@ class TestVQExprArtifacts(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             out_dir = Path(tmp)
             generator = VQExprDatasetGenerator(seed=24)
-            report = generator.generate_dataset(num_prob=15, output_dir=out_dir, rule_schema="mixed")
-            self.assertEqual(report["visual_family_counts"], {family: 3 for family in QUANTITY_FAMILIES})
+            report = generator.generate_dataset(num_prob=16, output_dir=out_dir, rule_schema="mixed")
+            self.assertEqual(report["visual_family_counts"], {family: 4 for family in QUANTITY_FAMILIES})
 
     def test_posthoc_audit_recomputes_oracle_and_candidate_only_report(self):
         with tempfile.TemporaryDirectory() as tmp:

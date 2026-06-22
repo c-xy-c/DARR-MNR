@@ -118,7 +118,7 @@ python3 -m unittest tests.test_fvnb_mnr -v
 
 ## VQ-Expr 1-5 Calibrated Visual Expression Dataset
 
-This repository also includes a VQ-Expr generator for the newer no-visible-digit design described in `doc/plan.md`. VQ-Expr uses sample-local calibration to decode fuzzy visual attributes into values in `1..5`, compiles visual rule graphs into executable Answer AoTs, and creates 8-way image candidates with single-mutation counterfactual negatives. The presentation view is a RAVEN-style context/choice split: a 1x3 row of complete context panels plus eight full-panel answer candidates. The current visual surface is an A-SIG-lite structured composition: grayscale only, circle quantity entities, one dynamic semantic boundary per panel, explicit four-region in/out binding, no role labels, and RAVEN-inspired configuration families such as `3x3Grid`, `2x2Grid`, `Out-InGrid`, `Out-InCenter`, and `Left-Right`.
+This repository also includes a VQ-Expr generator for the newer no-visible-digit design described in `doc/plan.md`. VQ-Expr uses sample-local calibration to decode fuzzy continuous visual attributes into values in `1..5`, compiles visual rule graphs into executable Answer AoTs, and creates 8-way image candidates with single-mutation counterfactual negatives. The presentation view is a RAVEN-style context/choice split: a 1x3 row of complete context panels plus eight full-panel answer candidates. The current visual surface is an A-SIG-lite structured composition: grayscale only, one quantity entity per role, one dynamic semantic boundary per panel, explicit four-region in/out binding, no role labels, and RAVEN-inspired configuration families such as `3x3Grid`, `2x2Grid`, `Out-InGrid`, `Out-InCenter`, and `Left-Right`.
 
 Generate a small VQ-Expr probe set:
 
@@ -148,9 +148,9 @@ Current schema:
 - `schema_version`: `vqexpr_1_5_avr_1x3_v8_dynamic_boundary`
 - `visual_surface.style`: `dynamic_boundary_expression_grayscale_a_sig_lite`
 - `visual_surface.scene_graph_schema`: `a_sig_lite_v4`
-- visual attribute surfaces: `gray_level`, `size_level`, `count`, `position_set`
+- visual attribute surfaces: `size_level`, `color_lightness`, `stroke_width`, `aspect_ratio`
 - boundary shapes: `circle`, `square`, `diamond`, `hexagon`
-- boundary split axes: `horizontal` or `vertical`; every sample binds `q1/q2` to two outer regions and `q3/q4` to two inner regions.
+- boundary split axes: `horizontal` or `vertical`; every sample binds `q1/q2` to two outer regions and `q3/q4` to two inner regions. Positions are sampled along the split axis, while the cross-axis is aligned so horizontal and vertical structures remain visually unambiguous.
 
 Supported rule schemas:
 
