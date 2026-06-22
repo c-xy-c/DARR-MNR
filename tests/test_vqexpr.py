@@ -12,6 +12,7 @@ from mnr_dataset.vqexpr_generator import (
 )
 from mnr_dataset.vqexpr_audit import audit_dataset
 from mnr_dataset.vqexpr_program import RULE_FAMILIES, evaluate_answer_aot
+from mnr_dataset.vqexpr_program import EXPRESSION_SCHEMAS_BY_FAMILY
 from mnr_dataset.vqexpr_quantity import (
     QUANTITY_FAMILIES,
     decode_observation,
@@ -29,14 +30,17 @@ EXPECTED_STRUCTURE_FAMILIES = {
 }
 
 EXPECTED_MIN_STRUCTURE_GROUPS = {
-    "serial": 2,
-    "parallel": 2,
+    "serial": 1,
+    "parallel": 1,
     "nested": 1,
     "inverse": 1,
     "calibration": 1,
 }
 
 BOUNDARY_SHAPES = {"circle", "square", "diamond", "hexagon"}
+PANEL_CONTENT_MIN = 14
+PANEL_CONTENT_MAX = 210
+BOUNDARY_SPLIT_AXES = {"horizontal", "vertical"}
 
 
 def _visible_text(primitives):
@@ -60,8 +64,74 @@ def _max_channel_delta(images):
     )
 
 
+def _scene_entities(graph):
+    rows = []
+    for component in graph["components"]:
+        for entity in component["entities"]:
+            rows.append((component, entity))
+    return rows
+
+
+def _assert_scene_geometry_contract(testcase, graph):
+    entities = _scene_entities(graph)
+    for component, entity in entities:
+        cx, cy = [float(v) for v in entity["center"]]
+        radius = float(entity["radius"])
+        testcase.assertGreaterEqual(cx - radius, PANEL_CONTENT_MIN, entity["entity_id"])
+        testcase.assertGreaterEqual(cy - radius, PANEL_CONTENT_MIN, entity["entity_id"])
+        testcase.assertLessEqual(cx + radius, PANEL_CONTENT_MAX, entity["entity_id"])
+        testcase.assertLessEqual(cy + radius, PANEL_CONTENT_MAX, entity["entity_id"])
+        x0, y0, x1, y1 = [float(v) for v in component["layout"]["bbox"]]
+        testcase.assertGreaterEqual(cx - radius, x0 - 1.0, entity["entity_id"])
+        testcase.assertGreaterEqual(cy - radius, y0 - 1.0, entity["entity_id"])
+        testcase.assertLessEqual(cx + radius, x1 + 1.0, entity["entity_id"])
+        testcase.assertLessEqual(cy + radius, y1 + 1.0, entity["entity_id"])
+
+    for left_idx, (_, left) in enumerate(entities):
+        for _, right in entities[left_idx + 1 :]:
+            left_center = np.array(left["center"], dtype=np.float32)
+            right_center = np.array(right["center"], dtype=np.float32)
+            distance = float(np.linalg.norm(left_center - right_center))
+            min_distance = float(left["radius"] + right["radius"] + 2.0)
+            testcase.assertGreaterEqual(
+                distance,
+                min_distance,
+                "{0} overlaps {1}".format(left["entity_id"], right["entity_id"]),
+            )
+
+    boundary_by_id = {
+        boundary["boundary_id"]: boundary
+        for boundary in graph.get("boundary_instances", [])
+    }
+    for component, entity in entities:
+        layout = component["layout"]
+        boundary_id = layout.get("boundary_id")
+        if not boundary_id:
+            continue
+        boundary = boundary_by_id[boundary_id]
+        distance = float(
+            np.linalg.norm(
+                np.array(entity["center"], dtype=np.float32)
+                - np.array(boundary["center"], dtype=np.float32)
+            )
+        )
+        radius = float(entity["radius"])
+        if layout["region"] == "inner":
+            testcase.assertLessEqual(
+                distance + radius,
+                float(boundary["radius"]) - 3.0,
+                "{0} crosses inner boundary".format(entity["entity_id"]),
+            )
+        elif layout["region"] == "outer":
+            testcase.assertGreaterEqual(
+                distance - radius,
+                float(boundary["radius"]) + 3.0,
+                "{0} crosses outer boundary".format(entity["entity_id"]),
+            )
+
+
 class TestVQExprQuantityAttributes(unittest.TestCase):
-    def test_each_quantity_family_covers_1_to_9_without_visible_symbols(self):
+    def test_each_quantity_family_covers_1_to_5_with_continuous_fuzzy_interpolation(self):
         self.assertEqual(
             set(QUANTITY_FAMILIES),
             {
@@ -72,13 +142,19 @@ class TestVQExprQuantityAttributes(unittest.TestCase):
                 "part_ratio_dial",
             },
         )
-        context = make_calibration_context("coverage", seed=4, black_digit=9)
+        context = make_calibration_context("coverage", seed=4, black_digit=5)
         for family in QUANTITY_FAMILIES:
-            for value in [1, 3, 5, 7, 9]:
+            for value in [1, 2, 3, 4, 5]:
                 with self.subTest(family=family, value=value):
                     rendered = render_quantity(family, value, object_id="q", calibration_context=context, style_seed=3)
                     self.assertEqual(rendered.numeric_value, value)
+                    self.assertEqual(rendered.fuzzy_value["discrete_levels"], [1, 2, 3, 4, 5])
                     self.assertIn(value, rendered.fuzzy_value["support"])
+                    self.assertIn("continuous_value", rendered.fuzzy_value)
+                    self.assertGreaterEqual(rendered.fuzzy_value["continuous_value"], 0.0)
+                    self.assertLessEqual(rendered.fuzzy_value["continuous_value"], 1.0)
+                    self.assertIn("interpolation_sigma", rendered.fuzzy_value)
+                    self.assertGreater(rendered.fuzzy_value["interpolation_sigma"], 0.0)
                     decoded = decode_observation(family, rendered.observation, context)
                     self.assertIn(str(value), decoded["membership"])
                     self.assertFalse(rendered.leakage_flags["contains_arabic_digit"])
@@ -87,18 +163,18 @@ class TestVQExprQuantityAttributes(unittest.TestCase):
                     self.assertIn("ink_area", rendered.visual_confounds)
                     self.assertIn("convex_hull_area", rendered.visual_confounds)
 
-    def test_same_black_token_maps_to_9_and_zero_digit_across_samples(self):
-        high_context = make_calibration_context("black_high", seed=1, black_digit=9)
+    def test_same_black_token_maps_to_5_and_zero_digit_across_samples(self):
+        high_context = make_calibration_context("black_high", seed=1, black_digit=5)
         low_context = make_calibration_context("black_low", seed=2, black_digit=0)
 
-        black_9 = render_quantity(
+        black_5 = render_quantity(
             "local_place_value_codebook",
-            9,
+            5,
             object_id="q_black_high",
             calibration_context=high_context,
         )
-        self.assertEqual(black_9.observation["slot_tokens"]["slot_b"], "token_black")
-        self.assertEqual(decode_observation("local_place_value_codebook", black_9.observation, high_context)["membership"]["9"], 1.0)
+        self.assertEqual(black_5.observation["slot_tokens"]["slot_b"], "token_black")
+        self.assertEqual(decode_observation("local_place_value_codebook", black_5.observation, high_context)["membership"]["5"], 1.0)
 
         black_zero_digit_value = render_quantity(
             "local_place_value_codebook",
@@ -120,12 +196,12 @@ class TestVQExprAoTAndCandidates(unittest.TestCase):
             sample = generator.generate_sample("unit_{0}".format(rule_family), rule_family=rule_family)
             metadata = sample["metadata"]
             seen.add(metadata["rule_family"])
-            self.assertEqual(metadata["value_range"], "1..9")
+            self.assertEqual(metadata["value_range"], "1..5")
             self.assertEqual(metadata["rule_family"], rule_family)
             query = metadata["query_panel"]
             evaluation = evaluate_answer_aot(query["quantities"], query["answer_aot"])
             self.assertEqual(evaluation["output_value"], query["evaluation"]["output_value"])
-            self.assertTrue(1 <= evaluation["output_value"] <= 9)
+            self.assertTrue(1 <= evaluation["output_value"] <= 5)
             self.assertIn("visual_rule_graph", query)
             self.assertIn("binding_edges", query["visual_rule_graph"])
             self.assertIn("scope_edges", query["visual_rule_graph"])
@@ -151,6 +227,7 @@ class TestVQExprAoTAndCandidates(unittest.TestCase):
                 self.assertGreaterEqual(candidate["score"], metadata["thresholds"]["theta_pos"])
             else:
                 self.assertLessEqual(candidate["score"], metadata["thresholds"]["theta_neg"])
+            self.assertTrue(1 <= candidate["output_value"] <= 5)
         self.assertTrue(all(metadata["validity"].values()))
 
     def test_each_sample_uses_one_visual_quantity_family(self):
@@ -178,10 +255,10 @@ class TestVQExprAoTAndCandidates(unittest.TestCase):
         self.assertTrue(metadata["presentation_constraints"]["raven_configuration_family"])
         self.assertTrue(metadata["presentation_constraints"]["structured_scope_groups"])
         self.assertTrue(metadata["presentation_constraints"]["typed_boundary_shapes"])
-        self.assertEqual(metadata["visual_surface"]["style"], "typed_boundary_scope_grayscale_a_sig_lite")
+        self.assertEqual(metadata["visual_surface"]["style"], "dynamic_boundary_expression_grayscale_a_sig_lite")
         self.assertIn(metadata["visual_surface"]["attribute_family"], {"gray_level", "size_level", "count", "position_set"})
         self.assertIn(metadata["visual_surface"]["structure_template"], {"3x3Grid", "2x2Grid", "Out-InGrid", "Out-InCenter", "Left-Right"})
-        self.assertEqual(metadata["visual_surface"]["scene_graph_schema"], "a_sig_lite_v3")
+        self.assertEqual(metadata["visual_surface"]["scene_graph_schema"], "a_sig_lite_v4")
         self.assertEqual(_max_channel_delta(sample["context_images"]), 0)
         self.assertEqual(_max_channel_delta(sample["answer_set_images"]), 0)
 
@@ -200,18 +277,26 @@ class TestVQExprAoTAndCandidates(unittest.TestCase):
                 sample = generator.generate_sample("unit_scene_{0}".format(rule_family), rule_family=rule_family)
                 metadata = sample["metadata"]
                 graph = metadata["query_panel"]["visual_scene_graph"]
-                self.assertEqual(graph["schema_version"], "a_sig_lite_v3")
+                self.assertEqual(graph["schema_version"], "a_sig_lite_v4")
                 self.assertEqual(graph["structure"]["family"], structure_family)
                 self.assertTrue(graph["structure"]["typed_boundary_shapes"])
+                self.assertTrue(graph["structure"]["dynamic_boundary_layout"])
                 self.assertEqual(graph["rendering_contract"]["drawn_from_scene_graph"], True)
                 self.assertEqual(graph["rendering_contract"]["no_visible_role_labels"], True)
                 self.assertEqual(graph["rendering_contract"]["typed_boundary_shapes"], True)
                 roles = {component["role"] for component in graph["components"]}
                 self.assertEqual(roles, set(metadata["query_panel"]["quantities"].keys()) | {"target"})
+                boundary_instances = graph["boundary_instances"]
+                self.assertGreaterEqual(len(boundary_instances), 1)
+                for boundary in boundary_instances:
+                    self.assertEqual(boundary["level"], "Boundary")
+                    self.assertIn(boundary["boundary_shape"], BOUNDARY_SHAPES)
+                    self.assertEqual(len(boundary["center"]), 2)
+                    self.assertGreater(boundary["radius"], 0)
+                    self.assertTrue(boundary["governs_expression_binding"])
 
                 groups = graph["structure_groups"]
                 self.assertGreaterEqual(len(groups), EXPECTED_MIN_STRUCTURE_GROUPS[rule_family])
-                self.assertTrue(any(group["boundary_shape"] != "circle" for group in groups))
                 for group in groups:
                     self.assertEqual(group["level"], "ComponentGroup")
                     self.assertGreaterEqual(len(group["roles"]), 2)
@@ -222,13 +307,47 @@ class TestVQExprAoTAndCandidates(unittest.TestCase):
                     self.assertEqual(len(group["center"]), 2)
                     self.assertGreater(group["radius"], 0)
                     self.assertTrue(set(group["roles"]).issubset(roles))
-                if rule_family in {"serial", "parallel", "calibration"}:
-                    self.assertTrue(any(group["visible_scope_marker"] for group in groups))
-                if rule_family in {"nested", "inverse"}:
-                    in_out = graph["structure"]["in_out_regions"]
-                    self.assertEqual(in_out["out_roles"], ["q1"])
-                    self.assertIn("target", in_out["in_roles"])
-                    self.assertTrue(any(group["space_relation"] == "out_to_in" for group in groups))
+                in_out = graph["structure"]["in_out_regions"]
+                self.assertEqual(in_out["boundary_id"], boundary_instances[0]["boundary_id"])
+                self.assertIn(in_out["split_axis"], BOUNDARY_SPLIT_AXES)
+                self.assertEqual(set(in_out["outer_roles"]), {"q1", "q2"})
+                self.assertEqual(set(in_out["inner_roles"]), {"q3", "q4"})
+                self.assertEqual(in_out["target_roles"], ["target"])
+                self.assertEqual(
+                    set(in_out["role_regions"].values()),
+                    {"outer_a", "outer_b", "inner_a", "inner_b", "answer"},
+                )
+                self.assertEqual(set(in_out["region_groups"]), {"outer_a", "outer_b", "inner_a", "inner_b", "answer"})
+                if in_out["split_axis"] == "horizontal":
+                    self.assertEqual(in_out["region_groups"]["outer_a"]["side"], "top")
+                    self.assertEqual(in_out["region_groups"]["outer_b"]["side"], "bottom")
+                    self.assertEqual(in_out["region_groups"]["inner_a"]["side"], "top")
+                    self.assertEqual(in_out["region_groups"]["inner_b"]["side"], "bottom")
+                else:
+                    self.assertEqual(in_out["region_groups"]["outer_a"]["side"], "left")
+                    self.assertEqual(in_out["region_groups"]["outer_b"]["side"], "right")
+                    self.assertEqual(in_out["region_groups"]["inner_a"]["side"], "left")
+                    self.assertEqual(in_out["region_groups"]["inner_b"]["side"], "right")
+                boundary_binding = metadata["query_panel"]["answer_aot"]["boundary_binding"]
+                self.assertEqual(boundary_binding["boundary_id"], in_out["boundary_id"])
+                self.assertEqual(boundary_binding["split_axis"], in_out["split_axis"])
+                self.assertEqual(boundary_binding["outer_roles"], in_out["outer_roles"])
+                self.assertEqual(boundary_binding["inner_roles"], in_out["inner_roles"])
+                self.assertEqual(boundary_binding["role_regions"], in_out["role_regions"])
+                self.assertTrue(any(group["space_relation"] == "out_to_in" for group in groups))
+                for component in graph["components"]:
+                    if component["role"] in {"q1", "q2"}:
+                        self.assertEqual(component["layout"]["region"], "outer")
+                        self.assertIn(component["layout"]["region_id"], {"outer_a", "outer_b"})
+                        self.assertEqual(component["layout"]["boundary_id"], in_out["boundary_id"])
+                    elif component["role"] in {"q3", "q4"}:
+                        self.assertEqual(component["layout"]["region"], "inner")
+                        self.assertIn(component["layout"]["region_id"], {"inner_a", "inner_b"})
+                        self.assertEqual(component["layout"]["boundary_id"], in_out["boundary_id"])
+                    elif component["role"] == "target":
+                        self.assertEqual(component["layout"]["region"], "answer")
+                        self.assertEqual(component["layout"]["region_id"], "answer")
+                        self.assertEqual(component["layout"]["boundary_id"], in_out["boundary_id"])
 
                 for component in graph["components"]:
                     layout = component["layout"]
@@ -259,10 +378,10 @@ class TestVQExprAoTAndCandidates(unittest.TestCase):
         generator = VQExprDatasetGenerator(seed=13)
         high = generator.generate_sample("black_high_sample", rule_family="calibration")["metadata"]["calibration_context"]
         low = make_calibration_context("manual_low", seed=13, black_digit=0)
-        self.assertIn(high["token_to_digit"]["token_black"], [0, 9])
+        self.assertIn(high["token_to_digit"]["token_black"], [0, 5])
         self.assertEqual(low["token_to_digit"]["token_black"], 0)
         self.assertNotEqual(
-            make_calibration_context("manual_high", seed=13, black_digit=9)["token_to_digit"]["token_black"],
+            make_calibration_context("manual_high", seed=13, black_digit=5)["token_to_digit"]["token_black"],
             low["token_to_digit"]["token_black"],
         )
 
@@ -275,7 +394,9 @@ class TestVQExprArtifacts(unittest.TestCase):
             report = generator.generate_dataset(num_prob=5, output_dir=out_dir, rule_schema="mixed")
 
             self.assertEqual(report["num_samples"], 5)
-            self.assertEqual(report["schema_version"], "vqexpr_1_9_avr_1x3_v7_typed_boundary")
+            self.assertEqual(report["schema_version"], "vqexpr_1_5_avr_1x3_v8_dynamic_boundary")
+            for rule_family in RULE_FAMILIES:
+                self.assertGreaterEqual(len(report["expression_schema_counts"][rule_family]), 2)
             self.assertEqual(report["presentation_layout"], "1x3_context_row")
             self.assertEqual(report["strip_semantics"], "three_context_panels_plus_eight_full_panel_candidates")
             self.assertEqual(sum(report["rule_counts"].values()), 5)
@@ -303,7 +424,7 @@ class TestVQExprArtifacts(unittest.TestCase):
             self.assertEqual(data["context_images"].shape[0], 3)
             self.assertEqual(data["answer_set_images"].shape[0], 8)
             metadata = json.loads(str(data["metadata_json"]))
-            self.assertEqual(metadata["value_range"], "1..9")
+            self.assertEqual(metadata["value_range"], "1..5")
             self.assertEqual(metadata["presentation_layout"], "1x3_context_row")
             self.assertEqual(len(metadata["context_panels"]), 3)
             self.assertTrue(metadata["presentation_constraints"]["no_query_panel_in_context_row"])
@@ -313,6 +434,90 @@ class TestVQExprArtifacts(unittest.TestCase):
             self.assertEqual(len(rows), 5)
             first_row = json.loads(rows[0])
             self.assertEqual(first_row["sample_id"], "vqexpr_000000")
+
+    def test_expression_schema_is_not_fixed_within_rule_family(self):
+        generator = VQExprDatasetGenerator(seed=41)
+        for rule_family, schemas in EXPRESSION_SCHEMAS_BY_FAMILY.items():
+            self.assertGreaterEqual(len(schemas), 2)
+            seen = set()
+            for schema_id in schemas:
+                sample = generator.generate_sample(
+                    "unit_expr_{0}_{1}".format(rule_family, schema_id),
+                    rule_family=rule_family,
+                    expression_schema=schema_id,
+                )
+                query = sample["metadata"]["query_panel"]
+                self.assertEqual(query["answer_aot"]["expression_schema"], schema_id)
+                self.assertEqual(query["answer_aot"]["template"], schemas[schema_id]["template"])
+                self.assertEqual(query["expression_schema"], schema_id)
+                seen.add(query["answer_aot"]["template"])
+            self.assertGreaterEqual(len(seen), 2)
+
+    def test_boundary_layout_is_dynamic_but_structured(self):
+        generator = VQExprDatasetGenerator(seed=51)
+        sample_a = generator.generate_sample("unit_boundary_a", rule_family="nested", expression_schema="nested_outer_minus_sum")
+        sample_b = generator.generate_sample("unit_boundary_b", rule_family="nested", expression_schema="nested_outer_minus_sum")
+        graph_a = sample_a["metadata"]["query_panel"]["visual_scene_graph"]
+        graph_b = sample_b["metadata"]["query_panel"]["visual_scene_graph"]
+        boundary_a = graph_a["boundary_instances"][0]
+        boundary_b = graph_b["boundary_instances"][0]
+        centers_or_shapes_differ = (
+            boundary_a["center"] != boundary_b["center"]
+            or boundary_a["radius"] != boundary_b["radius"]
+            or boundary_a["boundary_shape"] != boundary_b["boundary_shape"]
+        )
+        self.assertTrue(centers_or_shapes_differ)
+
+        def role_centers(graph):
+            return {
+                component["role"]: component["layout"]["center"]
+                for component in graph["components"]
+            }
+
+        self.assertNotEqual(role_centers(graph_a), role_centers(graph_b))
+        for graph in [graph_a, graph_b]:
+            boundary = graph["boundary_instances"][0]
+            for component in graph["components"]:
+                layout = component["layout"]
+                self.assertIn(layout["region"], {"inner", "outer", "answer", "boundary"})
+                self.assertEqual(layout["boundary_id"], boundary["boundary_id"])
+                distance = np.linalg.norm(np.array(layout["center"], dtype=np.float32) - np.array(boundary["center"], dtype=np.float32))
+                if layout["region"] == "inner":
+                    self.assertLess(distance, boundary["radius"])
+                elif layout["region"] in {"outer", "boundary"}:
+                    self.assertGreaterEqual(distance, boundary["radius"] * 0.55)
+            _assert_scene_geometry_contract(self, graph)
+
+    def test_boundary_split_axis_varies_across_samples(self):
+        generator = VQExprDatasetGenerator(seed=71)
+        axes = set()
+        for index in range(12):
+            sample = generator.generate_sample(
+                "unit_boundary_axis_{0}".format(index),
+                rule_family="nested",
+                expression_schema="nested_outer_minus_sum",
+            )
+            graph = sample["metadata"]["query_panel"]["visual_scene_graph"]
+            axis = graph["structure"]["in_out_regions"]["split_axis"]
+            self.assertIn(axis, BOUNDARY_SPLIT_AXES)
+            axes.add(axis)
+        self.assertEqual(axes, BOUNDARY_SPLIT_AXES)
+
+    def test_size_level_objects_do_not_overlap_or_cross_regions(self):
+        generator = VQExprDatasetGenerator(seed=61)
+        for rule_family in RULE_FAMILIES:
+            sample = generator.generate_sample(
+                "unit_size_geometry_{0}".format(rule_family),
+                rule_family=rule_family,
+                visual_quantity_family="calibrated_metric_scale",
+            )
+            graphs = [sample["metadata"]["query_panel"]["visual_scene_graph"]]
+            graphs.extend(candidate["visual_scene_graph"] for candidate in sample["metadata"]["candidates"])
+            for graph in graphs:
+                self.assertTrue(
+                    any(entity["attribute_family"] == "size_level" for _, entity in _scene_entities(graph))
+                )
+                _assert_scene_geometry_contract(self, graph)
 
     def test_dataset_writer_balances_correct_answer_positions(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -364,7 +569,7 @@ class TestVQExprArtifacts(unittest.TestCase):
             self.assertTrue((out_dir / "vqexpr_killer_presentation.png").exists())
             self.assertTrue((out_dir / "vqexpr_killer_debug.png").exists())
             self.assertTrue((out_dir / "vqexpr_killer_metadata.json").exists())
-            self.assertEqual(sample["metadata"]["value_range"], "1..9")
+            self.assertEqual(sample["metadata"]["value_range"], "1..5")
             self.assertEqual(sample["answer_set_images"].shape[0], 8)
 
 

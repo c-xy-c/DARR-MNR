@@ -14,7 +14,7 @@ VQ-Expr: Visual Quantity Expression Reasoning
 最后从 8 个完整图像候选中选择唯一正确 panel。
 ```
 
-当前 v1 明确收敛到 **1-9**，不是 1-99。理由是：我们现在最关键的研究对象不是“大数读数”，而是 **attribute -> fuzzy number -> role binding -> arithmetic AoT** 这条语义链。1-99 在无显式数字条件下很容易变成编码表或密集计数，反而让视觉展示不可读。1-9 足够承载 `+ - * /`、scope、port binding、fuzzy ambiguity 和 counterfactual negatives。
+当前 v8 明确收敛到 **1-5**，不是 1-99，也暂时不坚持 1-9。理由是：我们现在最关键的研究对象不是“大数读数”，而是 **attribute -> fuzzy number -> boundary role binding -> arithmetic AoT** 这条语义链。1-99 在无显式数字条件下很容易变成编码表或密集计数；1-9 对 size/position/count 仍偏吃力。1-5 允许每个视觉属性有五个离散 level，同时保留连续插值和相邻 membership 来体现 fuzzy。
 
 ## 1. 核心判断
 
@@ -111,68 +111,80 @@ quantity value is encoded by object attributes: count, position, size, gray, nes
 
 旧五类 attribute 可以保留在 metadata/audit 历史中，但不应作为最终视觉表面。
 
-### 1.4 当前 v7：In-Out + Typed Boundary 结构化构图
+### 1.4 当前 v8：Dynamic Boundary + 四区表达式绑定
 
-当前实现已经从 `v4_minimal`、`v5_structured` 继续升级到：
+当前实现已经从 `v4_minimal`、`v5_structured`、`v7_typed_boundary` 继续升级到：
 
 ```text
-schema_version = vqexpr_1_9_avr_1x3_v7_typed_boundary
-visual_surface.style = typed_boundary_scope_grayscale_a_sig_lite
-visual_surface.scene_graph_schema = a_sig_lite_v3
+schema_version = vqexpr_1_5_avr_1x3_v8_dynamic_boundary
+visual_surface.style = dynamic_boundary_expression_grayscale_a_sig_lite
+visual_surface.scene_graph_schema = a_sig_lite_v4
 ```
 
-这版的变化不是加装饰，而是把 panel 的视觉生成源头改成一个可检查的 A-SIG-lite scene graph：
+这版的变化不是加装饰，而是把 boundary 变成 expression binding 的一等对象。每个 panel 都有一个动态 boundary；boundary 的位置、半径、形状、split axis 都进入 metadata，并直接决定四个 operand 的角色：
 
 ```text
 Scene
-  Structure: 3x3Grid / 2x2Grid / Out-InGrid / Out-InCenter / Left-Right
-    ComponentGroup: typed semantic boundary, branch/scope/in-out grouping
+  Boundary: circle / square / diamond / hexagon
+    split_axis: horizontal or vertical
+    outer_a: q1
+    outer_b: q2
+    inner_a: q3
+    inner_b: q4
+    answer: target
+  Structure: source rule family remains serial / parallel / nested / inverse / calibration
     Component: q1, q2, q3, q4, target
-      Layout: bbox, scope, slot_id, number, position, uniformity
+      Layout: bbox, center, region, region_id, boundary_id, split_axis
         Entity: circle, gray/size/count/position attribute
 ```
 
-每个 context panel 和每个 candidate panel 都保存 `visual_scene_graph`。renderer 只读取这个 graph 画图；因此“同一个数字在不同视觉结构中绑定到不同角色”不再只是论文叙述，而是 metadata 与图像共同遵守的约束。
+每个 context panel 和每个 candidate panel 都保存 `visual_scene_graph`。renderer 先画 `boundary_instances`，再画 quantity entities；因此图像中看到的 boundary 就是 Answer AoT 中 `boundary_binding.boundary_id` 指向的 boundary，而不是装饰线。
 
-`v5_structured` 的主要教训是：只有 scene graph 和 role slot 还不够，`serial / parallel / calibration` 仍然容易看成简单点阵。`v7_typed_boundary` 因此加入两个结构层：
+四区布局是全 family 统一合同，不再只给 `nested / inverse` 特例：
 
 ```text
-1. in_out_regions:
-   nested / inverse 明确记录 out_roles = [q1]，in_roles = [q2, q3, target]。
+horizontal:
+  outer_a = boundary 上方，outer_b = boundary 下方
+  inner_a = boundary 内上方，inner_b = boundary 内下方
 
-2. structure_groups:
-   用 circle / square / diamond / hexagon 的灰度边界表示 scope、branch、local calibration frame、out-to-in containment。
+vertical:
+  outer_a = boundary 左侧，outer_b = boundary 右侧
+  inner_a = boundary 内左侧，inner_b = boundary 内右侧
 ```
 
-边界形状只服务于结构，不编码数字值；数字值仍由 circle quantity entity 的 gray/size/count/position attribute 表达。这样可以避免回到“花哨装饰”，同时让结构差异在图像层可见。
+边界形状只服务于结构，不编码数字值；数字值仍由 circle quantity entity 的 gray/size/count/position attribute 表达。boundary 的意义在于把同一组视觉 attribute 绑定到不同 expression role：同样的视觉数值如果从 outer_a 换到 inner_a，AoT 的端口语义会改变。
 
 当前 rule 到 structure 的映射是：
 
-| Rule family | Structure family | 视觉直觉 |
+| Rule family | Structure family | 当前表达式自由度 |
 | --- | --- | --- |
-| `serial` | `3x3Grid` | hexagon prefix scope 绑定 q1/q2/q3，diamond tail scope 绑定 q4/target |
-| `parallel` | `2x2Grid` + center target | top/bottom square branch scope，center circle merge scope |
-| `nested` | `Out-InGrid` | hexagon out-to-in boundary + square inner scope；`out_roles=[q1]` |
-| `inverse` | `Out-InCenter` | hexagon out-to-in boundary + diamond inner stack；`out_roles=[q1]` |
-| `calibration` | `Left-Right` | diamond local calibration frame 同时包住 q1/q2/target |
+| `serial` | `3x3Grid` label retained for split metadata | 至少两个 schema，例如 `Sub(Mul(Add(q1,q2),q3),q4)` 与 `Add(Mul(Sub(q1,q2),q3),q4)` |
+| `parallel` | `2x2Grid` label retained for split metadata | 至少两个 schema，例如 pairwise sum/difference |
+| `nested` | `Out-InGrid` | outer pair 与 inner pair 通过 boundary merge |
+| `inverse` | `Out-InCenter` | outer pair 生成 numerator，inner pair 生成 divisor |
+| `calibration` | `Left-Right` | 四个区域都经过 sample-local decoder 后进入表达式 |
 
 样例输出：
 
 ```text
-outputs/vqexpr_typed_boundary_1x3_v7_refined/vqexpr_000000_overview.png
-outputs/vqexpr_typed_boundary_1x3_v7_refined/typed_boundary_five_family_contact_sheet.png
-outputs/vqexpr_typed_boundary_1x3_v7_probe200/audit_report.json
+outputs/vqexpr_dynamic_boundary_1x3_v8/vqexpr_000000_overview.png
+outputs/vqexpr_dynamic_boundary_1x3_v8/dynamic_boundary_sample.png
 ```
 
 这版已经解决的差距：
 
 ```text
-不再只有一个 structure_template 字符串；
+boundary_instances 是一等 scene graph 节点；
+boundary_binding 进入 Answer AoT；
+所有 family 都使用 outer_a / outer_b / inner_a / inner_b 四区 role binding；
+每个 sample 采样 horizontal 或 vertical split axis；
+expression_schema 不再固定为一个表达式；
+值域收敛为 1..5，降低视觉读数器压力；
+五个离散 level 通过连续 attribute axis 插值产生 fuzzy membership；
 每个可见 entity 都能回到 metadata 中的 Component/Layout/Entity；
 candidates 是 full-panel scene graph，不是孤立 answer token；
-Out-In 类结构有可见外层 component；
-serial / parallel / calibration 不再只是裸点阵，而有可见 scope / branch / local-frame；
-boundary shape 进入 metadata 与 renderer，不再只用圆形大圈；
+boundary shape / center / radius / split axis 进入 metadata 与 renderer；
+object non-overlap、panel bounds、inner/outer containment 由测试约束；
 仍保持无数字、无算符、灰度、无 role label。
 ```
 
@@ -181,7 +193,7 @@ boundary shape 进入 metadata 与 renderer，不再只用圆形大圈；
 ```text
 quantity entity 仍只有 circle；Type 目前只给 boundary，不给数值实体；
 boundary shape 是结构通道，未来需要验证它不会成为 rule-family shortcut；
-parallel 的 center target 是折中设计，不是严格 RAVEN configuration；
+四区布局现在是可行原型，还需要人工比较 RAVEN 样例确认视觉节奏；
 candidate negatives 语义上是 single mutation，但视觉扰动还需要更强的 learned candidate-only audit；
 当前只是小样本视觉 probe，还没做人类 sanity check 或大规模 split。
 ```
@@ -229,23 +241,25 @@ candidate output 的同 family 视觉属性
 
 ## 3. Quantity Attribute Families
 
-v1 保留 1-9，但数值必须通过 RAVEN-like object attributes 表达。每一类都必须满足：
+v8 使用 1-5 值域。这里的目标不是弱化 fuzzy，而是避免把视觉编码逼成读数器：离散语义只有五档，视觉参数仍在连续轴上插值，decoder 输出相邻 level 的 fuzzy membership。每一类都必须满足：
 
 ```text
 render(obs | n, sample_seed)
-decode(obs, calibration_s) -> mu(n), n in 1..9
+decode(obs, calibration_s) -> mu(n), n in 1..5
 no visible digit / operator leakage
 single-sample consistency: all operands and candidate target roles use the same scene grammar
+fuzzy_value.discrete_levels = [1, 2, 3, 4, 5]
+fuzzy_value.continuous_value in [0, 1]
 ```
 
 推荐新版 attribute families：
 
 | Family | 图像中看到什么 | 数值语义 | Fuzzy 点 |
 | --- | --- | --- | --- |
-| Count | 1-9 个同类灰度几何对象 | Layout.Number | 遮挡/小尺寸/边界 entity 造成相邻数 membership |
-| Position set | 3x3 slots 中占据若干位置 | Layout.Position pattern rank | slot 偏移、边界位置、近邻 slot membership |
-| Size level | 一个或多个对象的离散大小 | Entity.Size level 1-9 | 连续尺寸落在相邻 bin 边界 |
-| Gray level | 几何对象灰度深浅 | Entity.Color/gray level 1-9 | 灰度接近相邻 level |
+| Count | 1-5 个同类灰度几何对象 | Layout.Number | dot spacing/面积/密度形成连续扰动，相邻 count 有 membership |
+| Position set | 5 个 rank slot 中占据一个位置 | Layout.Position rank | slot 中心附近连续偏移，靠近相邻 slot 时 membership 扩散 |
+| Size level | 一个对象的五档大小 | Entity.Size level 1-5 | 半径沿连续轴插值，落在相邻 bin 边界 |
+| Gray level | 几何对象五档灰度深浅 | Entity.Gray level 1-5 | 灰度沿连续轴插值，接近相邻 level |
 
 当前主 renderer 只保留这四类极简属性。连续比例类属性可以作为后续 fuzzy 分支，但不进入主视觉，避免引入额外装饰。
 
@@ -260,15 +274,15 @@ support(mu_q) includes true n and near-neighbor alternatives
 
 每个 panel 是一个完整 scene，而不是一个公式卡片。视觉结构只通过对象位置/包含关系/相对排布表达 role，不出现显式算符，也不出现固定右侧 output 节点。
 
-当前五类 AoT family：
+当前五类 AoT family 都使用四个 operand。`rule_family` 描述结构家族，`expression_schema` 描述具体算式；同一 family 内至少有两个 schema，避免 rule 被定死成一个表达式：
 
-| Family | Hidden expression | 视觉绑定直觉 |
+| Family | Example hidden expression | 视觉绑定直觉 |
 | --- | --- | --- |
 | serial | `Sub(Mul(Add(q1,q2),q3),q4)` | 角色来自 slot order 或 component order，不画箭头 |
 | parallel | `Add(Add(q1,q2),Sub(q3,q4))` | 左右/上下 component 表示并行 role |
-| nested | `Sub(q1,Add(q2,q3))` | outer/inner 或 grid center/corner 表示 scope |
-| inverse | `Div(Mul(q1,q2),q3)` | inside/outside 或 paired slots 表示可抵消 role |
-| calibration | `Add(q1,q2)` under local decoder | 同一灰度/大小/数量 attribute 经 sample-local decoder 影响答案 |
+| nested | `Sub(Add(q1,q2),Add(q3,q4))` | outer pair 与 inner pair 由 boundary 分组 |
+| inverse | `Div(Mul(q1,q2),Add(q3,q4))` | outer pair 生成 numerator，inner pair 生成 divisor |
+| calibration | `Add(Add(Decode_A(q1),Decode_B(q2)),Sub(Decode_A(q3),Decode_B(q4)))` | 同一灰度/大小/数量 attribute 经 sample-local decoder 影响答案 |
 
 关键不是让人从单张图读出公式，而是通过前三个 context panels 看到同一 hidden relation，再在 8 个 candidate scenes 中选择满足 target role 的完整 panel。
 
@@ -319,7 +333,7 @@ correct_answer_image_index: int in [0, 7]
 metadata_json:
   sample_id
   presentation_layout = 1x3_context_row
-  value_range = 1..9
+  value_range = 1..5
   visual_quantity_family
   calibration_context
   query_panel
@@ -375,14 +389,16 @@ BindingSensitivity: port/scope mutation caused score drop
 
 ```text
 mnr_dataset/vqexpr_quantity.py
-  1-9 fuzzy quantity attribute families
+  1-5 fuzzy quantity attribute families with continuous interpolation metadata
 
 mnr_dataset/vqexpr_program.py
-  five Answer AoT families with valid 1-9 reverse sampling
+  five Answer AoT families with valid 1-5 reverse sampling
+  at least two expression schemas per family
 
 mnr_dataset/vqexpr_generator.py
   AVR-style 1x3 context-row renderer
-  minimal grayscale object-attribute surface
+  dynamic boundary split renderer
+  four-region role binding: outer_a / outer_b / inner_a / inner_b
   single visual alphabet per sample
   full-panel candidates
   C0-C7 candidate generation
@@ -515,7 +531,7 @@ Reviewer 风险与修复：
 | “这只是把数字藏起来。” | sample-local calibration + token remapping + calibration-shuffled split |
 | “这不就是 RAVEN？” | RAVEN 是离散 abstract rule；VQ-Expr 是 fuzzy quantity + executable arithmetic AoT |
 | “这不就是 MNR 换皮？” | 无 visible digits/operators；候选是 full-panel visual-semantic counterfactual |
-| “1-9 太简单。” | 复杂性来自 fuzzy decoding、binding、scope、AoT depth 和 counterfactual，而不是大数 |
+| “1-5 太简单。” | 复杂性来自 fuzzy decoding、四区 boundary binding、AoT schema variation 和 counterfactual，而不是大数 |
 | “候选偏置。” | candidate-only audit + mutation balancing |
 | “fuzzy 主观。” | deterministic decoder、threshold、margin、oracle 复算 |
 
@@ -524,8 +540,8 @@ Reviewer 风险与修复：
 短期：
 
 ```text
-1. 人工审查极简 renderer 是否过稀疏、是否还保留足够 role binding。
-2. 人工审查 v7 typed-boundary renderer 是否已经像 AVR/RAVEN-style composition，而不是只是固定点阵。
+1. 人工审查 v8 dynamic-boundary renderer 是否像 AVR/RAVEN-style composition，而不是机制图。
+2. 为 horizontal / vertical split 各生成 contact sheet，检查四区 role binding 是否清晰。
 3. 把 `visual_rule_graph` 从旧 gate graph 改名或重构成 `visual_role_binding_graph`。
 4. 生成 1k+ probe，跑 oracle/candidate-only/hard-decoder baseline。
 5. 对每类 mutation 平衡视觉统计，避免正确候选在面积/密度上泄漏。
@@ -535,8 +551,8 @@ Reviewer 风险与修复：
 
 ```text
 1. Rule-OOD / Attribute-OOD / Calibration-OOD split。
-2. 人类 sanity check：1-9 版本是否可读、是否过于简单。
-3. 若 1-9 被证明太弱，再扩到 compositional multi-digit，而不是直接回到 1-99 dense encoding。
+2. 人类 sanity check：1-5 版本是否可读、是否过于简单。
+3. 若 1-5 被证明太弱，优先增加 expression depth / boundary split variants，而不是直接回到 1-99 dense encoding。
 ```
 
 一句话收束：

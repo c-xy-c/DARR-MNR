@@ -116,9 +116,9 @@ Run the FVNB-MNR tests:
 python3 -m unittest tests.test_fvnb_mnr -v
 ```
 
-## VQ-Expr 1-9 Calibrated Visual Expression Dataset
+## VQ-Expr 1-5 Calibrated Visual Expression Dataset
 
-This repository also includes a VQ-Expr generator for the newer no-visible-digit design described in `doc/plan.md`. VQ-Expr uses sample-local calibration to decode fuzzy visual attributes into values in `1..9`, compiles visual rule graphs into executable Answer AoTs, and creates 8-way image candidates with single-mutation counterfactual negatives. The presentation view is a RAVEN-style context/choice split: a 1x3 row of complete context panels plus eight full-panel answer candidates. The current visual surface is an A-SIG-lite structured composition: grayscale only, circle quantity entities, typed semantic boundary shapes, explicit in/out regions for containment structures, no role labels, and RAVEN-inspired configuration families such as `3x3Grid`, `2x2Grid`, `Out-InGrid`, `Out-InCenter`, and `Left-Right`.
+This repository also includes a VQ-Expr generator for the newer no-visible-digit design described in `doc/plan.md`. VQ-Expr uses sample-local calibration to decode fuzzy visual attributes into values in `1..5`, compiles visual rule graphs into executable Answer AoTs, and creates 8-way image candidates with single-mutation counterfactual negatives. The presentation view is a RAVEN-style context/choice split: a 1x3 row of complete context panels plus eight full-panel answer candidates. The current visual surface is an A-SIG-lite structured composition: grayscale only, circle quantity entities, one dynamic semantic boundary per panel, explicit four-region in/out binding, no role labels, and RAVEN-inspired configuration families such as `3x3Grid`, `2x2Grid`, `Out-InGrid`, `Out-InCenter`, and `Left-Right`.
 
 Generate a small VQ-Expr probe set:
 
@@ -135,7 +135,7 @@ Each generated `.npz` contains:
 - `context_images`: 3 rendered complete context panels for the 1x3 context row.
 - `answer_set_images`: 8 rendered image candidates.
 - `correct_answer_image_index`: the 8-way label.
-- `metadata_json`: calibration context, strip semantics, structured visual surface metadata, per-panel `visual_scene_graph`, typed boundary groups, visual quantity family, quantity objects, visual rule graph, Answer AoT, candidate mutation logs, scores, and validity checks.
+- `metadata_json`: calibration context, strip semantics, structured visual surface metadata, per-panel `visual_scene_graph`, dynamic boundary instances, visual quantity family, quantity objects, visual rule graph, Answer AoT, expression schema, candidate mutation logs, scores, and validity checks.
 
 The generator also writes:
 
@@ -145,11 +145,12 @@ The generator also writes:
 
 Current schema:
 
-- `schema_version`: `vqexpr_1_9_avr_1x3_v7_typed_boundary`
-- `visual_surface.style`: `typed_boundary_scope_grayscale_a_sig_lite`
-- `visual_surface.scene_graph_schema`: `a_sig_lite_v3`
+- `schema_version`: `vqexpr_1_5_avr_1x3_v8_dynamic_boundary`
+- `visual_surface.style`: `dynamic_boundary_expression_grayscale_a_sig_lite`
+- `visual_surface.scene_graph_schema`: `a_sig_lite_v4`
 - visual attribute surfaces: `gray_level`, `size_level`, `count`, `position_set`
 - boundary shapes: `circle`, `square`, `diamond`, `hexagon`
+- boundary split axes: `horizontal` or `vertical`; every sample binds `q1/q2` to two outer regions and `q3/q4` to two inner regions.
 
 Supported rule schemas:
 

@@ -18,6 +18,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 from mnr_dataset.vqexpr_program import (
+    EXPRESSION_SCHEMAS_BY_FAMILY,
     RULE_FAMILIES,
     VALUE_MAX,
     VALUE_MIN,
@@ -46,11 +47,11 @@ NEGATIVE_MUTATIONS = (
 )
 
 PANEL_SIZE = 224
-SCHEMA_VERSION = "vqexpr_1_9_avr_1x3_v7_typed_boundary"
+SCHEMA_VERSION = "vqexpr_1_5_avr_1x3_v8_dynamic_boundary"
 PRESENTATION_LAYOUT = "1x3_context_row"
 STRIP_SEMANTICS = "three_context_panels_plus_eight_full_panel_candidates"
-VISUAL_SURFACE_STYLE = "typed_boundary_scope_grayscale_a_sig_lite"
-SCENE_GRAPH_SCHEMA = "a_sig_lite_v3"
+VISUAL_SURFACE_STYLE = "dynamic_boundary_expression_grayscale_a_sig_lite"
+SCENE_GRAPH_SCHEMA = "a_sig_lite_v4"
 
 
 class VQExprDatasetGenerator(object):
@@ -79,6 +80,7 @@ class VQExprDatasetGenerator(object):
         rule_family: Optional[str] = None,
         correct_slot: Optional[int] = None,
         visual_quantity_family: Optional[str] = None,
+        expression_schema: Optional[str] = None,
     ) -> Dict[str, object]:
         rule_family = rule_family or self.rng.choice(RULE_FAMILIES)
         if rule_family == "mixed":
@@ -86,14 +88,17 @@ class VQExprDatasetGenerator(object):
         if rule_family not in RULE_FAMILIES:
             raise ValueError("Unknown rule family: {0}".format(rule_family))
 
-        black_digit = 9 if self.rng.randint(0, 1) == 0 else 0
+        black_digit = VALUE_MAX if self.rng.randint(0, 1) == 0 else 0
         calibration = make_calibration_context(sample_id=sample_id, seed=self.rng.randint(0, 10**7), black_digit=black_digit)
         visual_quantity_family = visual_quantity_family or self.rng.choice(QUANTITY_FAMILIES)
         if visual_quantity_family not in QUANTITY_FAMILIES:
             raise ValueError("Unknown visual quantity family: {0}".format(visual_quantity_family))
-        query = self._make_panel_program(sample_id + "_query", rule_family, calibration, visual_quantity_family)
+        expression_schema = expression_schema or self.rng.choice(list(EXPRESSION_SCHEMAS_BY_FAMILY[rule_family].keys()))
+        if expression_schema not in EXPRESSION_SCHEMAS_BY_FAMILY[rule_family]:
+            raise ValueError("Unknown expression schema for {0}: {1}".format(rule_family, expression_schema))
+        query = self._make_panel_program(sample_id + "_query", rule_family, calibration, visual_quantity_family, expression_schema)
         contexts = [
-            self._make_panel_program("{0}_ctx{1}".format(sample_id, idx), rule_family, calibration, visual_quantity_family)
+            self._make_panel_program("{0}_ctx{1}".format(sample_id, idx), rule_family, calibration, visual_quantity_family, expression_schema)
             for idx in range(3)
         ]
         candidates = self._make_candidates(query, calibration, visual_quantity_family)
@@ -110,6 +115,7 @@ class VQExprDatasetGenerator(object):
             "value_range": _value_range_label(self.value_range),
             "t_norm": self.t_norm,
             "rule_family": rule_family,
+            "expression_schema": expression_schema,
             "thresholds": dict(self.thresholds),
             "calibration_context": calibration,
             "presentation_layout": PRESENTATION_LAYOUT,
@@ -171,6 +177,10 @@ class VQExprDatasetGenerator(object):
         visual_family_counts = {family: 0 for family in QUANTITY_FAMILIES}
         correct_index_counts = {str(index): 0 for index in range(8)}
         negative_counts = {str(mutation): 0 for mutation in NEGATIVE_MUTATIONS if mutation is not None}
+        expression_schema_counts = {
+            family: {schema_id: 0 for schema_id in EXPRESSION_SCHEMAS_BY_FAMILY[family]}
+            for family in RULE_FAMILIES
+        }
         candidate_visual_audit = _empty_candidate_visual_audit()
         candidate_only_heuristics = _empty_candidate_only_heuristics()
         validity_counts = {
@@ -186,16 +196,20 @@ class VQExprDatasetGenerator(object):
                 rule_family = RULE_FAMILIES[index % len(RULE_FAMILIES)]
             else:
                 rule_family = rule_schema
+            schemas = list(EXPRESSION_SCHEMAS_BY_FAMILY[rule_family].keys())
+            expression_schema = schemas[rule_counts[rule_family] % len(schemas)]
             sample_id = "vqexpr_{0:06d}".format(index)
             sample = self.generate_sample(
                 sample_id=sample_id,
                 rule_family=rule_family,
                 correct_slot=index % 8,
                 visual_quantity_family=QUANTITY_FAMILIES[index % len(QUANTITY_FAMILIES)],
+                expression_schema=expression_schema,
             )
             metadata = sample["metadata"]
             rows.append(metadata)
             rule_counts[str(metadata["rule_family"])] += 1
+            expression_schema_counts[str(metadata["rule_family"])][str(metadata["expression_schema"])] += 1
             visual_family_counts[str(metadata["visual_quantity_family"])] += 1
             correct_index_counts[str(metadata["correct_answer_image_index"])] += 1
             _update_candidate_visual_audit(candidate_visual_audit, sample["answer_set_images"], metadata["candidates"])
@@ -230,6 +244,7 @@ class VQExprDatasetGenerator(object):
             "presentation_layout": PRESENTATION_LAYOUT,
             "strip_semantics": STRIP_SEMANTICS,
             "rule_counts": rule_counts,
+            "expression_schema_counts": expression_schema_counts,
             "visual_family_counts": visual_family_counts,
             "correct_index_counts": correct_index_counts,
             "candidate_visual_stats": _finalize_candidate_visual_audit(candidate_visual_audit),
@@ -256,12 +271,20 @@ class VQExprDatasetGenerator(object):
         rule_family: str,
         calibration: Mapping[str, object],
         visual_quantity_family: str,
+        expression_schema: str,
     ) -> Dict[str, object]:
-        leaf_values = reverse_sample_leaf_values(rule_family, self.rng)
+        leaf_values = reverse_sample_leaf_values(rule_family, self.rng, expression_schema=expression_schema)
         quantity_families = {
             qid: visual_quantity_family
             for qid in sorted(leaf_values)
         }
+        surface_family = _surface_family_for_quantity_family(visual_quantity_family)
+        layout_blueprint = _make_layout_blueprint(
+            panel_id=panel_id,
+            rule_family=rule_family,
+            operand_roles=sorted(leaf_values),
+            rng=self.rng,
+        )
         quantities = {
             qid: render_quantity(
                 quantity_families[qid],
@@ -272,7 +295,13 @@ class VQExprDatasetGenerator(object):
             ).to_dict()
             for qid, value in leaf_values.items()
         }
-        answer_aot = build_answer_aot(rule_family, leaf_values, quantity_families)
+        answer_aot = build_answer_aot(
+            rule_family,
+            leaf_values,
+            quantity_families,
+            expression_schema=expression_schema,
+            boundary_binding=layout_blueprint.get("boundary_binding"),
+        )
         evaluation = evaluate_answer_aot(quantities, answer_aot)
         output_quantity = render_quantity(
             visual_quantity_family,
@@ -282,17 +311,18 @@ class VQExprDatasetGenerator(object):
             style_seed=self.rng.randint(0, 10**7),
         ).to_dict()
         visual_rule_graph = build_visual_rule_graph(answer_aot, quantities)
-        surface_family = _surface_family_for_quantity_family(visual_quantity_family)
         visual_scene_graph = _build_visual_scene_graph(
             panel_id=panel_id,
             rule_family=rule_family,
             quantities=quantities,
             output_quantity=output_quantity,
             surface_family=surface_family,
+            layout_blueprint=layout_blueprint,
         )
         return {
             "panel_id": panel_id,
             "rule_family": rule_family,
+            "expression_schema": expression_schema,
             "leaf_values": dict(leaf_values),
             "quantity_families": dict(quantity_families),
             "quantities": quantities,
@@ -300,6 +330,7 @@ class VQExprDatasetGenerator(object):
             "answer_aot": answer_aot,
             "visual_rule_graph": visual_rule_graph,
             "visual_scene_graph": visual_scene_graph,
+            "visual_layout_blueprint": layout_blueprint,
             "evaluation": evaluation,
         }
 
@@ -312,13 +343,12 @@ class VQExprDatasetGenerator(object):
         expected = int(query["evaluation"]["output_value"])
         output_family = visual_quantity_family
         wrong_values = [value for value in range(self.value_range[0], self.value_range[1] + 1) if value != expected]
-        self.rng.shuffle(wrong_values)
         unshuffled = []
         for idx, mutation in enumerate(NEGATIVE_MUTATIONS):
             if mutation is None:
                 value = expected
             else:
-                value = wrong_values.pop()
+                value = self.rng.choice(wrong_values)
             score = candidate_score(expected, value, mutation)
             if mutation == "fuzzy_ambiguity_trap":
                 score = min(score, self.thresholds["theta_neg"] - 0.01)
@@ -336,6 +366,7 @@ class VQExprDatasetGenerator(object):
                 quantities=query["quantities"],
                 output_quantity=quantity,
                 surface_family=_surface_family_for_quantity_family(output_family),
+                layout_blueprint=query["visual_layout_blueprint"],
             )
             unshuffled.append(
                 {
@@ -408,6 +439,7 @@ def _strip_images(panel: Mapping[str, object]) -> Dict[str, object]:
     return {
         "panel_id": panel["panel_id"],
         "rule_family": panel["rule_family"],
+        "expression_schema": panel["expression_schema"],
         "leaf_values": dict(panel["leaf_values"]),
         "quantity_families": dict(panel["quantity_families"]),
         "quantities": panel["quantities"],
@@ -699,9 +731,16 @@ def _build_visual_scene_graph(
     quantities: Mapping[str, Mapping[str, object]],
     output_quantity: Mapping[str, object],
     surface_family: str,
+    layout_blueprint: Optional[Mapping[str, object]] = None,
 ) -> Dict[str, object]:
     structure_family = _raven_structure_template(rule_family)
-    layout_specs = _structured_role_layouts(rule_family)
+    layout_blueprint = layout_blueprint or _make_layout_blueprint(
+        panel_id=panel_id,
+        rule_family=rule_family,
+        operand_roles=sorted(quantities),
+        rng=random.Random("{0}:{1}".format(panel_id, rule_family)),
+    )
+    layout_specs = list(layout_blueprint["layout_specs"])
     components = []
     for spec in layout_specs:
         role = str(spec["role"])
@@ -714,7 +753,8 @@ def _build_visual_scene_graph(
             quantity=quantity,
         )
         components.append(component)
-    structure_groups = _structure_groups_for_rule(rule_family)
+    structure_groups = list(layout_blueprint["structure_groups"])
+    boundary_instances = list(layout_blueprint["boundary_instances"])
     return {
         "schema_version": SCENE_GRAPH_SCHEMA,
         "panel_id": panel_id,
@@ -725,9 +765,11 @@ def _build_visual_scene_graph(
             "source_rule_family": rule_family,
             "component_order": [component["component_id"] for component in components],
             "typed_boundary_shapes": True,
-            "in_out_regions": _in_out_regions_for_rule(rule_family),
+            "dynamic_boundary_layout": True,
+            "in_out_regions": layout_blueprint["in_out_regions"],
         },
         "surface_family": surface_family,
+        "boundary_instances": boundary_instances,
         "structure_groups": structure_groups,
         "components": components,
         "rendering_contract": {
@@ -744,16 +786,146 @@ def _build_visual_scene_graph(
     }
 
 
-def _in_out_regions_for_rule(rule_family: str) -> Dict[str, List[str]]:
-    if rule_family in {"nested", "inverse"}:
-        return {
-            "out_roles": ["q1"],
-            "in_roles": ["q2", "q3", "target"],
-        }
-    return {
-        "out_roles": [],
-        "in_roles": [],
+def _make_layout_blueprint(
+    panel_id: str,
+    rule_family: str,
+    operand_roles: Sequence[str],
+    rng: random.Random,
+) -> Dict[str, object]:
+    return _make_in_out_layout_blueprint(panel_id, rule_family, operand_roles, rng)
+
+
+def _make_in_out_layout_blueprint(
+    panel_id: str,
+    rule_family: str,
+    operand_roles: Sequence[str],
+    rng: random.Random,
+) -> Dict[str, object]:
+    if set(operand_roles) != {"q1", "q2", "q3", "q4"}:
+        raise ValueError("In/out boundary layouts require q1..q4 operands, got {0}".format(sorted(operand_roles)))
+
+    boundary_id = "boundary_main"
+    split_axis = rng.choice(["horizontal", "vertical"])
+    center = (rng.randint(110, 114), rng.randint(110, 114))
+    radius = rng.randint(46, 49)
+    boundary_shape = rng.choice(["circle", "square", "diamond", "hexagon"])
+    role_regions = {
+        "q1": "outer_a",
+        "q2": "outer_b",
+        "q3": "inner_a",
+        "q4": "inner_b",
+        "target": "answer",
     }
+    side_a, side_b = ("top", "bottom") if split_axis == "horizontal" else ("left", "right")
+    region_groups = {
+        "outer_a": {"region_id": "outer_a", "region": "outer", "side": side_a, "roles": ["q1"]},
+        "outer_b": {"region_id": "outer_b", "region": "outer", "side": side_b, "roles": ["q2"]},
+        "inner_a": {"region_id": "inner_a", "region": "inner", "side": side_a, "roles": ["q3"]},
+        "inner_b": {"region_id": "inner_b", "region": "inner", "side": side_b, "roles": ["q4"]},
+        "answer": {"region_id": "answer", "region": "answer", "side": "center", "roles": ["target"]},
+    }
+    boundary = {
+        "boundary_id": boundary_id,
+        "level": "Boundary",
+        "boundary_shape": boundary_shape,
+        "center": [int(center[0]), int(center[1])],
+        "radius": int(radius),
+        "split_axis": split_axis,
+        "role_regions": dict(role_regions),
+        "region_groups": region_groups,
+        "governs_expression_binding": True,
+        "dynamic_position": True,
+        "outline": [132, 132, 132],
+        "outline_width": 1,
+        "visible_boundary": True,
+        "z_order": 0,
+    }
+    in_out_regions = {
+        "boundary_id": boundary_id,
+        "split_axis": split_axis,
+        "outer_roles": ["q1", "q2"],
+        "inner_roles": ["q3", "q4"],
+        "target_roles": ["target"],
+        "role_regions": dict(role_regions),
+        "region_groups": region_groups,
+    }
+    binding = {
+        "boundary_id": boundary_id,
+        "split_axis": split_axis,
+        "outer_roles": ["q1", "q2"],
+        "inner_roles": ["q3", "q4"],
+        "target_roles": ["target"],
+        "role_regions": dict(role_regions),
+        "region_groups": region_groups,
+    }
+    layout_specs = _in_out_layout_specs(center, radius, split_axis, boundary_id, role_regions)
+    group = _structure_group(
+        "{0}_out_to_in_boundary".format(rule_family),
+        ["q1", "q2", "q3", "q4", "target"],
+        center,
+        radius,
+        boundary_shape,
+        "out_to_in",
+        z_order=0,
+    )
+    group["visible_scope_marker"] = False
+    return {
+        "layout_specs": layout_specs,
+        "boundary_instances": [boundary],
+        "structure_groups": [group],
+        "in_out_regions": in_out_regions,
+        "boundary_binding": binding,
+    }
+
+
+def _in_out_layout_specs(
+    center: Tuple[int, int],
+    radius: int,
+    split_axis: str,
+    boundary_id: str,
+    role_regions: Mapping[str, str],
+) -> List[Dict[str, object]]:
+    cx, cy = center
+    jitter = 0
+    if split_axis == "horizontal":
+        centers = {
+            "q1": (cx + jitter, cy - radius - 25),
+            "q2": (cx - jitter, cy + radius + 25),
+            "q3": (cx - 22, cy - 20),
+            "q4": (cx - 22, cy + 20),
+            "target": (cx + 26, cy),
+        }
+        layout_family = "BoundaryHorizontalSplit"
+    else:
+        centers = {
+            "q1": (cx - radius - 25, cy + jitter),
+            "q2": (cx + radius + 25, cy - jitter),
+            "q3": (cx - 22, cy - 22),
+            "q4": (cx + 22, cy - 22),
+            "target": (cx, cy + 26),
+        }
+        layout_family = "BoundaryVerticalSplit"
+    specs = []
+    for role in ["q1", "q2", "q3", "q4", "target"]:
+        region_id = str(role_regions[role])
+        region = "answer" if role == "target" else ("outer" if region_id.startswith("outer") else "inner")
+        specs.append(
+            _center_layout(
+                role,
+                layout_family,
+                _bbox_from_center(centers[role][0], centers[role][1], 34),
+                region,
+                z_order=3 if role == "target" else 2,
+                extra={
+                    "center": [int(centers[role][0]), int(centers[role][1])],
+                    "region": region,
+                    "region_id": region_id,
+                    "boundary_id": boundary_id,
+                    "split_axis": split_axis,
+                },
+            )
+        )
+    return specs
 
 
 def _structure_groups_for_rule(rule_family: str) -> List[Dict[str, object]]:
@@ -827,11 +999,15 @@ def _build_scene_component(
         "scope": str(layout_spec["scope"]),
         "slot_id": str(layout_spec["slot_id"]),
         "bbox": [int(v) for v in layout_spec["bbox"]],
+        "center": list(layout_spec.get("center", _bbox_center(layout_spec["bbox"]))),
         "grid_shape": list(layout_spec.get("grid_shape", [])),
         "position": list(layout_spec.get("position", [])),
         "number": _layout_number(surface_family, value),
         "uniformity": True,
     }
+    for key in ("region", "region_id", "boundary_id", "split_axis"):
+        if key in layout_spec:
+            layout[key] = layout_spec[key]
     entities = _entities_for_quantity(
         role=role,
         value=value,
@@ -925,8 +1101,15 @@ def _grid_layout(
     }
 
 
-def _center_layout(role: str, layout_family: str, bbox: Tuple[int, int, int, int], scope: str, z_order: int) -> Dict[str, object]:
-    return {
+def _center_layout(
+    role: str,
+    layout_family: str,
+    bbox: Tuple[int, int, int, int],
+    scope: str,
+    z_order: int,
+    extra: Optional[Mapping[str, object]] = None,
+) -> Dict[str, object]:
+    layout = {
         "role": role,
         "layout_family": layout_family,
         "scope": scope,
@@ -934,6 +1117,9 @@ def _center_layout(role: str, layout_family: str, bbox: Tuple[int, int, int, int
         "bbox": bbox,
         "z_order": z_order,
     }
+    if extra is not None:
+        layout.update(dict(extra))
+    return layout
 
 
 def _bbox_from_center(cx: int, cy: int, size: int) -> Tuple[int, int, int, int]:
@@ -968,8 +1154,6 @@ def _entities_for_quantity(
             )
             for index, center in enumerate(centers)
         ]
-        if outer_scope:
-            return [_outer_structure_ring_entity(role, value, surface_family, layout)] + entities
         return entities
     centers = _position_center(layout["bbox"], value, outer_scope)
     entity = _entity(
@@ -983,8 +1167,6 @@ def _entities_for_quantity(
         outline_width=2,
         index=1 if outer_scope else 0,
     )
-    if outer_scope:
-        return [_outer_structure_ring_entity(role, value, surface_family, layout), entity]
     return [entity]
 
 
@@ -1087,6 +1269,10 @@ def _draw_scene_graph(scene_graph: Mapping[str, object], debug: bool = False) ->
     image = Image.new("RGB", (PANEL_SIZE, PANEL_SIZE), (255, 255, 255))
     draw = ImageDraw.Draw(image)
     draw.rectangle((12, 12, PANEL_SIZE - 13, PANEL_SIZE - 13), fill=(255, 255, 255), outline=(34, 34, 34), width=2)
+    boundaries = sorted(scene_graph.get("boundary_instances", []), key=lambda boundary: int(boundary.get("z_order", 0)))
+    for boundary in boundaries:
+        if bool(boundary.get("visible_boundary", True)):
+            _draw_boundary_instance(draw, boundary)
     groups = sorted(scene_graph.get("structure_groups", []), key=lambda group: int(group.get("z_order", 0)))
     for group in groups:
         if bool(group.get("visible_scope_marker", False)):
@@ -1100,6 +1286,18 @@ def _draw_scene_graph(scene_graph: Mapping[str, object], debug: bool = False) ->
         font = ImageFont.load_default()
         draw.text((16, PANEL_SIZE - 24), str(scene_graph["structure"]["family"]), fill=(20, 20, 20), font=font)
     return image
+
+
+def _draw_boundary_instance(draw: ImageDraw.ImageDraw, boundary: Mapping[str, object]) -> None:
+    group_like = {
+        "center": boundary["center"],
+        "radius": boundary["radius"],
+        "outline": boundary.get("outline", [132, 132, 132]),
+        "outline_width": boundary.get("outline_width", 1),
+        "boundary_shape": boundary.get("boundary_shape", "circle"),
+        "shape": boundary.get("boundary_shape", "circle"),
+    }
+    _draw_structure_group(draw, group_like)
 
 
 def _draw_structure_group(draw: ImageDraw.ImageDraw, group: Mapping[str, object]) -> None:
@@ -1350,7 +1548,7 @@ def _draw_mark(
 
 
 def main(argv: Optional[Sequence[str]] = None) -> None:
-    parser = argparse.ArgumentParser(description="Generate VQ-Expr 1-9 calibrated visual expression data.")
+    parser = argparse.ArgumentParser(description="Generate VQ-Expr 1-5 calibrated visual expression data.")
     parser.add_argument("--num_prob", type=int, default=10)
     parser.add_argument("--output_dir", type=Path, default=Path("VQExpr-ProbSet"))
     parser.add_argument("--seed", type=int, default=0)

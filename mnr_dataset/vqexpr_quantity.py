@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""1-9 calibrated fuzzy quantity attributes for VQ-Expr.
+"""1-5 calibrated fuzzy quantity attributes for VQ-Expr.
 
 Presentation primitives intentionally avoid Arabic digits and arithmetic
 symbols. Numeric values live in metadata for the oracle/debug view only.
@@ -22,7 +22,7 @@ QUANTITY_FAMILIES = (
 )
 
 VALUE_MIN = 1
-VALUE_MAX = 9
+VALUE_MAX = 5
 
 TOKEN_ORDER = (
     "token_black",
@@ -76,10 +76,7 @@ class RenderedQuantity:
             "primitives": list(self.primitives),
             "symbolic_parse": dict(self.symbolic_parse),
             "component_parse": dict(self.symbolic_parse),
-            "fuzzy_value": {
-                "support": list(self.fuzzy_value["support"]),
-                "membership": dict(self.fuzzy_value["membership"]),
-            },
+            "fuzzy_value": dict(self.fuzzy_value),
             "visual_confounds": dict(self.visual_confounds),
             "leakage_flags": dict(self.leakage_flags),
         }
@@ -190,7 +187,7 @@ def render_quantity(
     if family not in QUANTITY_FAMILIES:
         raise ValueError("Unknown VQ-Expr quantity family: {0}".format(family))
     if not VALUE_MIN <= int(value) <= VALUE_MAX:
-        raise ValueError("VQ-Expr quantity value must be in 1..9")
+        raise ValueError("VQ-Expr quantity value must be in 1..5")
 
     context = calibration_context or make_calibration_context(seed=style_seed)
     value = int(value)
@@ -456,7 +453,16 @@ def _fuzzy_value(value: int, severity: str = "medium") -> Dict[str, object]:
             support.add(value + delta)
     membership = {str(candidate): _triangular_membership(value, candidate) for candidate in sorted(support)}
     membership[str(value)] = 1.0
-    return {"support": sorted(support), "membership": membership}
+    continuous = 0.0 if VALUE_MAX == VALUE_MIN else (float(value) - VALUE_MIN) / float(VALUE_MAX - VALUE_MIN)
+    sigma = {"low": 0.10, "medium": 0.16, "high": 0.24}.get(severity, 0.16)
+    return {
+        "support": sorted(support),
+        "membership": membership,
+        "discrete_levels": list(range(VALUE_MIN, VALUE_MAX + 1)),
+        "continuous_value": round(continuous, 4),
+        "interpolation_sigma": sigma,
+        "interpolation_kernel": "triangular_over_continuous_attribute_axis",
+    }
 
 
 def _triangular_membership(center: int, candidate: int) -> float:
