@@ -150,7 +150,7 @@ Current schema:
 - `visual_surface.scene_graph_schema`: `a_sig_lite_v4`
 - visual attribute surfaces: `size_level`, `color_lightness`, `stroke_width`, `aspect_ratio`
 - boundary shapes: `circle`, `square`, `diamond`, `hexagon`
-- boundary split axes: `horizontal` or `vertical`; every sample binds `q1/q2` to two outer regions and `q3/q4` to two inner regions. Positions are sampled along the split axis, while the cross-axis is aligned so horizontal and vertical structures remain visually unambiguous.
+- boundary split axes: `horizontal` or `vertical`; every sample binds `q1/q2` to two outer regions and `q3/q4` to two inner regions. Positions are sampled along the split axis, while the cross-axis is aligned to an off-center lane so horizontal and vertical structures remain visually unambiguous.
 
 Supported rule schemas:
 
