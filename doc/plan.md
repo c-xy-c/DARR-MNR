@@ -187,6 +187,7 @@ candidates 是 full-panel scene graph，不是孤立 answer token；
 boundary shape / center / radius / split axis 进入 metadata 与 renderer；
 left/right 或 top/bottom 区域内的具体 position 由 constrained rejection sampling 产生，不是固定坐标模板，也不是数值 attribute；
 对左右 split，只沿 x 轴采样，成对对象的 y 坐标对齐；对上下 split，只沿 y 轴采样，成对对象的 x 坐标对齐，避免把左右题看成上下题或反过来；
+inner pair 和 outer pair 在同一个 panel 中共享同一种二分方向；inner 对象必须离 boundary 中线有最小语义轴偏移，不能挤在中心附近；
 对象尺寸有 panel-ratio 下限，默认对象不能小到变成不可读的小点；
 object non-overlap、panel bounds、inner/outer containment 由测试约束；
 仍保持无数字、无算符、灰度、无 role label。

@@ -953,11 +953,11 @@ def _sample_in_out_role_centers(
     answer_side = rng.choice(["left", "right"]) if split_axis == "horizontal" else rng.choice(["top", "bottom"])
     if split_axis == "horizontal":
         outer_locked = {"x": rng.randint(cx - 28, cx + 28)}
-        inner_locked = {"x": rng.randint(cx - 10, cx + 10)}
+        inner_locked = {"x": rng.randint(cx - 4, cx + 4)}
         answer_locked = {"y": rng.randint(cy - 20, cy + 20)}
     else:
         outer_locked = {"y": rng.randint(cy - 28, cy + 28)}
-        inner_locked = {"y": rng.randint(cy - 10, cy + 10)}
+        inner_locked = {"y": rng.randint(cy - 4, cy + 4)}
         answer_locked = {"x": rng.randint(cx - 20, cx + 20)}
     role_specs = {
         "q1": ("outer", "top" if split_axis == "horizontal" else "left", outer_locked),
@@ -1018,8 +1018,8 @@ def _region_sampling_domain(
     low = PANEL_CONTENT_MIN + half + 3
     high = PANEL_CONTENT_MAX - half - 3
     outer_gap = boundary_radius + 26
-    inner_span = 20
-    inner_gap = 18
+    inner_span = 26
+    inner_gap = 24
     answer_span = max(24, boundary_radius - 10)
 
     if region == "inner":
@@ -1089,7 +1089,7 @@ def _sampled_region_center_is_valid(
     cx, cy = boundary_center
     distance = _point_distance(point, boundary_center)
     if region == "inner":
-        if distance + 19.0 > float(boundary_radius) - 3.0:
+        if distance + 16.0 > float(boundary_radius) - 3.0:
             return False
         if side == "top" and not y < cy:
             return False
@@ -1126,7 +1126,7 @@ def _fallback_region_center(
 ) -> Tuple[int, int]:
     cx, cy = boundary_center
     if region == "inner":
-        offset = max(18, min(24, boundary_radius - 20))
+        offset = max(24, min(26, boundary_radius - 20))
         if side == "top":
             return (cx, cy - offset)
         if side == "bottom":
