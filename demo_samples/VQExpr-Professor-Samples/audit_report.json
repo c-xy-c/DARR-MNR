@@ -1,0 +1,118 @@
+{
+  "candidate_only_heuristics": {
+    "best_accuracy": 0.5,
+    "chance_accuracy": 0.125,
+    "heuristics": {
+      "max_bbox_fraction": {
+        "accuracy": 0.125,
+        "correct": 1,
+        "total": 8
+      },
+      "max_ink_fraction": {
+        "accuracy": 0.25,
+        "correct": 2,
+        "total": 8
+      },
+      "max_visual_mass": {
+        "accuracy": 0.5,
+        "correct": 4,
+        "total": 8
+      },
+      "min_bbox_fraction": {
+        "accuracy": 0.125,
+        "correct": 1,
+        "total": 8
+      },
+      "min_ink_fraction": {
+        "accuracy": 0.25,
+        "correct": 2,
+        "total": 8
+      },
+      "min_visual_mass": {
+        "accuracy": 0.375,
+        "correct": 3,
+        "total": 8
+      }
+    },
+    "note": "Candidate-only heuristic sanity check; learned candidate-only models are still required for publication claims.",
+    "num_samples": 8
+  },
+  "candidate_visual_stats": {
+    "correct": {
+      "bbox_fraction": 0.797194,
+      "count": 8,
+      "ink_fraction": 0.075362,
+      "visual_mass": 0.054142
+    },
+    "correct_minus_negative": {
+      "bbox_fraction": 0.0,
+      "ink_fraction": -3.4e-05,
+      "visual_mass": 0.000452
+    },
+    "negative": {
+      "bbox_fraction": 0.797194,
+      "count": 56,
+      "ink_fraction": 0.075396,
+      "visual_mass": 0.05369
+    },
+    "note": "Simple visual-stat audit only; run a learned candidate-only baseline before making claims.",
+    "slots": {
+      "0": {
+        "bbox_fraction": 0.797194,
+        "count": 8,
+        "ink_fraction": 0.075258,
+        "visual_mass": 0.053315
+      },
+      "1": {
+        "bbox_fraction": 0.797194,
+        "count": 8,
+        "ink_fraction": 0.075756,
+        "visual_mass": 0.053995
+      },
+      "2": {
+        "bbox_fraction": 0.797194,
+        "count": 8,
+        "ink_fraction": 0.074879,
+        "visual_mass": 0.052732
+      },
+      "3": {
+        "bbox_fraction": 0.797194,
+        "count": 8,
+        "ink_fraction": 0.074635,
+        "visual_mass": 0.053566
+      },
+      "4": {
+        "bbox_fraction": 0.797194,
+        "count": 8,
+        "ink_fraction": 0.075945,
+        "visual_mass": 0.054269
+      },
+      "5": {
+        "bbox_fraction": 0.797194,
+        "count": 8,
+        "ink_fraction": 0.075228,
+        "visual_mass": 0.053569
+      },
+      "6": {
+        "bbox_fraction": 0.797194,
+        "count": 8,
+        "ink_fraction": 0.075447,
+        "visual_mass": 0.054443
+      },
+      "7": {
+        "bbox_fraction": 0.797194,
+        "count": 8,
+        "ink_fraction": 0.075985,
+        "visual_mass": 0.054087
+      }
+    }
+  },
+  "learned_candidate_only_probe": {
+    "num_samples": 8,
+    "reason": "need at least 16 samples",
+    "status": "skipped"
+  },
+  "metadata_oracle_accuracy": 1.0,
+  "num_samples": 8,
+  "score_argmax_accuracy": 1.0
+}
