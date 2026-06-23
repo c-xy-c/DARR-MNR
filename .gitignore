@@ -5,6 +5,11 @@ __pycache__/
 # Generated dataset
 ProbSet/
 outputs/
+data/
+CIFAR-MNR-v1/
+CIFAR-MNR-v1-*/
+!demo_samples/CIFAR-MNR-v1-Samples/
+!demo_samples/CIFAR-MNR-v1-Samples/**
 
 # 2to3 backup files
 *.bak

@@ -1,0 +1,12 @@
+schema_version: cifar_mnr_v1_per_problem_mapping
+source: cifar10
+cifar_root: E:\科研\DARR-MNR\data
+cifar_url: None
+num_prob_per_condition: 1
+max_samples: 12
+saved_samples: 12
+tile_size: 20
+rgb_tiles: True
+mapping_policy: per_problem_permutation
+cifar_classes: 0=airplane, 1=automobile, 2=bird, 3=cat, 4=deer, 5=dog, 6=frog, 7=horse, 8=ship, 9=truck
+note: Every generated .npz contains metadata_json with its local digit-to-CIFAR mapping.
