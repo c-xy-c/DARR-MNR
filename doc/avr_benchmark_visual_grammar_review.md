@@ -164,13 +164,13 @@ post-hoc audit:
 
 其中 `rule_counts`、`visual_family_counts`、`correct_index_counts` 在 dataset writer 层面轮转均衡；不是只在文档里承诺。
 
-当前极简视觉层已经删除彩色 token / bar / path / dial / role-specific shapes / internal structure lines。主视觉只保留单对象几何 primitive，数值只通过必要连续 attribute 变化表达：
+当前极简视觉层已经删除彩色 token / bar / path / dial / role-specific shapes / internal structure lines。主视觉只保留一种圆形 primitive，数值只通过必要 attribute 变化表达：
 
 ```text
+gray_level
 size_level
-color_lightness
-stroke_width
-aspect_ratio
+count
+position_set
 ```
 
 也就是说：
