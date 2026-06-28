@@ -17,128 +17,52 @@ RULE_FAMILIES = (
 
 OPS = ("Add", "Sub", "Mul", "Div")
 VALUE_MIN = 1
-VALUE_MAX = 5
-
-EXPRESSION_SCHEMAS_BY_FAMILY: Dict[str, Dict[str, Dict[str, object]]] = {
-    "serial": {
-        "serial_add_mul_sub": {
-            "roles": ["q1", "q2", "q3", "q4"],
-            "template": "Sub(Mul(Add(q1,q2),q3),q4)",
-            "gates": [
-                {"id": "g1", "op": "Add", "inputs": ["d_q1", "d_q2"], "membership": 0.97},
-                {"id": "g2", "op": "Mul", "inputs": ["g1", "d_q3"], "membership": 0.96},
-                {"id": "g3", "op": "Sub", "inputs": ["g2", "d_q4"], "membership": 0.96},
-            ],
-        },
-        "serial_sub_mul_add": {
-            "roles": ["q1", "q2", "q3", "q4"],
-            "template": "Add(Mul(Sub(q1,q2),q3),q4)",
-            "gates": [
-                {"id": "g1", "op": "Sub", "inputs": ["d_q1", "d_q2"], "membership": 0.97},
-                {"id": "g2", "op": "Mul", "inputs": ["g1", "d_q3"], "membership": 0.96},
-                {"id": "g3", "op": "Add", "inputs": ["g2", "d_q4"], "membership": 0.96},
-            ],
-        },
-    },
-    "parallel": {
-        "parallel_sum_difference": {
-            "roles": ["q1", "q2", "q3", "q4"],
-            "template": "Add(Add(q1,q2),Sub(q3,q4))",
-            "gates": [
-                {"id": "g1", "op": "Add", "inputs": ["d_q1", "d_q2"], "membership": 0.97},
-                {"id": "g2", "op": "Sub", "inputs": ["d_q3", "d_q4"], "membership": 0.96},
-                {"id": "g3", "op": "Add", "inputs": ["g1", "g2"], "membership": 0.96},
-            ],
-        },
-        "parallel_difference_sum": {
-            "roles": ["q1", "q2", "q3", "q4"],
-            "template": "Add(Sub(q1,q2),Add(q3,q4))",
-            "gates": [
-                {"id": "g1", "op": "Sub", "inputs": ["d_q1", "d_q2"], "membership": 0.97},
-                {"id": "g2", "op": "Add", "inputs": ["d_q3", "d_q4"], "membership": 0.96},
-                {"id": "g3", "op": "Add", "inputs": ["g1", "g2"], "membership": 0.96},
-            ],
-        },
-    },
-    "nested": {
-        "nested_outer_minus_sum": {
-            "roles": ["q1", "q2", "q3", "q4"],
-            "template": "Sub(Add(q1,q2),Add(q3,q4))",
-            "gates": [
-                {"id": "g1", "op": "Add", "inputs": ["d_q1", "d_q2"], "membership": 0.97},
-                {"id": "g2", "op": "Add", "inputs": ["d_q3", "d_q4"], "membership": 0.97},
-                {"id": "g3", "op": "Sub", "inputs": ["g1", "g2"], "membership": 0.95},
-            ],
-        },
-        "nested_pairwise_difference_sum": {
-            "roles": ["q1", "q2", "q3", "q4"],
-            "template": "Add(Sub(q1,q3),Sub(q2,q4))",
-            "gates": [
-                {"id": "g1", "op": "Sub", "inputs": ["d_q1", "d_q3"], "membership": 0.96},
-                {"id": "g2", "op": "Sub", "inputs": ["d_q2", "d_q4"], "membership": 0.96},
-                {"id": "g3", "op": "Add", "inputs": ["g1", "g2"], "membership": 0.95},
-            ],
-        },
-    },
-    "inverse": {
-        "inverse_product_divisor": {
-            "roles": ["q1", "q2", "q3", "q4"],
-            "template": "Div(Mul(q1,q2),Add(q3,q4))",
-            "gates": [
-                {"id": "g1", "op": "Mul", "inputs": ["d_q1", "d_q2"], "membership": 0.96},
-                {"id": "g2", "op": "Add", "inputs": ["d_q3", "d_q4"], "membership": 0.96},
-                {"id": "g3", "op": "Div", "inputs": ["g1", "g2"], "membership": 0.95},
-            ],
-        },
-        "inverse_sum_divisor": {
-            "roles": ["q1", "q2", "q3", "q4"],
-            "template": "Div(Add(q1,q2),Sub(q3,q4))",
-            "gates": [
-                {"id": "g1", "op": "Add", "inputs": ["d_q1", "d_q2"], "membership": 0.96},
-                {"id": "g2", "op": "Sub", "inputs": ["d_q3", "d_q4"], "membership": 0.96},
-                {"id": "g3", "op": "Div", "inputs": ["g1", "g2"], "membership": 0.95},
-            ],
-        },
-    },
-    "calibration": {
-        "calibration_sum": {
-            "roles": ["q1", "q2", "q3", "q4"],
-            "template": "Add(Add(Decode_A(q1),Decode_B(q2)),Sub(Decode_A(q3),Decode_B(q4)))",
-            "gates": [
-                {"id": "g1", "op": "Add", "inputs": ["d_q1", "d_q2"], "membership": 0.96},
-                {"id": "g2", "op": "Sub", "inputs": ["d_q3", "d_q4"], "membership": 0.96},
-                {"id": "g3", "op": "Add", "inputs": ["g1", "g2"], "membership": 0.95},
-            ],
-        },
-        "calibration_difference": {
-            "roles": ["q1", "q2", "q3", "q4"],
-            "template": "Add(Sub(Decode_A(q1),Decode_A(q3)),Sub(Decode_B(q2),Decode_B(q4)))",
-            "gates": [
-                {"id": "g1", "op": "Sub", "inputs": ["d_q1", "d_q3"], "membership": 0.96},
-                {"id": "g2", "op": "Sub", "inputs": ["d_q2", "d_q4"], "membership": 0.96},
-                {"id": "g3", "op": "Add", "inputs": ["g1", "g2"], "membership": 0.95},
-            ],
-        },
-    },
-}
+VALUE_MAX = 9
 
 
-def reverse_sample_leaf_values(
-    rule_family: str,
-    rng: random.Random,
-    expression_schema: Optional[str] = None,
-) -> Dict[str, int]:
-    """Sample leaf values whose final answer and intermediates stay in 1..5."""
+def reverse_sample_leaf_values(rule_family: str, rng: random.Random) -> Dict[str, int]:
+    """Sample leaf values whose final answer and intermediates stay in 1..9."""
 
-    _, schema = _resolve_expression_schema(rule_family, expression_schema, rng=rng)
-    roles = [str(role) for role in schema["roles"]]
-    for _ in range(8000):
-        leaf_values = {role: rng.randint(VALUE_MIN, VALUE_MAX) for role in roles}
-        try:
-            _evaluate_schema_nodes(schema, leaf_values)
-        except ValueError:
-            continue
-        return leaf_values
+    if rule_family == "serial":
+        for _ in range(2000):
+            q1 = rng.randint(1, 4)
+            q2 = rng.randint(1, 4)
+            q3 = rng.randint(1, 3)
+            mid = (q1 + q2) * q3
+            if VALUE_MIN + 1 <= mid <= VALUE_MAX:
+                q4 = rng.randint(1, min(8, mid - 1))
+                y = mid - q4
+                if VALUE_MIN <= y <= VALUE_MAX:
+                    return {"q1": q1, "q2": q2, "q3": q3, "q4": q4}
+    elif rule_family == "parallel":
+        for _ in range(2000):
+            q1 = rng.randint(1, 4)
+            q2 = rng.randint(1, 4)
+            q3 = rng.randint(2, 9)
+            q4 = rng.randint(1, q3 - 1)
+            y = (q1 + q2) + (q3 - q4)
+            if VALUE_MIN <= y <= VALUE_MAX:
+                return {"q1": q1, "q2": q2, "q3": q3, "q4": q4}
+    elif rule_family == "nested":
+        for _ in range(2000):
+            q1 = rng.randint(4, 9)
+            q2 = rng.randint(1, 4)
+            q3 = rng.randint(1, 4)
+            y = q1 - (q2 + q3)
+            if VALUE_MIN <= y <= VALUE_MAX:
+                return {"q1": q1, "q2": q2, "q3": q3}
+    elif rule_family == "inverse":
+        for _ in range(2000):
+            q2 = rng.randint(1, 9)
+            q1 = rng.randint(1, 9)
+            if q1 * q2 <= VALUE_MAX:
+                return {"q1": q1, "q2": q2, "q3": q2}
+    elif rule_family == "calibration":
+        for _ in range(2000):
+            q1 = rng.randint(1, 8)
+            q2 = rng.randint(1, 8)
+            if q1 + q2 <= VALUE_MAX:
+                return {"q1": q1, "q2": q2}
     raise ValueError("Could not sample values for rule family {0}".format(rule_family))
 
 
@@ -146,15 +70,12 @@ def build_answer_aot(
     rule_family: str,
     leaf_values: Mapping[str, int],
     quantity_families: Mapping[str, str],
-    expression_schema: Optional[str] = None,
-    boundary_binding: Optional[Mapping[str, object]] = None,
 ) -> Dict[str, object]:
     if rule_family not in RULE_FAMILIES:
         raise ValueError("Unknown rule family: {0}".format(rule_family))
 
-    schema_id, schema = _resolve_expression_schema(rule_family, expression_schema)
     nodes: List[Dict[str, object]] = []
-    for qid in schema["roles"]:
+    for qid in sorted(leaf_values):
         nodes.append(
             {
                 "id": "d_{0}".format(qid),
@@ -164,24 +85,20 @@ def build_answer_aot(
             }
         )
 
-    gates = _gate_nodes(rule_family, schema_id)
+    gates = _gate_nodes(rule_family)
     nodes.extend(gates)
-    binding_edges = _binding_edges(gates)
-    scope_edges = _scope_edges(rule_family, gates, boundary_binding)
+    binding_edges = _binding_edges(rule_family)
+    scope_edges = _scope_edges(rule_family)
     root = gates[-1]["id"]
-    answer_aot = {
+    return {
         "rule_family": rule_family,
-        "expression_schema": schema_id,
         "root": root,
         "nodes": nodes,
         "binding_edges": binding_edges,
         "scope_edges": scope_edges,
-        "template": str(schema["template"]),
-        "value_range": "1..5",
+        "template": _template(rule_family),
+        "value_range": "1..9",
     }
-    if boundary_binding is not None:
-        answer_aot["boundary_binding"] = dict(boundary_binding)
-    return answer_aot
 
 
 def evaluate_answer_aot(
@@ -268,93 +185,66 @@ def candidate_score(
     return round(max(0.05, mutation_penalty - 0.005 * distance), 4)
 
 
-def _gate_nodes(rule_family: str, expression_schema: Optional[str] = None) -> List[Dict[str, object]]:
-    _, schema = _resolve_expression_schema(rule_family, expression_schema)
-    return [
-        {
-            "id": str(gate["id"]),
-            "type": "Gate",
-            "op": str(gate["op"]),
-            "inputs": [str(value) for value in gate["inputs"]],
-            "membership": float(gate.get("membership", 0.96)),
-        }
-        for gate in schema["gates"]
-    ]
+def _gate_nodes(rule_family: str) -> List[Dict[str, object]]:
+    if rule_family == "serial":
+        return [
+            {"id": "g1", "type": "Gate", "op": "Add", "inputs": ["d_q1", "d_q2"], "membership": 0.97},
+            {"id": "g2", "type": "Gate", "op": "Mul", "inputs": ["g1", "d_q3"], "membership": 0.96},
+            {"id": "g3", "type": "Gate", "op": "Sub", "inputs": ["g2", "d_q4"], "membership": 0.96},
+        ]
+    if rule_family == "parallel":
+        return [
+            {"id": "g1", "type": "Gate", "op": "Add", "inputs": ["d_q1", "d_q2"], "membership": 0.97},
+            {"id": "g2", "type": "Gate", "op": "Sub", "inputs": ["d_q3", "d_q4"], "membership": 0.96},
+            {"id": "g3", "type": "Gate", "op": "Add", "inputs": ["g1", "g2"], "membership": 0.96},
+        ]
+    if rule_family == "nested":
+        return [
+            {"id": "g1", "type": "Gate", "op": "Add", "inputs": ["d_q2", "d_q3"], "membership": 0.97},
+            {"id": "g2", "type": "Gate", "op": "Sub", "inputs": ["d_q1", "g1"], "membership": 0.95},
+        ]
+    if rule_family == "inverse":
+        return [
+            {"id": "g1", "type": "Gate", "op": "Mul", "inputs": ["d_q1", "d_q2"], "membership": 0.96},
+            {"id": "g2", "type": "Gate", "op": "Div", "inputs": ["g1", "d_q3"], "membership": 0.95},
+        ]
+    if rule_family == "calibration":
+        return [
+            {"id": "g1", "type": "Gate", "op": "Add", "inputs": ["d_q1", "d_q2"], "membership": 0.96},
+        ]
+    raise ValueError("Unknown rule family: {0}".format(rule_family))
 
 
-def _binding_edges(gates: Sequence[Mapping[str, object]]) -> List[Dict[str, object]]:
+def _binding_edges(rule_family: str) -> List[Dict[str, object]]:
     edges = []
-    for gate in gates:
+    for gate in _gate_nodes(rule_family):
         for port, src in zip(["left", "right"], gate["inputs"]):
             edges.append({"src": src, "dst": gate["id"], "port": port, "membership": 0.95})
     return edges
 
 
-def _scope_edges(
-    rule_family: str,
-    gates: Sequence[Mapping[str, object]],
-    boundary_binding: Optional[Mapping[str, object]] = None,
-) -> List[Dict[str, object]]:
-    gate_ids = [str(gate["id"]) for gate in gates]
+def _scope_edges(rule_family: str) -> List[Dict[str, object]]:
     if rule_family == "nested":
-        boundary_id = None if boundary_binding is None else boundary_binding.get("boundary_id")
-        edges = [
-            {"scope": "outer_pair", "contains": ["d_q1", "d_q2", gate_ids[0]], "membership": 0.95},
-            {"scope": "inner_pair", "contains": ["d_q3", "d_q4", gate_ids[1]], "membership": 0.95},
-            {"scope": "boundary_merge", "contains": gate_ids, "membership": 0.94},
-        ]
-        if boundary_id is not None:
-            for edge in edges:
-                edge["boundary_id"] = boundary_id
-        return edges
-    if rule_family == "inverse" and boundary_binding is not None:
-        boundary_id = boundary_binding.get("boundary_id")
         return [
-            {"scope": "outer_pair", "contains": ["d_q1", "d_q2", gate_ids[0]], "membership": 0.94, "boundary_id": boundary_id},
-            {"scope": "inner_pair", "contains": ["d_q3", "d_q4", gate_ids[1]], "membership": 0.95, "boundary_id": boundary_id},
-            {"scope": "boundary_merge", "contains": gate_ids, "membership": 0.94, "boundary_id": boundary_id},
+            {"scope": "inner_container", "contains": ["g1"], "membership": 0.95},
+            {"scope": "outer_container", "contains": ["d_q1", "g1", "g2"], "membership": 0.94},
         ]
     if rule_family == "parallel":
         return [
-            {"scope": "left_lane", "contains": ["d_q1", "d_q2", gate_ids[0]], "membership": 0.95},
-            {"scope": "right_lane", "contains": ["d_q3", "d_q4", gate_ids[1]], "membership": 0.95},
+            {"scope": "left_lane", "contains": ["d_q1", "d_q2", "g1"], "membership": 0.95},
+            {"scope": "right_lane", "contains": ["d_q3", "d_q4", "g2"], "membership": 0.95},
         ]
-    return [{"scope": "main_flow", "contains": gate_ids, "membership": 0.94}]
+    return [{"scope": "main_flow", "contains": [edge["dst"] for edge in _binding_edges(rule_family)], "membership": 0.94}]
 
 
-def _template(rule_family: str, expression_schema: Optional[str] = None) -> str:
-    _, schema = _resolve_expression_schema(rule_family, expression_schema)
-    return str(schema["template"])
-
-
-def _resolve_expression_schema(
-    rule_family: str,
-    expression_schema: Optional[str],
-    rng: Optional[random.Random] = None,
-) -> Tuple[str, Mapping[str, object]]:
-    if rule_family not in EXPRESSION_SCHEMAS_BY_FAMILY:
-        raise ValueError("Unknown rule family: {0}".format(rule_family))
-    schemas = EXPRESSION_SCHEMAS_BY_FAMILY[rule_family]
-    if expression_schema is None:
-        schema_id = rng.choice(list(schemas.keys())) if rng is not None else next(iter(schemas.keys()))
-    else:
-        schema_id = str(expression_schema)
-    if schema_id not in schemas:
-        raise ValueError("Unknown expression schema for {0}: {1}".format(rule_family, schema_id))
-    return schema_id, schemas[schema_id]
-
-
-def _evaluate_schema_nodes(schema: Mapping[str, object], leaf_values: Mapping[str, int]) -> Dict[str, int]:
-    node_outputs = {"d_{0}".format(role): int(leaf_values[str(role)]) for role in schema["roles"]}
-    for gate in schema["gates"]:
-        left_id, right_id = [str(value) for value in gate["inputs"]]
-        left = int(node_outputs[left_id])
-        right = int(node_outputs[right_id])
-        output = apply_op(str(gate["op"]), left, right)
-        if not VALUE_MIN <= output <= VALUE_MAX:
-            raise ValueError("AoT output out of range: {0}".format(output))
-        node_outputs[str(gate["id"])] = output
-    return node_outputs
+def _template(rule_family: str) -> str:
+    return {
+        "serial": "Sub(Mul(Add(q1,q2),q3),q4)",
+        "parallel": "Add(Add(q1,q2),Sub(q3,q4))",
+        "nested": "Sub(q1,Add(q2,q3))",
+        "inverse": "Div(Mul(q1,q2),q3)",
+        "calibration": "Add(Decode_A(q1),Decode_B(q2))",
+    }[rule_family]
 
 
 def _fuzzy_output(value: int) -> Dict[str, object]:
