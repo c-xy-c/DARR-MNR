@@ -952,12 +952,12 @@ def _sample_in_out_role_centers(
     cx, cy = center
     answer_side = rng.choice(["left", "right"]) if split_axis == "horizontal" else rng.choice(["top", "bottom"])
     if split_axis == "horizontal":
-        outer_locked = {"x": cx + _signed_offset(rng, 42, 58)}
-        inner_locked = {"x": cx + _signed_offset(rng, 10, 12)}
+        outer_locked = {"x": rng.randint(cx - 28, cx + 28)}
+        inner_locked = {"x": rng.randint(cx - 4, cx + 4)}
         answer_locked = {"y": rng.randint(cy - 20, cy + 20)}
     else:
-        outer_locked = {"y": cy + _signed_offset(rng, 42, 58)}
-        inner_locked = {"y": cy + _signed_offset(rng, 10, 12)}
+        outer_locked = {"y": rng.randint(cy - 28, cy + 28)}
+        inner_locked = {"y": rng.randint(cy - 4, cy + 4)}
         answer_locked = {"x": rng.randint(cx - 20, cx + 20)}
     role_specs = {
         "q1": ("outer", "top" if split_axis == "horizontal" else "left", outer_locked),
@@ -1018,7 +1018,7 @@ def _region_sampling_domain(
     low = PANEL_CONTENT_MIN + half + 3
     high = PANEL_CONTENT_MAX - half - 3
     outer_gap = boundary_radius + 26
-    inner_span = 25
+    inner_span = 26
     inner_gap = 24
     answer_span = max(24, boundary_radius - 10)
 
@@ -1160,11 +1160,6 @@ def _locked_coordinate(value: Optional[int], valid_range: Sequence[int]) -> Opti
     if value is None:
         return None
     return max(int(valid_range[0]), min(int(valid_range[1]), int(value)))
-
-
-def _signed_offset(rng: random.Random, low: int, high: int) -> int:
-    magnitude = rng.randint(int(low), int(high))
-    return magnitude if rng.randint(0, 1) == 0 else -magnitude
 
 
 def _point_distance(left: Tuple[int, int], right: Tuple[int, int]) -> float:
