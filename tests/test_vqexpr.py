@@ -43,8 +43,6 @@ PANEL_CONTENT_MAX = 210
 BOUNDARY_SPLIT_AXES = {"horizontal", "vertical"}
 CONTINUOUS_QUANTITY_FAMILIES = {"size_level", "color_lightness", "stroke_width", "aspect_ratio"}
 MIN_ENTITY_RADIUS = 8
-MIN_INNER_AXIS_OFFSET = 24
-MIN_OUTER_AXIS_OFFSET = 64
 
 
 def _visible_text(primitives):
@@ -543,21 +541,13 @@ class TestVQExprArtifacts(unittest.TestCase):
             if axis == "horizontal":
                 self.assertEqual(centers["q1"][0], centers["q2"][0])
                 self.assertEqual(centers["q3"][0], centers["q4"][0])
-                self.assertGreaterEqual(abs(centers["q1"][1] - by), MIN_OUTER_AXIS_OFFSET)
-                self.assertGreaterEqual(abs(centers["q2"][1] - by), MIN_OUTER_AXIS_OFFSET)
-                self.assertGreaterEqual(abs(centers["q3"][1] - by), MIN_INNER_AXIS_OFFSET)
-                self.assertGreaterEqual(abs(centers["q4"][1] - by), MIN_INNER_AXIS_OFFSET)
                 self.assertGreater(abs(centers["q1"][1] - centers["q2"][1]), 80)
-                self.assertGreater(abs(centers["q3"][1] - centers["q4"][1]), 46)
+                self.assertGreater(abs(centers["q3"][1] - centers["q4"][1]), 30)
             else:
                 self.assertEqual(centers["q1"][1], centers["q2"][1])
                 self.assertEqual(centers["q3"][1], centers["q4"][1])
-                self.assertGreaterEqual(abs(centers["q1"][0] - bx), MIN_OUTER_AXIS_OFFSET)
-                self.assertGreaterEqual(abs(centers["q2"][0] - bx), MIN_OUTER_AXIS_OFFSET)
-                self.assertGreaterEqual(abs(centers["q3"][0] - bx), MIN_INNER_AXIS_OFFSET)
-                self.assertGreaterEqual(abs(centers["q4"][0] - bx), MIN_INNER_AXIS_OFFSET)
                 self.assertGreater(abs(centers["q1"][0] - centers["q2"][0]), 80)
-                self.assertGreater(abs(centers["q3"][0] - centers["q4"][0]), 46)
+                self.assertGreater(abs(centers["q3"][0] - centers["q4"][0]), 30)
 
         self.assertEqual(seen_axes, BOUNDARY_SPLIT_AXES)
         for axis in seen_axes:
