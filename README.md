@@ -175,3 +175,29 @@ python3 -m mnr_dataset.vqexpr_audit VQExpr-ProbSet \
 ```
 
 The post-hoc audit recomputes the metadata oracle, score-argmax oracle, candidate visual statistics, hand-written candidate-only heuristics, and a small learned linear candidate-only probe over visual statistics and answer slot.
+
+## CIFAR-MNR v1
+
+CIFAR-MNR v1 is a direct visual-surface variant of the original DARR-MNR generator. It keeps the original problem tree, arithmetic rules, context/answer split, and `.npz` schema, but replaces every visible digit character with a CIFAR-10 image tile whose class id represents that digit:
+
+```text
+0=airplane, 1=automobile, 2=bird, 3=cat, 4=deer,
+5=dog, 6=frog, 7=horse, 8=ship, 9=truck
+```
+
+Generate a small CIFAR-MNR v1 set:
+
+```bash
+python3 -m mnr_dataset.cifar_mnr_main \
+  --num_prob 1 \
+  --output_dir CIFAR-MNR-v1 \
+  --cifar_root ./data
+```
+
+Each generated `.npz` remains compatible with the original MNR data format:
+
+- `context_images`: 3 context panels.
+- `answer_set_images`: 8 answer candidates.
+- `correct_answer_image_index`: the 8-way answer index.
+
+The generator writes `cifar_mnr_v1_report.txt` with the CIFAR digit-class mapping and generation settings. Use `--allow_synthetic_fallback` only for local smoke tests when CIFAR-10 or `torchvision` is unavailable; benchmark data should use real CIFAR-10 images.

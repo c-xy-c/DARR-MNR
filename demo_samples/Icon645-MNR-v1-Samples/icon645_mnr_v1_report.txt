@@ -1,0 +1,11 @@
+schema_version: icon645_mnr_v1_per_problem_mapping
+source: synthetic_icon645_fallback
+icon645_root: C:\Users\Zeng Cai\AppData\Local\Temp\icon645
+num_prob_per_condition: 1
+max_samples: 8
+saved_samples: 8
+tile_size: 24
+grayscale_tiles: False
+mapping_policy: per_problem_permutation
+icon_classes: synthetic_icon_00, synthetic_icon_01, synthetic_icon_02, synthetic_icon_03, synthetic_icon_04, synthetic_icon_05, synthetic_icon_06, synthetic_icon_07, synthetic_icon_08, synthetic_icon_09
+note: IconQA is not used directly because it is a complete QA benchmark; Icon645 is the official IconQA companion icon dataset used as visual tokens.

@@ -1,0 +1,10 @@
+schema_version: clevr3d_mnr_v1_per_problem_mapping
+source: synthetic_clevr3d
+num_prob_per_condition: 1
+max_samples: 8
+saved_samples: 8
+tile_size: 24
+grayscale_tiles: False
+mapping_policy: per_problem_permutation
+token_names: red_sphere, blue_sphere, green_cube, yellow_cube, purple_cylinder, cyan_cylinder, orange_sphere, pink_cube, brown_cylinder, teal_cube
+note: This is a CLEVR-style synthetic 3D token dataset designed to replace CIFAR-like symbols in DARR-MNR.
