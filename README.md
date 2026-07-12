@@ -201,3 +201,31 @@ Each generated `.npz` remains compatible with the original MNR data format:
 - `correct_answer_image_index`: the 8-way answer index.
 
 The generator writes `cifar_mnr_v1_report.txt` with the CIFAR digit-class mapping and generation settings. Use `--allow_synthetic_fallback` only for local smoke tests when CIFAR-10 or `torchvision` is unavailable; benchmark data should use real CIFAR-10 images.
+
+## VG-MNR v0 Prototype
+
+This repository also includes a minimal VG-MNR prototype inspired by `doc/vg_mnr_benchmark_paper_plan.md`. It is a first runnable version of the proposed visually grounded machine number reasoning benchmark: three solved context panels, one query panel, and a small expression-tree-based visual syntax.
+
+Generate a small VG-MNR demo set:
+
+```bash
+python3 -m mnr_dataset.vgmnr_main \
+  --num_prob 10 \
+  --output_dir demo_samples/VGMNR-ProbSet \
+  --seed 0 \
+  --panel_size 128
+```
+
+Each generated `.npz` contains:
+
+- `context_images`: 3 rendered context panels.
+- `answer_set_images`: 8 rendered answer candidates.
+- `correct_answer_image_index`: the 8-way label.
+- `metadata_json`: latent program, visual necessity certificate fields, and per-sample panel metadata.
+
+The generator also writes:
+
+- `generation_report.json`: basic generation summary.
+- `png_overviews/`: PNG previews for quick visual inspection.
+
+This is a prototype for demonstration and iteration. It is not yet the full VG-MNR benchmark described in the proposal; the full version will additionally require exact-collision construction, stronger counterfactual checks, and richer diagnostic split definitions.
