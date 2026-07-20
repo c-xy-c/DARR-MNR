@@ -228,4 +228,11 @@ The generator also writes:
 - `generation_report.json`: basic generation summary.
 - `png_overviews/`: PNG previews for quick visual inspection.
 
-This is a prototype for demonstration and iteration. It is not yet the full VG-MNR benchmark described in the proposal; the full version will additionally require exact-collision construction, stronger counterfactual checks, and richer diagnostic split definitions.
+Current scope and limitations:
+
+- This is a **stage-0 prototype** for communication and iteration, not the full benchmark.
+- It demonstrates the intended visual-program structure and output format.
+- It does **not yet** implement exact-collision pairs, full ablation suites, or the complete diagnostic splits described in the proposal.
+- The answer candidates are currently placeholder views for demo purposes; the full benchmark will need more rigorous candidate construction and collision control.
+
+For the next development stage, the recommended priorities are exact-collision construction, ablation generation, and split design.
