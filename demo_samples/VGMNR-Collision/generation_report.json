@@ -1,6 +1,6 @@
 {
   "num_samples": 10,
   "schema_version": "vg_mnr_v0_ast_binding",
-  "mode": "full",
+  "mode": "collision",
   "notes": "Prototype stage-0 generator with ablation-ready modes."
 }
