@@ -206,8 +206,6 @@ The generator writes `cifar_mnr_v1_report.txt` with the CIFAR digit-class mappin
 
 This repository also includes a minimal VG-MNR prototype inspired by `doc/vg_mnr_benchmark_paper_plan.md`. It is a first runnable version of the proposed visually grounded machine number reasoning benchmark: three solved context panels, one query panel, and a small expression-tree-based visual syntax.
 
-## VG-MNR v0 prototype
-
 Generate a small VG-MNR demo set:
 
 ```bash
@@ -219,11 +217,12 @@ python3 -m mnr_dataset.vgmnr_main \
   --mode full
 ```
 
-The prototype currently supports three modes:
+The prototype currently supports four modes:
 
 - `full`: visually grounded context/query panels.
 - `no_visual`: removes functional visual relations to support visual ablation checks.
 - `no_context`: removes context panels to support context ablation checks.
+- `collision`: generates paired samples for a minimal exact-collision demo.
 
 Each generated `.npz` contains:
 
@@ -234,19 +233,19 @@ Each generated `.npz` contains:
 
 The generator also writes:
 
-- `generation_report.json`: basic generation summary.
+- `generation_report.json`: basic generation summary, plus mode/tag summaries.
 - `png_overviews/`: PNG previews for quick visual inspection.
 
 Scope and limitations:
 
 - This is a **stage-0 prototype** for communication and iteration, not the full benchmark.
 - The prototype already covers the ablation directions requested in the proposal at a minimal level.
-- It does **not yet** implement exact-collision pairs, full diagnostic splits, or the complete VNC filtering procedure described in the proposal.
+- It now includes a minimal VNC gate and an initial exact-collision demo, plus pair-level diagnostic tags, but it still does **not yet** implement benchmark-grade collision families, full diagnostic splits, or the complete VNC filtering procedure described in the proposal.
 - Candidate construction is still placeholder-grade for demonstration, so the next step is to make it benchmark-grade before running model experiments.
 
 Recommended next priorities:
 
 - exact-collision construction
-- stronger ablation filtering
+- stronger VNC filtering
 - split design for IID/OOD diagnostics
 - benchmark-grade candidate construction and scoring

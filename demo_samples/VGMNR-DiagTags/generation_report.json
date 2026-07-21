@@ -1,0 +1,6 @@
+{
+  "num_samples": 4,
+  "schema_version": "vg_mnr_v0_ast_binding",
+  "mode": "collision",
+  "notes": "Prototype stage-0 generator with ablation-ready modes, minimal exact-collision pairs, and a prototype VNC gate."
+}
