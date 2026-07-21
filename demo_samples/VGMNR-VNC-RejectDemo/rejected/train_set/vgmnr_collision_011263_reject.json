@@ -1,0 +1,19 @@
+{
+  "pair_id": "vgmnr_collision_011263_pair",
+  "reason": "pair_level_vnc_failed",
+  "summary": {
+    "pair_id": "vgmnr_collision_011263_pair",
+    "roles": [
+      "A",
+      "B"
+    ],
+    "passes_min_vnc": false,
+    "same_mode": true,
+    "same_schema": true,
+    "collision_kind": "exact_query_binding_collision",
+    "diagnostic_tags": [
+      "ablation_ready",
+      "pair_collision"
+    ]
+  }
+}
