@@ -206,6 +206,10 @@ The generator writes `cifar_mnr_v1_report.txt` with the CIFAR digit-class mappin
 
 This repository also includes a minimal VG-MNR prototype inspired by `doc/vg_mnr_benchmark_paper_plan.md`. It is a first runnable version of the proposed visually grounded machine number reasoning benchmark: three solved context panels, one query panel, and a small expression-tree-based visual syntax.
 
+The current prototype now also records candidate diagnostics and a slightly stronger VNC summary so we can distinguish real answers from placeholder candidate sets during debugging.
+
+Recent updates added explicit rejected-sample reason tracking at a medium granularity (candidate / collision / render / metadata / gate), so the generator can explain why samples fail instead of only marking them rejected.
+
 Generate a small VG-MNR demo set:
 
 ```bash
@@ -224,6 +228,15 @@ The prototype currently supports four modes:
 - `no_context`: removes context panels to support context ablation checks.
 - `collision`: generates paired samples for a minimal exact-collision demo.
 
+Recent validation results show that all four modes now run stably in small batches, with the split routing working as intended:
+
+- `full` maps to `full_supervision`
+- `no_visual` maps to `visual_ablation`
+- `no_context` maps to `context_ablation`
+- `collision` maps to `pair_collision`
+
+The current collision baseline is the stable `operand_swap` variant. It produces accepted pairs reliably under the current gate, while more complex collision variants remain available as future extensions.
+
 Each generated `.npz` contains:
 
 - `context_images`: 3 rendered context panels.
@@ -240,12 +253,14 @@ Scope and limitations:
 
 - This is a **stage-0 prototype** for communication and iteration, not the full benchmark.
 - The prototype already covers the ablation directions requested in the proposal at a minimal level.
-- It now includes a minimal VNC gate and an initial exact-collision demo, plus pair-level diagnostic tags, but it still does **not yet** implement benchmark-grade collision families, full diagnostic splits, or the complete VNC filtering procedure described in the proposal.
-- Candidate construction is still placeholder-grade for demonstration, so the next step is to make it benchmark-grade before running model experiments.
+- It now includes a minimal VNC gate and a pair-collision demo, and the candidate set is no longer a placeholder copy of the query image.
+- It still does **not yet** implement benchmark-grade collision families, full diagnostic splits, or the complete VNC filtering procedure described in the proposal.
+- The next step is to validate candidate difficulty, extend the collision family, and harden the filtering/reporting pipeline before running model experiments.
 
 Recommended next priorities:
 
-- exact-collision construction
+- candidate difficulty validation
 - stronger VNC filtering
+- benchmark-grade collision families
 - split design for IID/OOD diagnostics
 - benchmark-grade candidate construction and scoring
