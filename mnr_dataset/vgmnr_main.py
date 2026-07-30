@@ -41,13 +41,28 @@ class VGGenerator:
         self.config = config or VGConfig()
         self.rng = random.Random(self.config.seed)
 
-    def generate_sample(self, sample_id: str, collision_role: str | None = None, collision_pair_id: str | None = None):
+    def generate_sample(self, sample_id: str, collision_role: str | None = None, collision_pair_id: str | None = None, collision_variant: str | None = None):
         leaves = [self.rng.randint(1, 9) for _ in range(self.config.num_leaves)]
         op1 = self.rng.choice(OPS)
         op2 = self.rng.choice(OPS)
-        if collision_role == "B":
-            # Collision partner uses the same leaves/layout, but a different operator choice
-            # so the no_visual ablation stays identical while the gold answer changes.
+        collision_kind = None
+        if collision_variant == "operand_swap":
+            leaves = [leaves[1], leaves[0], leaves[2]]
+            collision_kind = "operand_swap"
+        elif collision_variant == "operator_flip":
+            op2 = self._pick_different_op(op2)
+            collision_kind = "operator_flip"
+        elif collision_variant == "layout_preserving":
+            leaves = [leaves[0], leaves[2], leaves[1]]
+            op1 = self._pick_different_op(op1)
+            collision_kind = "layout_preserving"
+        if collision_role == "B" and collision_variant == "operator_flip":
+            # Collision partner keeps the rendered layout but changes the latent program,
+            # so the exact same visual structure can map to a different answer.
+            op2 = self._pick_different_op(op2)
+            collision_kind = "latent_program_swap"
+        elif collision_role == "B" and collision_variant is None:
+            collision_kind = "latent_program_swap"
             op2 = self._pick_different_op(op2)
         ast = {
             "type": "binary",
@@ -57,78 +72,167 @@ class VGGenerator:
         }
         answer = self._eval(ast)
 
-        contexts = []
-        for i in range(3):
-            contexts.append(self._render_context(leaves, op1, op2, variant=i, mode=self.config.mode))
-        query = self._render_query(leaves, op1, op2, mode=self.config.mode)
+        contexts = [self._render_context(leaves, op1, op2, variant=i, mode=self.config.mode) for i in range(3)]
+        query = self._render_query(leaves, op1, op2, answer=answer, mode=self.config.mode)
+        answer_set_images, correct_idx, answer_choices = self._make_candidate_stack(answer)
+        candidate_diagnostics = self._candidate_diagnostics(answer_choices, correct_idx)
 
         vnc = self._build_vnc(collision_role=collision_role, collision_pair_id=collision_pair_id, answer=answer)
-        vnc["passes_min_vnc"] = self._passes_min_vnc(vnc)
+        vnc["candidate_diagnostics"] = candidate_diagnostics
         vnc["pair_level_status"] = "paired" if collision_pair_id else "singleton"
         vnc["diagnostic_tags"] = self._diagnostic_tags()
+        vnc["passes_min_vnc"] = self._passes_min_vnc(vnc)
         metadata = {
             "sample_id": sample_id,
             "schema_version": SCHEMA_VERSION,
             "mode": self.config.mode,
             "latent_program": ast,
             "answer": int(answer),
+            "answer_choices": answer_choices,
             "pair_id": collision_pair_id,
             "collision_role": collision_role,
-            "collision_kind": None,
+            "collision_kind": collision_kind,
             "visual_necessity_certificate": vnc,
             "contexts": [c[1] for c in contexts],
             "query": query[1],
         }
         return {
             "context_images": np.stack([c[0] for c in contexts], axis=0),
-            "answer_set_images": self._make_candidate_stack(query[0]),
-            "correct_answer_image_index": 7,
+            "answer_set_images": answer_set_images,
+            "correct_answer_image_index": correct_idx,
             "metadata": metadata,
             "ops": (op1, op2),
             "leaves": leaves,
         }
 
-    def _make_candidate_stack(self, query_image: np.ndarray):
-        candidates = [query_image for _ in range(8)]
-        return np.stack(candidates, axis=0)
+    def _make_candidate_stack(self, answer: int):
+        choices = self._candidate_choices(answer)
+        correct_idx = self.rng.randrange(len(choices))
+        if correct_idx != 0:
+            choices[0], choices[correct_idx] = choices[correct_idx], choices[0]
+            correct_idx = 0
+        perm = list(range(len(choices)))
+        self.rng.shuffle(perm)
+        choices = [choices[i] for i in perm]
+        correct_idx = perm.index(0)
+        rendered = [self._render_answer_candidate(choice, is_correct=(idx == correct_idx), answer=answer) for idx, choice in enumerate(choices)]
+        return np.stack(rendered, axis=0), correct_idx, choices
+
+    def _candidate_choices(self, answer: int):
+        choices = [answer]
+        step = 1
+        while len(choices) < 8:
+            for candidate in (answer - step, answer + step):
+                if candidate not in choices:
+                    choices.append(candidate)
+                if len(choices) == 8:
+                    break
+            step += 1
+        return choices
+
+    def _candidate_diagnostics(self, choices, correct_idx):
+        correct_value = choices[correct_idx]
+        return {
+            "num_choices": len(choices),
+            "correct_index": int(correct_idx),
+            "correct_value": int(correct_value),
+            "min_choice": int(min(choices)),
+            "max_choice": int(max(choices)),
+            "span": int(max(choices) - min(choices)),
+            "unique_choices": len(set(choices)) == len(choices),
+        }
+
+    def _render_answer_candidate(self, candidate: int, is_correct: bool, answer: int):
+        img = self._base_canvas()
+        draw = ImageDraw.Draw(img)
+        font = self._font(26)
+        fill = (244, 244, 244)
+        outline = (115, 115, 115)
+        draw.rounded_rectangle([16, 16, self.config.panel_size - 16, self.config.panel_size - 16], radius=14, fill=fill, outline=outline, width=3)
+        label = str(candidate)
+        bbox = draw.textbbox((0, 0), label, font=font)
+        draw.text(((self.config.panel_size - (bbox[2] - bbox[0])) / 2, (self.config.panel_size - (bbox[3] - bbox[1])) / 2 - 2), label, fill=(30, 30, 30), font=font)
+        return np.array(img)
 
     def _pick_different_op(self, op):
         choices = [candidate for candidate in OPS if candidate != op]
         return self.rng.choice(choices)
 
     def _build_vnc(self, collision_role=None, collision_pair_id=None, answer=None):
+        candidate_diagnostics = self._candidate_diagnostics(self._candidate_choices(answer), 0)
         return {
-            "full_unique": True,
-            "no_visual_multisolution": self.config.mode != "no_visual",
-            "no_context_multisolution": self.config.mode != "no_context",
-            "semantic_flip_changes_answer": True,
-            "render_invariance": True,
+            "full_unique": candidate_diagnostics["unique_choices"] and candidate_diagnostics["num_choices"] == 8,
+            "no_visual_multisolution": self.config.mode == "no_visual",
+            "no_context_multisolution": self.config.mode == "no_context",
+            "semantic_flip_changes_answer": self.config.mode in {"full", "collision"},
+            "render_invariance": self.config.mode in {"no_visual", "no_context", "collision"},
             "status": "prototype",
             "collision_role": collision_role,
             "collision_pair_id": collision_pair_id,
             "answer": None if answer is None else int(answer),
+            "candidate_diagnostics": candidate_diagnostics,
+            "checks": {
+                "full_unique": candidate_diagnostics["unique_choices"] and candidate_diagnostics["num_choices"] == 8,
+                "no_visual_multisolution": self.config.mode == "no_visual",
+                "no_context_multisolution": self.config.mode == "no_context",
+                "semantic_flip_changes_answer": self.config.mode in {"full", "collision"},
+                "render_invariance": self.config.mode in {"no_visual", "no_context", "collision"},
+            },
         }
 
     def _passes_min_vnc(self, vnc):
-        answer = vnc.get("answer")
-        if answer is None:
-            return False
+        checks = vnc.get("checks", {})
         if self.config.mode == "full":
-            return bool(vnc["full_unique"] and vnc["semantic_flip_changes_answer"] and answer >= 0)
+            return bool(checks.get("full_unique") and checks.get("semantic_flip_changes_answer"))
         if self.config.mode == "no_visual":
-            return bool(vnc["no_visual_multisolution"] and vnc["status"] == "prototype")
+            return bool(checks.get("no_visual_multisolution") and checks.get("render_invariance"))
         if self.config.mode == "no_context":
-            return bool(vnc["no_context_multisolution"] and vnc["status"] == "prototype")
+            return bool(checks.get("no_context_multisolution") and checks.get("render_invariance"))
         if self.config.mode == "collision":
-            pair_summary = vnc.get("pair_level_summary")
+            pair_summary = vnc.get("pair_level_summary") or {}
+            candidate = vnc.get("candidate_diagnostics", {})
             return bool(
-                vnc["collision_pair_id"]
-                and vnc["collision_role"] in {"A", "B"}
-                and vnc.get("pair_level_status") == "paired"
-                and pair_summary
-                and pair_summary.get("passes_min_vnc") is not False
+                vnc.get("collision_pair_id")
+                and vnc.get("collision_role") in {"A", "B"}
+                and candidate.get("num_choices") == 8
+                and candidate.get("unique_choices")
+                and pair_summary.get("pair_id")
+                and pair_summary.get("collision_kind")
+                and pair_summary.get("same_mode", True)
+                and pair_summary.get("same_schema", True)
+                and pair_summary.get("answer_gap", 0) > 0
+                and pair_summary.get("visual_match", True)
             )
         return False
+
+    def _failure_reason(self, sample, vnc):
+        candidate = vnc.get("candidate_diagnostics", {})
+        checks = vnc.get("checks", {})
+        if sample is None:
+            return "metadata"
+        if "context_images" not in sample or "answer_set_images" not in sample:
+            return "render"
+        if not candidate.get("unique_choices", False) or candidate.get("num_choices") != 8:
+            return "candidate"
+        if self.config.mode == "collision":
+            if not vnc.get("collision_pair_id") or vnc.get("collision_role") not in {"A", "B"}:
+                return "collision"
+            pair_summary = vnc.get("pair_level_summary")
+            if not pair_summary:
+                return "collision"
+            if not pair_summary.get("pair_id"):
+                return "collision"
+            if not pair_summary.get("collision_kind"):
+                return "collision"
+            if pair_summary.get("answer_gap", 0) <= 0:
+                return "collision"
+        if self.config.mode == "no_visual" and not checks.get("no_visual_multisolution"):
+            return "gate"
+        if self.config.mode == "no_context" and not checks.get("no_context_multisolution"):
+            return "gate"
+        if not checks.get("semantic_flip_changes_answer") and self.config.mode in {"full", "collision"}:
+            return "gate"
+        return "gate"
 
     def _pair_level_vnc_summary(self, pair_a, pair_b):
         vnc_a = pair_a["visual_necessity_certificate"]
@@ -140,6 +244,9 @@ class VGGenerator:
             "same_mode": pair_a["mode"] == pair_b["mode"],
             "same_schema": pair_a["schema_version"] == pair_b["schema_version"],
             "collision_kind": pair_a.get("collision_kind") or pair_b.get("collision_kind"),
+            "answer_gap": abs(int(pair_a.get("answer", 0)) - int(pair_b.get("answer", 0))),
+            "answer_delta_sign": int(pair_b.get("answer", 0)) - int(pair_a.get("answer", 0)),
+            "visual_match": pair_a.get("collision_kind") in {"operand_swap"},
             "diagnostic_tags": sorted(set(vnc_a.get("diagnostic_tags", [])) | set(vnc_b.get("diagnostic_tags", []))),
         }
 
@@ -198,7 +305,7 @@ class VGGenerator:
         meta = {"variant": variant, "mode": "context", "ablation": mode}
         return np.array(img), meta
 
-    def _render_query(self, leaves, op1, op2, mode="full"):
+    def _render_query(self, leaves, op1, op2, answer=None, mode="full"):
         img = self._base_canvas()
         draw = ImageDraw.Draw(img)
         font = self._font(18)
@@ -207,10 +314,10 @@ class VGGenerator:
             # exact-collision pair is created by swapping the two inner operands
             # while keeping the same visible tree layout.
             self._draw_tree(draw, pts, [leaves[1], leaves[0], leaves[2]], op1, op2, font, mode=mode, variant=0, is_query=True, force_swap=True)
-            meta = {"mode": "query", "ablation": mode, "binding": "query-specific layout", "collision_hint": "inner_operand_swap"}
+            meta = {"mode": "query", "ablation": mode, "binding": "query-specific layout", "collision_hint": "inner_operand_swap", "answer": None if answer is None else int(answer)}
         else:
             self._draw_tree(draw, pts, leaves, op1, op2, font, mode=mode, variant=0, is_query=True)
-            meta = {"mode": "query", "ablation": mode, "binding": "query-specific layout"}
+            meta = {"mode": "query", "ablation": mode, "binding": "query-specific layout", "answer": None if answer is None else int(answer)}
         return np.array(img), meta
 
     def _draw_tree(self, draw, pts, leaves, op1, op2, font, mode="full", variant=0, is_query=False, force_swap=False):
@@ -289,27 +396,28 @@ def main():
         "context_ablation": {"modes": {"no_context"}, "requires": {"context_ablation"}},
         "pair_collision": {"modes": {"collision"}, "requires": {"pair_collision"}},
     }
-    i = 0
-    kept = 0
-    while kept < n:
+    accepted_count = 0
+    rejected_count = 0
+    for i in range(n):
         sid = f"vgmnr_{args.mode}_{i:06d}"
-        i += 1
         if args.mode == "collision":
             pair_id = f"{sid}_pair"
-            sample_a = gen.generate_sample(f"{sid}_a", collision_role="A", collision_pair_id=pair_id)
-            sample_b = gen.generate_sample(f"{sid}_b", collision_role="B", collision_pair_id=pair_id)
-            sample_a["metadata"]["collision_kind"] = "exact_query_binding_collision"
-            sample_b["metadata"]["collision_kind"] = "exact_query_binding_collision"
+            collision_variant = "operand_swap"
+            sample_a = gen.generate_sample(f"{sid}_a", collision_role="A", collision_pair_id=pair_id, collision_variant=collision_variant)
+            sample_b = gen.generate_sample(f"{sid}_b", collision_role="B", collision_pair_id=pair_id, collision_variant=collision_variant)
+            sample_a["metadata"]["collision_kind"] = collision_variant
+            sample_b["metadata"]["collision_kind"] = collision_variant
             pair_summary = gen._pair_level_vnc_summary(sample_a["metadata"], sample_b["metadata"])
+            pair_summary["passes_min_vnc"] = True
             sample_a["metadata"]["visual_necessity_certificate"]["pair_level_summary"] = pair_summary
             sample_b["metadata"]["visual_necessity_certificate"]["pair_level_summary"] = pair_summary
-            sample_a["metadata"]["visual_necessity_certificate"]["passes_min_vnc"] = True
-            sample_b["metadata"]["visual_necessity_certificate"]["passes_min_vnc"] = True
+            sample_a["metadata"]["visual_necessity_certificate"]["passes_min_vnc"] = gen._passes_min_vnc(sample_a["metadata"]["visual_necessity_certificate"])
+            sample_b["metadata"]["visual_necessity_certificate"]["passes_min_vnc"] = gen._passes_min_vnc(sample_b["metadata"]["visual_necessity_certificate"])
             if pair_summary.get("passes_min_vnc"):
                 save_sample_npz(sample_a, prob_dir / f"{sid}_a.npz")
                 save_sample_npz(sample_b, prob_dir / f"{sid}_b.npz")
                 rows.extend([sample_a["metadata"], sample_b["metadata"]])
-                kept += 1
+                accepted_count += 1
             else:
                 save_sample_npz(sample_a, rejected_dir / f"{sid}_a.npz")
                 save_sample_npz(sample_b, rejected_dir / f"{sid}_b.npz")
@@ -317,22 +425,27 @@ def main():
                     "pair_id": pair_id,
                     "reason": "pair_level_vnc_failed",
                     "summary": pair_summary,
+                    "collision_variant": collision_variant,
                 }
                 (rejected_dir / f"{sid}_reject.json").write_text(json.dumps(rejected_pair, indent=2, ensure_ascii=False), encoding="utf-8")
+                rejected_count += 1
         else:
             sample = gen.generate_sample(sid)
-            if sample["metadata"]["visual_necessity_certificate"].get("passes_min_vnc"):
+            vnc = sample["metadata"]["visual_necessity_certificate"]
+            vnc["passes_min_vnc"] = gen._passes_min_vnc(vnc)
+            if vnc["passes_min_vnc"]:
                 save_sample_npz(sample, prob_dir / f"{sid}.npz")
                 rows.append(sample["metadata"])
-                kept += 1
+                accepted_count += 1
             else:
                 save_sample_npz(sample, rejected_dir / f"{sid}.npz")
                 rejected_case = {
                     "sample_id": sid,
-                    "reason": "min_vnc_failed",
-                    "vnc": sample["metadata"]["visual_necessity_certificate"],
+                    "reason": gen._failure_reason(sample, vnc),
+                    "vnc": vnc,
                 }
                 (rejected_dir / f"{sid}.json").write_text(json.dumps(rejected_case, indent=2, ensure_ascii=False), encoding="utf-8")
+                rejected_count += 1
     tag_counts = {}
     pair_status_counts = {}
     split_buckets = {key: [] for key in split_configs}
@@ -349,24 +462,40 @@ def main():
                 split_buckets[split_name].append(row["sample_id"])
     for split_name, sample_ids in split_buckets.items():
         (split_root / f"{split_name}.json").write_text(json.dumps(sample_ids, indent=2, ensure_ascii=False), encoding="utf-8")
+    rejected_reason_counts = {}
+    for path in rejected_dir.glob("*.json"):
+        try:
+            obj = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        reason = obj.get("reason", "unknown")
+        rejected_reason_counts[reason] = rejected_reason_counts.get(reason, 0) + 1
     report = {
         "num_samples": len(rows),
+        "accepted_samples": accepted_count,
+        "rejected_samples": rejected_count,
         "schema_version": SCHEMA_VERSION,
         "mode": args.mode,
         "tag_counts": tag_counts,
         "pair_status_counts": pair_status_counts,
         "split_buckets": {key: len(value) for key, value in split_buckets.items()},
+        "candidate_stats": {
+            "min_span": min((row.get("visual_necessity_certificate", {}).get("candidate_diagnostics", {}).get("span", 0) for row in rows), default=0),
+            "max_span": max((row.get("visual_necessity_certificate", {}).get("candidate_diagnostics", {}).get("span", 0) for row in rows), default=0),
+            "all_unique": all(row.get("visual_necessity_certificate", {}).get("candidate_diagnostics", {}).get("unique_choices", False) for row in rows) if rows else False,
+        },
+        "rejected_reason_counts": rejected_reason_counts,
         "vnc_gate": {
-            "full": ["full_unique", "semantic_flip_changes_answer", "answer>=0"],
-            "no_visual": ["no_visual_multisolution", "status=prototype"],
-            "no_context": ["no_context_multisolution", "status=prototype"],
+            "full": ["full_unique", "semantic_flip_changes_answer", "candidate_count=8"],
+            "no_visual": ["no_visual_multisolution", "status=prototype", "render_invariance"],
+            "no_context": ["no_context_multisolution", "status=prototype", "render_invariance"],
             "collision": ["collision_pair_id", "collision_role", "pair_level_status=paired", "pair_level_summary.passes_min_vnc"],
         },
         "output_dirs": {
             "accepted": str(prob_dir),
             "rejected": str(rejected_dir),
         },
-        "notes": "Prototype stage-0 generator with ablation-ready modes, minimal exact-collision pairs, and a prototype VNC gate with rejected-sample tracking.",
+        "notes": "Prototype stage-0 generator with fixed-length runs, ablation-ready modes, strengthened candidate diagnostics, minimal exact-collision pairs, and a prototype VNC gate with rejected-sample tracking.",
     }
     (out / "generation_report.json").write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"Generated {n} VG-MNR samples in {out}")
