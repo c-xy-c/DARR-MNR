@@ -41,12 +41,22 @@ class VGGenerator:
         self.config = config or VGConfig()
         self.rng = random.Random(self.config.seed)
 
-    def generate_sample(self, sample_id: str, collision_role: str | None = None, collision_pair_id: str | None = None, collision_variant: str | None = None):
+    def generate_sample(self, sample_id: str, collision_role: str | None = None, collision_pair_id: str | None = None, collision_variant: str | None = None, partner_ast: dict | None = None, rendered_layout: tuple | None = None):
         leaves = [self.rng.randint(1, 9) for _ in range(self.config.num_leaves)]
         op1 = self.rng.choice(OPS)
         op2 = self.rng.choice(OPS)
         collision_kind = None
-        if collision_variant == "operand_swap":
+        render_leaves = list(leaves)
+        render_op1 = op1
+        render_op2 = op2
+        if collision_role == "B" and partner_ast is not None and rendered_layout is not None:
+            # B reuses A's rendered layout exactly, but its latent AST is permuted.
+            render_leaves, render_op1, render_op2 = rendered_layout
+            leaves = [partner_ast["left"]["left"], partner_ast["left"]["right"], partner_ast["right"]]
+            op1 = partner_ast["left"]["op"]
+            op2 = self._pick_different_op(partner_ast["op"])
+            collision_kind = "shared_layout_latent_swap"
+        elif collision_variant == "operand_swap":
             leaves = [leaves[1], leaves[0], leaves[2]]
             collision_kind = "operand_swap"
         elif collision_variant == "operator_flip":
@@ -56,12 +66,10 @@ class VGGenerator:
             leaves = [leaves[0], leaves[2], leaves[1]]
             op1 = self._pick_different_op(op1)
             collision_kind = "layout_preserving"
-        if collision_role == "B" and collision_variant == "operator_flip":
-            # Collision partner keeps the rendered layout but changes the latent program,
-            # so the exact same visual structure can map to a different answer.
+        if collision_role == "B" and collision_variant == "operator_flip" and partner_ast is None:
             op2 = self._pick_different_op(op2)
             collision_kind = "latent_program_swap"
-        elif collision_role == "B" and collision_variant is None:
+        elif collision_role == "B" and collision_variant is None and partner_ast is None:
             collision_kind = "latent_program_swap"
             op2 = self._pick_different_op(op2)
         ast = {
@@ -72,8 +80,8 @@ class VGGenerator:
         }
         answer = self._eval(ast)
 
-        contexts = [self._render_context(leaves, op1, op2, variant=i, mode=self.config.mode) for i in range(3)]
-        query = self._render_query(leaves, op1, op2, answer=answer, mode=self.config.mode)
+        contexts = [self._render_context(render_leaves, render_op1, render_op2, variant=i, mode=self.config.mode) for i in range(3)]
+        query = self._render_query(render_leaves, render_op1, render_op2, answer=answer, mode=self.config.mode)
         answer_set_images, correct_idx, answer_choices = self._make_candidate_stack(answer)
         candidate_diagnostics = self._candidate_diagnostics(answer_choices, correct_idx)
 
@@ -120,14 +128,24 @@ class VGGenerator:
 
     def _candidate_choices(self, answer: int):
         choices = [answer]
-        step = 1
+        offsets = [1, -1, 2, -2, 3, -3, 5, -5, 7, -7, 9, -9]
+        idx = 0
+        while len(choices) < 8 and idx < len(offsets):
+            candidate = answer + offsets[idx]
+            if candidate not in choices:
+                choices.append(candidate)
+            idx += 1
+        # If the nearby offsets collide, fall back to semantically plausible distractors.
+        fallback = [answer * 2 if answer != 0 else 1, answer + 10, answer - 10, abs(answer) + 1, -abs(answer) - 1]
+        for candidate in fallback:
+            if len(choices) >= 8:
+                break
+            if candidate not in choices:
+                choices.append(candidate)
         while len(choices) < 8:
-            for candidate in (answer - step, answer + step):
-                if candidate not in choices:
-                    choices.append(candidate)
-                if len(choices) == 8:
-                    break
-            step += 1
+            candidate = answer + self.rng.randint(11, 20) * (1 if self.rng.random() < 0.5 else -1)
+            if candidate not in choices:
+                choices.append(candidate)
         return choices
 
     def _candidate_diagnostics(self, choices, correct_idx):
@@ -336,9 +354,9 @@ class VGGenerator:
             draw.line([left, mid], fill=(60, 60, 60), width=3)
 
         self._draw_node(draw, root, op2 if mode != "no_visual" else "?", (230, 240, 255), (40, 80, 140), font)
-        self._draw_node(draw, left, str(a), (255, 240, 230), (140, 80, 40), font)
+        self._draw_node(draw, left, str(a) if mode != "no_visual" else "?", (255, 240, 230), (140, 80, 40), font)
         self._draw_node(draw, mid, op1 if mode != "no_visual" else "?", (240, 255, 235), (70, 120, 60), font)
-        self._draw_node(draw, right, str(c), (255, 245, 245), (130, 60, 60), font)
+        self._draw_node(draw, right, str(c) if mode != "no_visual" else "?", (255, 245, 245), (130, 60, 60), font)
 
         if mode != "no_context":
             if is_query:
@@ -374,11 +392,68 @@ def build_parser():
     p.add_argument("--panel_size", type=int, default=128)
     p.add_argument("--max_samples", type=int, default=None)
     p.add_argument("--mode", type=str, default="full", choices=MODES)
+    p.add_argument("--combine_from", type=str, default=None, help="Comma-separated dataset roots to merge into output_dir")
     return p
+
+
+def _combine_datasets(output_dir: Path, source_roots: List[Path]):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    prob_dir = output_dir / "ProbSet" / "train_set"
+    prob_dir.mkdir(parents=True, exist_ok=True)
+    rejected_dir = output_dir / "rejected" / "train_set"
+    rejected_dir.mkdir(parents=True, exist_ok=True)
+    split_root = output_dir / "splits"
+    split_root.mkdir(parents=True, exist_ok=True)
+
+    split_buckets = {
+        "full_supervision": [],
+        "visual_ablation": [],
+        "context_ablation": [],
+        "pair_collision": [],
+    }
+    copied = 0
+    reports = []
+    for root in source_roots:
+        report_path = root / "generation_report.json"
+        if report_path.exists():
+            try:
+                reports.append(json.loads(report_path.read_text(encoding="utf-8")))
+            except Exception:
+                pass
+        split_dir = root / "splits"
+        prob_src = root / "ProbSet" / "train_set"
+        for split_name in split_buckets:
+            split_file = split_dir / f"{split_name}.json"
+            if not split_file.exists():
+                continue
+            sample_ids = json.loads(split_file.read_text(encoding="utf-8"))
+            for sample_id in sample_ids:
+                matches = list(prob_src.glob(f"{sample_id}*.npz"))
+                if not matches:
+                    continue
+                target = prob_dir / matches[0].name
+                target.write_bytes(matches[0].read_bytes())
+                split_buckets[split_name].append(sample_id)
+                copied += 1
+    for split_name, sample_ids in split_buckets.items():
+        (split_root / f"{split_name}.json").write_text(json.dumps(sample_ids, indent=2, ensure_ascii=False), encoding="utf-8")
+    report = {
+        "combined_from": [str(p) for p in source_roots],
+        "copied_samples": copied,
+        "split_buckets": {k: len(v) for k, v in split_buckets.items()},
+        "source_reports": reports,
+        "notes": "Combined VG-MNR dataset assembled from multiple mode-specific outputs.",
+    }
+    (output_dir / "generation_report.json").write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"Combined {copied} VG-MNR samples into {output_dir}")
 
 
 def main():
     args = build_parser().parse_args()
+    if args.combine_from:
+        sources = [Path(item.strip()) for item in args.combine_from.split(",") if item.strip()]
+        _combine_datasets(Path(args.output_dir), sources)
+        return
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
     gen = VGGenerator(VGConfig(panel_size=args.panel_size, seed=args.seed, mode=args.mode))
@@ -404,9 +479,16 @@ def main():
             pair_id = f"{sid}_pair"
             collision_variant = "operand_swap"
             sample_a = gen.generate_sample(f"{sid}_a", collision_role="A", collision_pair_id=pair_id, collision_variant=collision_variant)
-            sample_b = gen.generate_sample(f"{sid}_b", collision_role="B", collision_pair_id=pair_id, collision_variant=collision_variant)
+            sample_b = gen.generate_sample(
+                f"{sid}_b",
+                collision_role="B",
+                collision_pair_id=pair_id,
+                collision_variant=collision_variant,
+                partner_ast=sample_a["metadata"]["latent_program"],
+                rendered_layout=(sample_a["leaves"], sample_a["ops"][0], sample_a["ops"][1]),
+            )
             sample_a["metadata"]["collision_kind"] = collision_variant
-            sample_b["metadata"]["collision_kind"] = collision_variant
+            sample_b["metadata"]["collision_kind"] = "shared_layout_latent_swap"
             pair_summary = gen._pair_level_vnc_summary(sample_a["metadata"], sample_b["metadata"])
             pair_summary["passes_min_vnc"] = True
             sample_a["metadata"]["visual_necessity_certificate"]["pair_level_summary"] = pair_summary

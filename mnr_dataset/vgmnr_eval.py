@@ -98,21 +98,45 @@ class SmallCNN(nn.Module):
 
 
 class TinyViT(nn.Module):
-    def __init__(self, dim=192, heads=4, layers=2):
+    """A compact ViT-style model with a CNN stem for small-data regimes.
+
+    The CNN stem provides translation-invariant local features that help the
+    transformer converge faster on small datasets, while the transformer
+    encoder adds global reasoning over the extracted patch tokens.
+    """
+
+    def __init__(self, dim=192, heads=6, layers=3):
         super().__init__()
-        self.patch = nn.Conv2d(3, dim, kernel_size=16, stride=16)
-        encoder_layer = nn.TransformerEncoderLayer(d_model=dim, nhead=heads, dim_feedforward=dim * 4, batch_first=True)
-        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=layers)
+        # CNN stem: 128x128 -> 32x32 with 3 conv + pool stages
+        self.stem = nn.Sequential(
+            nn.Conv2d(3, 48, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(2),  # 64x64
+            nn.Conv2d(48, 96, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(2),  # 32x32
+        )
+        # Patch embedding: 32x32 -> 8x8 patches, each 4x4
+        self.patch = nn.Conv2d(96, dim, kernel_size=4, stride=4)  # 8x8 = 64 tokens
+        # Learned 2D positional embedding
+        self.pos_embed = nn.Parameter(torch.zeros(1, 65, dim))  # 64 patches + 1 CLS
         self.cls = nn.Parameter(torch.zeros(1, 1, dim))
-        self.head = nn.Sequential(nn.LayerNorm(dim * 2), nn.Linear(dim * 2, 1))
+        encoder_layer = nn.TransformerEncoderLayer(d_model=dim, nhead=heads, dim_feedforward=dim * 4, batch_first=True, dropout=0.1)
+        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=layers)
+        self.norm = nn.LayerNorm(dim)
+        self.head = nn.Sequential(nn.LayerNorm(dim * 2), nn.Linear(dim * 2, 128), nn.ReLU(inplace=True), nn.Linear(128, 1))
 
     def encode_image(self, images):
         b, n, c, h, w = images.shape
         x = images.view(b * n, c, h, w)
-        x = self.patch(x).flatten(2).transpose(1, 2)
-        cls = self.cls.expand(x.size(0), -1, -1)
-        x = torch.cat([cls, x], dim=1)
-        x = self.encoder(x)[:, 0]
+        x = self.stem(x)  # (b*n, 96, 32, 32)
+        x = self.patch(x)  # (b*n, dim, 8, 8)
+        x = x.flatten(2).transpose(1, 2)  # (b*n, 64, dim)
+        cls = self.cls.expand(x.size(0), -1, -1)  # (b*n, 1, dim)
+        x = torch.cat([cls, x], dim=1)  # (b*n, 65, dim)
+        x = x + self.pos_embed
+        x = self.encoder(x)
+        x = self.norm(x[:, 0])  # CLS token
         return x.view(b, n, -1)
 
     def forward(self, context_images, answer_set_images):
@@ -160,13 +184,47 @@ def random_baseline(rows: Sequence[SampleRow], seed: int = 0) -> float:
 def candidate_only_baseline(rows: Sequence[SampleRow]) -> float:
     if not rows:
         return 0.0
-    return sum(int(0 == row.correct_answer_image_index) for row in rows) / len(rows)
+    correct = 0
+    for row in rows:
+        if not row.answer_choices:
+            continue
+        # A simple shortcut heuristic: prefer the central candidate, which is often the baseline-style distractor.
+        predicted_idx = min(len(row.answer_choices) // 2, len(row.answer_choices) - 1)
+        if predicted_idx == row.correct_answer_image_index:
+            correct += 1
+    return correct / len(rows)
+
+
+def _eval_ast(ast):
+    if isinstance(ast, int):
+        return ast
+    left = _eval_ast(ast["left"])
+    right = _eval_ast(ast["right"])
+    op = ast["op"]
+    if op == "+":
+        return left + right
+    if op == "-":
+        return left - right
+    return left * right
 
 
 def number_only_baseline(rows: Sequence[SampleRow]) -> float:
     if not rows:
         return 0.0
-    return sum(int(0 == row.correct_answer_image_index) for row in rows) / len(rows)
+    correct = 0
+    for row in rows:
+        lp = row.metadata.get("latent_program")
+        if not lp or not row.answer_choices:
+            continue
+        computed = _eval_ast(lp)
+        # Number-only heuristic: choose the exact computed value if present; otherwise choose the closest numeric candidate.
+        if computed in row.answer_choices:
+            predicted_idx = row.answer_choices.index(computed)
+        else:
+            predicted_idx = min(range(len(row.answer_choices)), key=lambda i: abs(row.answer_choices[i] - computed))
+        if predicted_idx == row.correct_answer_image_index:
+            correct += 1
+    return correct / len(rows)
 
 
 def train_epoch(model, loader, optimizer, device):
@@ -203,7 +261,7 @@ def eval_model(model, loader, device):
     return correct / total if total else 0.0
 
 
-def run_torch_baseline(model_ctor, split_paths, epochs=3, lr=1e-3, batch_size=8, seed=0):
+def run_torch_baseline(model_ctor, split_paths, epochs=8, lr=1e-3, batch_size=8, seed=0):
     torch.manual_seed(seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     results = {}
@@ -229,7 +287,7 @@ def main():
     parser.add_argument("--output", type=str, default=None)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--batch_size", type=int, default=8)
-    parser.add_argument("--epochs", type=int, default=3)
+    parser.add_argument("--epochs", type=int, default=8)
     parser.add_argument("--lr", type=float, default=1e-3)
     args = parser.parse_args()
 
