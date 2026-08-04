@@ -23,9 +23,61 @@ For machine number reasoning (MNR) dataset:
 - OpenCV
 - See `mnr_dataset/requirements.txt` for a detailed list of packages required.
 
-## Experiments
-Model training and evaluation code will be released soon.
+## Benchmark evaluation
 
+DARR-MNR uses a fixed 3-context / 8-choice evaluation contract. Validate a split:
+
+```bash
+python benchmark.py ProbSet/test_set
+```
+
+Evaluate a prediction CSV:
+
+```bash
+python benchmark.py ProbSet/test_set --predictions predictions.csv
+```
+
+Generate a random baseline prediction file:
+
+```bash
+python benchmark_baseline.py ProbSet/test_set --output random_predictions.csv
+```
+
+Run the end-to-end benchmark evaluator and save a JSON report:
+
+```bash
+python benchmark_run.py ProbSet/test_set --baseline --report benchmark_report.json
+```
+
+Generate a submission template:
+
+```bash
+python benchmark_submission.py ProbSet/test_set --output submission_template.csv
+```
+
+Create benchmark predictions with a simple strategy:
+
+```bash
+python benchmark_predict.py ProbSet/test_set --strategy first --output predictions.csv
+```
+
+Create a structured benchmark report:
+
+```bash
+python benchmark_report.py ProbSet/test_set --predictions predictions.csv --output benchmark_report.json
+```
+
+The prediction CSV must contain exactly one row per `.npz` file:
+
+```text
+sample_id,prediction
+prob_000001.npz,3
+```
+
+See `benchmark_protocol.md`, `docs_submission_format.md`, `docs_results_report.md`, `docs_handoff_to_darr_owner.md`, and `docs_progress_report_for_supervisor.md` for the dataset contract, reporting requirements, reproducibility rules, DARR model handoff instructions, and current progress summary.
+
+## Experiments
+Model training and evaluation code will be released soon. Until the official DARR training pipeline is released, benchmark scores should not be reported as reproduced results.
 
 ## Citation
 If you find this repo useful in your research, please consider citing our paper as follows:
