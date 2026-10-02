@@ -1,0 +1,15 @@
+{
+  "program_ssl/__init__.py": "d71b2d1187e2a42f1f5b58d69a0a911800a7eb059077cbb774df965dcf636455",
+  "program_ssl/check_contracts.py": "fd5de9c72314a2cec3888df81044764379b0fb2e601f7b0b05113c8a51e256cb",
+  "program_ssl/data.py": "576c880c1c9c11445ab12be013a9e6010e038b55cf6cd129cca54a9cc53f14d9",
+  "program_ssl/evaluate.py": "9ffa7849a199f7dabccb4146049f897ccbcb99d0603fba979ddbee993c1494dd",
+  "program_ssl/model.py": "1655075cd1ab3483c23bbc9b51c15ae6ce423b1708e44dba7f9e0f3249a03ed9",
+  "program_ssl/train.py": "f7a37309543cdedd09716c89516c258b8c8119e9c182bdd8ffa6dfba61ce4b77",
+  "sspredrnet/__init__.py": "8183b313c84b9e052655cbd4074dcff1134a50f062b14d98e46b9ca218ac7a6a",
+  "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+  "sspredrnet/evaluate.py": "464155a4658c7240f2fcd49b5a01962a3203b2686ab250fc350e0eb9bb20d3fb",
+  "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+  "sspredrnet/model.py": "fd5a739e244a0a0a374cffe2fafa6aafad443aecc47c50a355bc286c061efa0b",
+  "sspredrnet/train.py": "931709f2400ea8088aca527570f6a70a823a689bd77e08a58fa3dce33ee14f4d",
+  "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07"
+}

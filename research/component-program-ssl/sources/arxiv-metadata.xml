@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/ByXvh9sDLt1JthclX59oXcTVtq4</id>
+  <title>arXiv Query: search_query=&amp;id_list=2607.02404,2605.26379,2602.06358&amp;start=0&amp;max_results=3</title>
+  <updated>2026-10-02T18:32:15Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=&amp;start=0&amp;max_results=3&amp;id_list=2607.02404,2605.26379,2602.06358" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>3</opensearch:itemsPerPage>
+  <opensearch:totalResults>3</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2605.26379v1</id>
+    <title>When Does LeJEPA Learn a World Model?</title>
+    <updated>2026-05-25T22:56:26Z</updated>
+    <link href="https://arxiv.org/abs/2605.26379v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2605.26379v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>A representation that scrambles the true degrees of freedom of the world cannot support reliable planning or compositional generalization. We prove that LeJEPA (alignment plus Gaussian regularization) linearly recovers the world's latent variables from nonlinear observations, a property known as linear identifiability, in a broad class of worlds where latents evolve under stationary, additive-noise transitions. Our main result is that among all such worlds, the Gaussian is the unique latent distribution for which this guarantee holds. The forward direction rests on a spectral decomposition in which each degree of nonlinearity is strictly penalized by alignment, making the linear map the optimum; the converse rules out every non-Gaussian alternative. We further prove an approximate identifiability result where the guarantee degrades gracefully, and show that linear, orthogonal identifiability enables optimal latent-space planning. We validate the theory with experiments ranging from 2D examples to 1024-dimensional latents, including distributional ablations and pixel-based robotic control. Our theory turns an empirically successful recipe into a mathematical guarantee, providing the foundation for building World Models that provably recover the structure of the world.</summary>
+    <category term="stat.ML" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-05-25T22:56:26Z</published>
+    <arxiv:primary_category term="stat.ML"/>
+    <author>
+      <name>David Klindt</name>
+    </author>
+    <author>
+      <name>Yann LeCun</name>
+    </author>
+    <author>
+      <name>Randall Balestriero</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2602.06358v3</id>
+    <title>SHINE: A Scalable In-Context Hypernetwork for Mapping Context to LoRA in a Single Pass</title>
+    <updated>2026-07-04T16:06:38Z</updated>
+    <link href="https://arxiv.org/abs/2602.06358v3" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2602.06358v3" rel="related" type="application/pdf" title="pdf"/>
+    <summary>We propose SHINE (Scalable Hyper In-context NEtwork), a scalable hypernetwork that can map diverse meaningful contexts into high-quality LoRA adapters for large language models (LLMs). By reusing the frozen LLM's own parameters in an in-context hypernetwork design and introducing architectural innovations, SHINE overcomes key limitations of prior hypernetworks and achieves strong expressive power with a relatively small number of parameters. We introduce a pretraining and instruction fine-tuning pipeline, and train our hypernetwork to generate high quality LoRA adapters from diverse meaningful contexts in a single forward pass. It updates LLM parameters without any fine-tuning, and immediately enables complex question answering tasks related to the context without directly accessing the context, effectively transforming in-context knowledge to in-parameter knowledge in one pass. Our work achieves outstanding results on various tasks, greatly saves time, computation and memory costs compared to SFT-based LLM adaptation, and shows great potential for scaling. Our code is available at https://github.com/MuLabPKU/SHINE</summary>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-02-06T03:40:31Z</published>
+    <arxiv:primary_category term="cs.CL"/>
+    <author>
+      <name>Yewei Liu</name>
+    </author>
+    <author>
+      <name>Xiyuan Wang</name>
+    </author>
+    <author>
+      <name>Yansheng Mao</name>
+    </author>
+    <author>
+      <name>Yoav Gelbery</name>
+    </author>
+    <author>
+      <name>Haggai Maron</name>
+    </author>
+    <author>
+      <name>Muhan Zhang</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2607.02404v1</id>
+    <title>Object-centric LeJEPA</title>
+    <updated>2026-07-02T16:38:21Z</updated>
+    <link href="https://arxiv.org/abs/2607.02404v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2607.02404v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Image encoders trained with LeJEPA can deliver strong features for downstream tasks, but, like other image-level self-supervised methods, typically require large training datasets. Aligning representations at the level of objects rather than whole scenes promises greater data efficiency, but doing this in a completely self-supervised way, effectively jointly partitioning a scene and representing its objects, is unstable: the two are locked in a cyclic dependency, partitioning requires meaningful representations, while meaningful representations require consistent partitioning. We sidestep this instability by taking object masks as given during training, using cheap, off-the-shelf SAM proposals. We extend LeJEPA - whose distributional anti-collapse objective ports naturally from whole images to variable-sized sets of objects - to align object-centric representations rather than whole images. An additional instance-separating loss, which treats other objects in the same scene as negatives, further boosts downstream performance. Across two model scales and 10-100% of COCO, object-level LeJEPA outperforms image-level LeJEPA on tracking (DAVIS), classification (ImageNet-1k), segmentation (ADE20k), and re-identification (NAVI).</summary>
+    <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-07-02T16:38:21Z</published>
+    <arxiv:primary_category term="cs.CV"/>
+    <author>
+      <name>Jakob Geusen</name>
+    </author>
+    <author>
+      <name>Ender Konukoglu</name>
+    </author>
+  </entry>
+</feed>

@@ -12,3 +12,7 @@ ProbSet/
 .DS_Store
 .vscode/
 .idea/
+
+# Local literature extracts and rejected executable prototypes
+research/component-program-ssl/sources/*.txt
+research/component-program-ssl/archive-v1/*.py

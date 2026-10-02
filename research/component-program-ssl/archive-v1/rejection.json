@@ -1,0 +1,25 @@
+{
+  "accepted_as_contribution": false,
+  "reason": "The learned support compiler became input-independent, with a direct baseline context path bypassing it.",
+  "diagnostic": {
+    "epoch": 5,
+    "validation_puzzles": 112,
+    "alpha_std": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "uniform_max_score_change": 0.003085613250732422,
+    "uniform_changed_answers": 0,
+    "no_program_max_score_change": 0.13416147232055664,
+    "no_program_changed_answers": 1
+  },
+  "completed_epoch_records": 6,
+  "best_validation_accuracy": 71.53571428571429,
+  "test_opened": false,
+  "termination": "intentional SIGINT, exit code 130",
+  "source_snapshot_remote": "/LCT-AVR/TTT/sspredrnet-runs/component-program-20261003-source"
+}

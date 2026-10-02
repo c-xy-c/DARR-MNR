@@ -1,0 +1,16 @@
+{
+  "epoch": 5,
+  "validation_puzzles": 112,
+  "alpha_std": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "uniform_max_score_change": 0.003085613250732422,
+  "uniform_changed_answers": 0,
+  "no_program_max_score_change": 0.13416147232055664,
+  "no_program_changed_answers": 1
+}
