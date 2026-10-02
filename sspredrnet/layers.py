@@ -5,14 +5,14 @@ import torch.nn as nn
 def ConvNormAct(inplanes, ouplanes, kernel_size=3, padding=0, stride=1, activate=True):
 
     block = [nn.Conv2d(
-        inplanes, ouplanes, kernel_size, 
-        padding=padding, bias=False, 
+        inplanes, ouplanes, kernel_size,
+        padding=padding, bias=False,
         stride=stride)
     ]
     block += [nn.BatchNorm2d(ouplanes)]
     if activate:
         block += [nn.ReLU()]
-    
+
     return nn.Sequential(*block)
 
 
