@@ -1,0 +1,39 @@
+{
+  "source_run": "raven-original-component-views-v24-20261003",
+  "source_training_epochs": 20,
+  "upstream_repository": "https://github.com/ZjjConan/AVR-PredRNet-and-SSPredRNet",
+  "upstream_commit": "347ec81cee92e857f51bb6933b1addeee21e6724",
+  "upstream_model_sha256": "387b50b45df04b20942d68b56029517530fe74e6124f5d1333fb21b3945f0043",
+  "source_history_sha256": "a1299022f0a216de1b082a1f0dcd7cb60e18cbaafcb0410bd73e0c5bc50ec354",
+  "source_config_sha256": "2351024fb6ea623aa047877f49d6c92f3c37a7d2deb810b64f19758d47f61f61",
+  "checkpoint_source_sha256": {
+    "best": "10bcdaf7ee3689e18416d114e0c8a0b128ee2d019da8ab0c44367f13641eb3f3",
+    "final": "5c946ab484dfef464052b4076e5e9312c387d6169901a95b5e7851c38dc7b2a7"
+  },
+  "checkpoint_release_sha256": {
+    "best": "b3a1a509000ce0c7e352525755c7f7ed32fb8b9450b887f1b281bdc9f67560fa",
+    "final": "f5a1848f932c6ad9c1a32eaab235f45704cff52661bea360754af9032285fe8b"
+  },
+  "checkpoint_release_format": "model state_dict with reasoner.* only and epoch; no auxiliary heads, optimizer, or RNG history",
+  "original_training_and_validation_seconds": 2288.708729378879,
+  "refactor_checks": {
+    "initial_parameters_and_buffers": "bitwise_equal",
+    "seven_config_training_inputs": "bitwise_equal",
+    "evaluation_scores": "bitwise_equal",
+    "fp16_training_errors_and_loss": "bitwise_equal",
+    "fp16_parameter_gradients": "bitwise_equal",
+    "cuda_dropout_rng": "bitwise_equal",
+    "max_gradient_difference": 0.0,
+    "unused_heads_removed": true,
+    "samples_checked": 7
+  },
+  "full_clean_evaluation_verified": true,
+  "history_changes": "removed inactive auxiliary-loss fields; retained all epoch, validation, loss, step, timing and selection records",
+  "config_changes": "removed obsolete method/version/auxiliary fields and machine-specific paths",
+  "limitations": [
+    "single seed",
+    "two views per raw puzzle; more compute than baseline",
+    "layout decomposition and exact-positive negative masking are bundled; not a single-factor causal attribution",
+    "original candidate negative images remain in training; no answer-index or XML supervision"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "initial_parameters_and_buffers": "bitwise_equal",
+  "seven_config_training_inputs": "bitwise_equal",
+  "evaluation_scores": "bitwise_equal",
+  "fp16_training_errors_and_loss": "bitwise_equal",
+  "fp16_parameter_gradients": "bitwise_equal",
+  "cuda_dropout_rng": "bitwise_equal",
+  "max_gradient_difference": 0.0,
+  "unused_heads_removed": true,
+  "samples_checked": 7
+}

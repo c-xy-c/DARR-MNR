@@ -1,0 +1,37 @@
+{
+  "best_epoch": 17,
+  "best_validation_accuracy": 70.17142857142856,
+  "selection_split": "val",
+  "test": {
+    "best": {
+      "accuracy_macro": 70.37857142857142,
+      "accuracy_micro": 70.37857142857143,
+      "by_configuration": {
+        "center_single": 95.3,
+        "distribute_four": 45.6,
+        "distribute_nine": 33.4,
+        "in_center_single_out_center_single": 90.1,
+        "in_distribute_four_out_center_single": 38.45,
+        "left_center_single_right_center_single": 94.7,
+        "up_center_single_down_center_single": 95.1
+      },
+      "correct": 9853,
+      "total": 14000
+    },
+    "final": {
+      "accuracy_macro": 67.65714285714286,
+      "accuracy_micro": 67.65714285714286,
+      "by_configuration": {
+        "center_single": 86.85,
+        "distribute_four": 51.4,
+        "distribute_nine": 32.7,
+        "in_center_single_out_center_single": 85.9,
+        "in_distribute_four_out_center_single": 36.25,
+        "left_center_single_right_center_single": 90.5,
+        "up_center_single_down_center_single": 90.0
+      },
+      "correct": 9472,
+      "total": 14000
+    }
+  }
+}

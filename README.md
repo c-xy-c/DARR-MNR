@@ -63,3 +63,12 @@ Main changes include:
 - Verified that the dataset generation script can run successfully under Python 3.12.
 
 This update focuses only on compatibility and does not intentionally change the original dataset generation logic.
+
+## SSPredRNet self-supervised RAVEN experiments
+
+[sspredrnet/](sspredrnet/) contains a focused implementation of the original
+neural prediction-error reasoner with component views. A verified 20-epoch
+RAVEN experiment achieved 70.38% test accuracy for the validation-selected
+checkpoint and 67.66% at epoch 20. The method uses public layout priors and
+two views per puzzle. Training commands, checkpoints, verification records,
+and comparison limits are documented in [sspredrnet/README.md](sspredrnet/README.md).

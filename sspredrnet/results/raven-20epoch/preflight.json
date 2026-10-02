@@ -1,0 +1,59 @@
+{
+  "answer_indices_read": false,
+  "by_configuration": {
+    "center_single": {
+      "full_candidate_fallbacks": 0,
+      "identical_known_positive_negatives": 84,
+      "puzzles": 6000,
+      "separated_fraction": 0.0,
+      "separated_puzzles": 0
+    },
+    "distribute_four": {
+      "full_candidate_fallbacks": 0,
+      "identical_known_positive_negatives": 8,
+      "puzzles": 6000,
+      "separated_fraction": 0.0,
+      "separated_puzzles": 0
+    },
+    "distribute_nine": {
+      "full_candidate_fallbacks": 0,
+      "identical_known_positive_negatives": 0,
+      "puzzles": 6000,
+      "separated_fraction": 0.0,
+      "separated_puzzles": 0
+    },
+    "in_center_single_out_center_single": {
+      "full_candidate_fallbacks": 237,
+      "identical_known_positive_negatives": 773,
+      "puzzles": 6000,
+      "separated_fraction": 0.9726666666666667,
+      "separated_puzzles": 5836
+    },
+    "in_distribute_four_out_center_single": {
+      "full_candidate_fallbacks": 882,
+      "identical_known_positive_negatives": 586,
+      "puzzles": 6000,
+      "separated_fraction": 0.8698333333333333,
+      "separated_puzzles": 5219
+    },
+    "left_center_single_right_center_single": {
+      "full_candidate_fallbacks": 0,
+      "identical_known_positive_negatives": 124,
+      "puzzles": 6000,
+      "separated_fraction": 1.0,
+      "separated_puzzles": 6000
+    },
+    "up_center_single_down_center_single": {
+      "full_candidate_fallbacks": 0,
+      "identical_known_positive_negatives": 110,
+      "puzzles": 6000,
+      "separated_fraction": 1.0,
+      "separated_puzzles": 6000
+    }
+  },
+  "limits": "Fixed public geometry and enclosing connected-ink components are priors. Geometric decomposition does not guarantee semantic component correctness.",
+  "optimizer_steps": 0,
+  "puzzles": 42000,
+  "split": "train",
+  "xml_read": false
+}

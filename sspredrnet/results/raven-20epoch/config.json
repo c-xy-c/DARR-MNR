@@ -1,0 +1,20 @@
+{
+  "epochs": 20,
+  "batch_size": 128,
+  "workers": 8,
+  "seed": 12345,
+  "lr": 0.001,
+  "weight_decay": 1e-05,
+  "margin": 0.7,
+  "device": "cuda:0",
+  "fp16": true,
+  "train_count": 42000,
+  "validation_count": 14000,
+  "selection_split": "val",
+  "test_opened_during_training": false,
+  "views_per_puzzle": 2,
+  "public_layout_prior": true,
+  "dataset_root": "RAVEN",
+  "run_dir": "raven-20epoch",
+  "resume": false
+}
