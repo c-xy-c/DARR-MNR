@@ -1,0 +1,42 @@
+{
+  "training_source_directory": "/LCT-AVR/TTT/sspredrnet-runs/support-program-v3-20261003-source",
+  "evaluation_source_directory": "/LCT-AVR/TTT/sspredrnet-runs/support-program-v3-evaluation-20261003-source",
+  "training_source_sha256": {
+    "program_ssl/model.py": "1655075cd1ab3483c23bbc9b51c15ae6ce423b1708e44dba7f9e0f3249a03ed9",
+    "program_ssl/data.py": "e4cc27a32ee482e588e773b2f1c549549c2478c864d7f463be802187dc04754b",
+    "program_ssl/train.py": "ccc5b3a89823ef31e02f609f1a3052510d8595ee0223141c7e991a71a103841e",
+    "program_ssl/check_contracts.py": "4747547133dd97f7012f20e02e0ccd83800991fbacda3b0dd512a5f8f52cac99"
+  },
+  "evaluation_source_sha256": {
+    "program_ssl/model.py": "9198c6c88e7870332c2ad5bf3f171d99e7e1c3a39354690fb32e99816394e9f4",
+    "program_ssl/evaluate.py": "c83350d2540701abec1bde1ccda97703b031f9f5d1cf214f28a546e0d1919dd2",
+    "program_ssl/feature_cache.py": "06c62f5b0458b6d30c3b6567d72de580690e1e8f7f7c52658e68c6a180a042a1",
+    "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+    "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+    "sspredrnet/model.py": "fd5a739e244a0a0a374cffe2fafa6aafad443aecc47c50a355bc286c061efa0b",
+    "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+    "sspredrnet/evaluate.py": "464155a4658c7240f2fcd49b5a01962a3203b2686ab250fc350e0eb9bb20d3fb"
+  },
+  "environment": {
+    "python": "3.12.14",
+    "torch": "2.11.0+cu128",
+    "numpy": "2.5.2",
+    "opencv": "5.0.0",
+    "cuda": "12.8",
+    "cudnn": 91900,
+    "gpu": "NVIDIA GeForce RTX 4090"
+  },
+  "lock_before_test_console": true,
+  "lock_before_test_result": true,
+  "new_test_used_for_selection": false,
+  "all_four_complete_8_epoch_runs": true,
+  "baseline_pretraining_budget_epochs": 20,
+  "additional_epochs_per_study": 8,
+  "additional_epochs_across_four_studies": 32,
+  "rejected_v1_program_epochs": 6,
+  "rejected_v2_program_epochs": 8,
+  "rejected_prototypes_excluded_from_claimed_result": true,
+  "evaluation_training_source_separate": true,
+  "published_duplicate_last_checkpoints_omitted": true,
+  "original_remote_resume_states_preserved": true
+}

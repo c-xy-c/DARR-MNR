@@ -71,12 +71,12 @@ def main():
               'source_training_budget_epochs': 20,
               'baseline_sha256': hashlib.sha256(Path(args.baseline).read_bytes()).hexdigest(),
               'perception_frozen': True, 'batchnorm_frozen': True,
-              'gradient_clip_norm': 1., 'version': 2,
+              'gradient_clip_norm': 1., 'version': 3,
               'reasoner_frozen': args.study != 'control',
               'train_count': 42000, 'validation_count': 14000,
               'selection_split': 'val', 'test_opened_during_training': False,
               'adaptation_uses_candidates': args.study in ('control', 'program-no-ssl'),
-              'training_split_confidence_uses_first_six_only': True,
+              'training_split_confidence_uses_observed_five_only': True,
               'new_ssl_uses_candidates': False}
     if args.resume:
         saved = json.loads((root / 'config.json').read_text())
@@ -167,7 +167,7 @@ def main():
             mean = alpha_sum / (2 * samples)
             deviation = (alpha_square_sum / (2 * samples) - mean.square()).clamp_min(0).sqrt()
             record['alpha_mean'], record['alpha_std'] = mean.tolist(), deviation.tolist()
-            record['operator_right_norm'] = float(model.operators.right.norm())
+            record['operator_right_norm'] = float(model.operators.right.detach().norm())
             record['operator_coefficients'] = model.operators.coefficients.detach().tolist()
         with (root / 'history.jsonl').open('a') as stream:
             stream.write(json.dumps(record) + '\n')

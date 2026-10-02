@@ -1,0 +1,6 @@
+{
+  "fixture_source": "/LCT-AVR/TTT/datasets/RAVEN/in_center_single_out_center_single/RAVEN_0_train.npz",
+  "changed_only_known_target": true,
+  "observed_view_pixels_changed": 0,
+  "independent": true
+}

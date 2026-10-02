@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 import torch
 from sspredrnet.data import Raven, CONFIGS
-from sspredrnet.views import component_views
+from sspredrnet.views import split_layers
 
 
 class KnownRowTraining(Raven):
@@ -23,9 +23,17 @@ class KnownRowTraining(Raven):
                            for p in raw]).astype(np.uint8)
         if random.random() < .5:
             panels = panels[:, :, ::-1].copy()
-        # Existing splitter checks eight context slots. Duplicating panels
-        # zero/one makes its confidence depend on exactly the first six.
-        views, _ = component_views(panels, path.parent.name)
+        # Only the five visible predictor inputs can decide a global fallback.
+        # The known target at index five is not an observed predictor input.
+        layers = [split_layers(p, path.parent.name) for p in panels]
+        if any(layer is None for layer in layers[:5]):
+            views = np.stack((panels, panels))
+        else:
+            # Ambiguous target/candidate panels fall back independently. They
+            # cannot change the views of support or query-prefix panels.
+            layers = [np.stack((p, p)) if layer is None else layer
+                      for p, layer in zip(panels, layers)]
+            views = np.stack(layers, axis=1)
         if not self.include_candidates:
             views = views[:, :6]
         return (torch.from_numpy(views.astype(np.float32)), -1,

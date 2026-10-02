@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -uo pipefail
-cd /LCT-AVR/TTT/sspredrnet-runs/support-program-v2-20261003-source
-experiment_root=/LCT-AVR/TTT/sspredrnet-runs/support-program-v2-20261003
+cd /LCT-AVR/TTT/sspredrnet-runs/support-program-v3-20261003-source
+experiment_root=/LCT-AVR/TTT/sspredrnet-runs/support-program-v3-20261003
 mkdir -p "$experiment_root"
 for study in program control program-no-ssl program-static; do
   /LCT-AVR/TTT/.venvs/sspredrnet/bin/python -u -m program_ssl.train \

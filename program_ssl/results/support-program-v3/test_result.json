@@ -1,0 +1,211 @@
+{
+  "selection_split": "val",
+  "source_training_budget_epochs": 20,
+  "additional_training_epochs": 8,
+  "final_lineage_epochs": 25,
+  "total_training_budget_epochs": 28,
+  "studies": {
+    "program": {
+      "best": {
+        "additional_epoch": 2,
+        "checkpoint_lineage_epoch": 19,
+        "calibrated_program_weight": 0.05,
+        "verification_mode": "support_evidence_ratio",
+        "checkpoint_sha256": "62813f9c4e66d56b8e301b55c9e57a6d2042c04e761417a706a5f731ccb98b78",
+        "test": {
+          "accuracy_macro": 70.25714285714285,
+          "accuracy_micro": 70.25714285714285,
+          "by_configuration": {
+            "center_single": 95.3,
+            "distribute_four": 45.4,
+            "distribute_nine": 33.25,
+            "in_center_single_out_center_single": 89.9,
+            "in_distribute_four_out_center_single": 38.35,
+            "left_center_single_right_center_single": 94.65,
+            "up_center_single_down_center_single": 94.95
+          },
+          "correct": 9836,
+          "total": 14000
+        },
+        "native_test_cache_parity_verified": true
+      },
+      "final": {
+        "additional_epoch": 8,
+        "checkpoint_lineage_epoch": 25,
+        "calibrated_program_weight": 0.05,
+        "verification_mode": "support_evidence_ratio",
+        "checkpoint_sha256": "7c23982ce729e9a369ffdc01ca93a242e855596e8489edf8e39d9b554e1c1e12",
+        "test": {
+          "accuracy_macro": 70.2642857142857,
+          "accuracy_micro": 70.26428571428572,
+          "by_configuration": {
+            "center_single": 95.3,
+            "distribute_four": 45.4,
+            "distribute_nine": 33.25,
+            "in_center_single_out_center_single": 89.85,
+            "in_distribute_four_out_center_single": 38.3,
+            "left_center_single_right_center_single": 94.7,
+            "up_center_single_down_center_single": 95.05
+          },
+          "correct": 9837,
+          "total": 14000
+        }
+      }
+    },
+    "control": {
+      "best": {
+        "additional_epoch": 3,
+        "checkpoint_lineage_epoch": 20,
+        "calibrated_program_weight": null,
+        "verification_mode": null,
+        "checkpoint_sha256": "8a383fcc609127a7c35bfb9c6a2ffe064ce5285f66d8525b3668385ec915928c",
+        "test": {
+          "accuracy_macro": 71.03571428571429,
+          "accuracy_micro": 71.03571428571429,
+          "by_configuration": {
+            "center_single": 96.5,
+            "distribute_four": 44.5,
+            "distribute_nine": 32.4,
+            "in_center_single_out_center_single": 92.1,
+            "in_distribute_four_out_center_single": 38.9,
+            "left_center_single_right_center_single": 96.35,
+            "up_center_single_down_center_single": 96.5
+          },
+          "correct": 9945,
+          "total": 14000
+        }
+      },
+      "final": {
+        "additional_epoch": 8,
+        "checkpoint_lineage_epoch": 25,
+        "calibrated_program_weight": null,
+        "verification_mode": null,
+        "checkpoint_sha256": "f201fc6c5788e66219003387a40370097305655238faf81324178384130c65df",
+        "test": {
+          "accuracy_macro": 71.41428571428571,
+          "accuracy_micro": 71.41428571428571,
+          "by_configuration": {
+            "center_single": 97.05,
+            "distribute_four": 44.85,
+            "distribute_nine": 33.5,
+            "in_center_single_out_center_single": 92.35,
+            "in_distribute_four_out_center_single": 39.1,
+            "left_center_single_right_center_single": 96.3,
+            "up_center_single_down_center_single": 96.75
+          },
+          "correct": 9998,
+          "total": 14000
+        }
+      }
+    },
+    "program-no-ssl": {
+      "best": {
+        "additional_epoch": 6,
+        "checkpoint_lineage_epoch": 23,
+        "calibrated_program_weight": 0.05,
+        "verification_mode": "support_evidence_ratio",
+        "checkpoint_sha256": "10e59c0a9264b170385507859f5c5a1f3115ce898e001dfda303139ea13639e4",
+        "test": {
+          "accuracy_macro": 70.32857142857144,
+          "accuracy_micro": 70.32857142857142,
+          "by_configuration": {
+            "center_single": 95.25,
+            "distribute_four": 45.5,
+            "distribute_nine": 33.45,
+            "in_center_single_out_center_single": 90.0,
+            "in_distribute_four_out_center_single": 38.45,
+            "left_center_single_right_center_single": 94.7,
+            "up_center_single_down_center_single": 94.95
+          },
+          "correct": 9846,
+          "total": 14000
+        }
+      },
+      "final": {
+        "additional_epoch": 8,
+        "checkpoint_lineage_epoch": 25,
+        "calibrated_program_weight": 0.05,
+        "verification_mode": "support_evidence_ratio",
+        "checkpoint_sha256": "efe7cc1360851db6c574f38387b3b1ad03a2f824947271dc61cae6c678936756",
+        "test": {
+          "accuracy_macro": 70.31428571428572,
+          "accuracy_micro": 70.31428571428572,
+          "by_configuration": {
+            "center_single": 95.25,
+            "distribute_four": 45.5,
+            "distribute_nine": 33.45,
+            "in_center_single_out_center_single": 90.0,
+            "in_distribute_four_out_center_single": 38.4,
+            "left_center_single_right_center_single": 94.65,
+            "up_center_single_down_center_single": 94.95
+          },
+          "correct": 9844,
+          "total": 14000
+        }
+      }
+    },
+    "program-static": {
+      "best": {
+        "additional_epoch": 2,
+        "checkpoint_lineage_epoch": 19,
+        "calibrated_program_weight": 0.1,
+        "verification_mode": "support_evidence_ratio",
+        "checkpoint_sha256": "b413687aebaae781a0fd5428b64a1381bc5e613cfe436d9d4bbfc6ebc15d86df",
+        "test": {
+          "accuracy_macro": 70.37857142857142,
+          "accuracy_micro": 70.37857142857143,
+          "by_configuration": {
+            "center_single": 95.3,
+            "distribute_four": 45.6,
+            "distribute_nine": 33.4,
+            "in_center_single_out_center_single": 90.1,
+            "in_distribute_four_out_center_single": 38.45,
+            "left_center_single_right_center_single": 94.7,
+            "up_center_single_down_center_single": 95.1
+          },
+          "correct": 9853,
+          "total": 14000
+        }
+      },
+      "final": {
+        "additional_epoch": 8,
+        "checkpoint_lineage_epoch": 25,
+        "calibrated_program_weight": 0.1,
+        "verification_mode": "support_evidence_ratio",
+        "checkpoint_sha256": "bf625aa2ac698e249858fbb760e2811382b4c3499de46c7e5e30817794e4d3fb",
+        "test": {
+          "accuracy_macro": 70.37857142857142,
+          "accuracy_micro": 70.37857142857143,
+          "by_configuration": {
+            "center_single": 95.3,
+            "distribute_four": 45.6,
+            "distribute_nine": 33.4,
+            "in_center_single_out_center_single": 90.1,
+            "in_distribute_four_out_center_single": 38.45,
+            "left_center_single_right_center_single": 94.7,
+            "up_center_single_down_center_single": 95.1
+          },
+          "correct": 9853,
+          "total": 14000
+        }
+      }
+    }
+  },
+  "baseline_test": {
+    "accuracy_macro": 70.37857142857142,
+    "accuracy_micro": 70.37857142857143,
+    "by_configuration": {
+      "center_single": 95.3,
+      "distribute_four": 45.6,
+      "distribute_nine": 33.4,
+      "in_center_single_out_center_single": 90.1,
+      "in_distribute_four_out_center_single": 38.45,
+      "left_center_single_right_center_single": 94.7,
+      "up_center_single_down_center_single": 95.1
+    },
+    "correct": 9853,
+    "total": 14000
+  },
+  "requested_70_percent_gate_met": true,
+  "evaluation_cache_fingerprint": "5211d625466e827d71e1073da21f8b28c7d1b6ab8b344556c4f29d5121bf762e"
+}

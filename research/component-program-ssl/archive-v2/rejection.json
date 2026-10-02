@@ -1,0 +1,16 @@
+{
+  "status": "rejected_before_test",
+  "reason": "Global component fallback examined the masked sixth panel and could change the first five predictor inputs.",
+  "fixture": "in_center_single_out_center_single/RAVEN_0_train.npz",
+  "intervention": "Replace only the known sixth panel by white pixels.",
+  "v2_observed_view_pixels_changed": 2671,
+  "v3_observed_view_pixels_changed": 0,
+  "program_epochs_completed": 8,
+  "program_best_epoch": 2,
+  "program_best_validation_accuracy": 69.83571428571429,
+  "control_stopped_intentionally": true,
+  "control_exit_code": 130,
+  "test_evaluated": false,
+  "replacement": "support-program-v3-20261003",
+  "snapshots": "Executable Python snapshots retained locally under ignored archive-v2 paths and in the immutable remote source directory."
+}

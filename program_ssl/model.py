@@ -73,13 +73,16 @@ class ComponentProgram(nn.Module):
     """Frozen baseline plus candidate-independent completion programs."""
     def __init__(self, *, use_program=True, program_weight=.1,
                  support_temperature=.15, verify_temperature=.15,
-                 static_program=False, margin=.7):
+                 static_program=False, margin=.7, verification_mode='posterior'):
         super().__init__()
         self.reasoner = Reasoner()
         self.use_program, self.static_program = use_program, static_program
         self.program_weight = program_weight
         self.support_temperature, self.verify_temperature = support_temperature, verify_temperature
         self.margin = margin
+        if verification_mode not in ('posterior', 'support_evidence_ratio'):
+            raise ValueError('unknown verification energy')
+        self.verification_mode = verification_mode
         if use_program:
             self.operators = CompletionOperators()
             if not static_program:
@@ -124,6 +127,13 @@ class ComponentProgram(nn.Module):
         logits = alpha.clamp_min(1e-12).log()[:, :, None] - energies / self.verify_temperature
         return -self.verify_temperature * torch.logsumexp(logits, dim=1)
 
+    def verification_energy(self, prefix, targets, alpha):
+        posterior = self.verify(prefix, targets, alpha)
+        if self.verification_mode == 'posterior':
+            return posterior
+        uniform = torch.full_like(alpha, 1 / alpha.shape[-1])
+        return posterior - self.verify(prefix, targets, uniform)
+
     def training_errors(self, features, program_error=None):
         targets = torch.cat((features[:, 5:6], features[:, 8:]), 1)
         n, choices = targets.shape[:2]
@@ -150,7 +160,7 @@ class ComponentProgram(nn.Module):
         alpha = joint_log.softmax(-1)
         if intervention == 'swapped_program':
             alpha = alpha.roll(2, 0)
-        program = self.verify(features[:, 6:8], features[:, 8:], alpha)
+        program = self.verification_energy(features[:, 6:8], features[:, 8:], alpha)
         return base + self.program_weight * program.reshape(batch, 2, 8).mean(1)
 
     def ssl(self, views, configurations):

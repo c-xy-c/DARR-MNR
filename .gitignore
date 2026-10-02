@@ -16,3 +16,4 @@ ProbSet/
 # Local literature extracts and rejected executable prototypes
 research/component-program-ssl/sources/*.txt
 research/component-program-ssl/archive-v1/*.py
+research/component-program-ssl/archive-v2/*.py

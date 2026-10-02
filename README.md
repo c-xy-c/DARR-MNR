@@ -72,3 +72,12 @@ RAVEN experiment achieved 70.38% test accuracy for the validation-selected
 checkpoint and 67.66% at epoch 20. The method uses public layout priors and
 two views per puzzle. Training commands, checkpoints, verification records,
 and comparison limits are documented in [sspredrnet/README.md](sspredrnet/README.md).
+
+[program_ssl/](program_ssl/) studies two additions in a shared executable
+completion energy framework: CECS self-supervision and SER-PaV support evidence
+verification. Eight-epoch adaptation from the frozen component-view baseline
+achieved 70.26% test accuracy after validation selection. Known-panel retrieval
+improved, while candidate accuracy remained below the 70.38% baseline and
+original-reasoner continuation. The [contribution definitions](research/component-program-ssl/contributions.md),
+[complete results](research/component-program-ssl/results.md), checkpoints and
+locked evaluator document those limits.

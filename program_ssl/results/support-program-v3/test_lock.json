@@ -1,0 +1,42 @@
+{
+  "selection_split": "val",
+  "new_test_not_used_for_model_selection": true,
+  "studies": {
+    "program": {
+      "best": "62813f9c4e66d56b8e301b55c9e57a6d2042c04e761417a706a5f731ccb98b78",
+      "final": "7c23982ce729e9a369ffdc01ca93a242e855596e8489edf8e39d9b554e1c1e12"
+    },
+    "control": {
+      "best": "8a383fcc609127a7c35bfb9c6a2ffe064ce5285f66d8525b3668385ec915928c",
+      "final": "f201fc6c5788e66219003387a40370097305655238faf81324178384130c65df"
+    },
+    "program-no-ssl": {
+      "best": "10e59c0a9264b170385507859f5c5a1f3115ce898e001dfda303139ea13639e4",
+      "final": "efe7cc1360851db6c574f38387b3b1ad03a2f824947271dc61cae6c678936756"
+    },
+    "program-static": {
+      "best": "b413687aebaae781a0fd5428b64a1381bc5e613cfe436d9d4bbfc6ebc15d86df",
+      "final": "bf625aa2ac698e249858fbb760e2811382b4c3499de46c7e5e30817794e4d3fb"
+    }
+  },
+  "config_sha256": {
+    "program": "b948f29a4fe78b9f603eaa6a64da36d9a358fb28df7f443ad525c7526e999127",
+    "control": "e0661f54acde02a6a8d0bca99c3d8ddd9933fed2f65a5443c51f6bbded20d4fa",
+    "program-no-ssl": "0fc895776fd6b902ff70786be24b81d368582b1650b21922a323fde837ef79bd",
+    "program-static": "9b001e2210c9a7c42feba111fae17baf579533afa57ad8d5163633e9e6f6f2c0"
+  },
+  "model_source_sha256": "9198c6c88e7870332c2ad5bf3f171d99e7e1c3a39354690fb32e99816394e9f4",
+  "evaluation_source_sha256": "c83350d2540701abec1bde1ccda97703b031f9f5d1cf214f28a546e0d1919dd2",
+  "evaluation_dependencies_sha256": {
+    "program_ssl/model.py": "9198c6c88e7870332c2ad5bf3f171d99e7e1c3a39354690fb32e99816394e9f4",
+    "program_ssl/evaluate.py": "c83350d2540701abec1bde1ccda97703b031f9f5d1cf214f28a546e0d1919dd2",
+    "program_ssl/feature_cache.py": "06c62f5b0458b6d30c3b6567d72de580690e1e8f7f7c52658e68c6a180a042a1",
+    "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+    "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+    "sspredrnet/model.py": "fd5a739e244a0a0a374cffe2fafa6aafad443aecc47c50a355bc286c061efa0b",
+    "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+    "sspredrnet/evaluate.py": "464155a4658c7240f2fcd49b5a01962a3203b2686ab250fc350e0eb9bb20d3fb"
+  },
+  "calibration_sha256": "d988f7498f34bd31419547455feaf53c594856aa3c87f98a9dba80eb31bfc0c3",
+  "validation_audit_sha256": "851f9dfbf865a682e5a2d6bcb75995c6883e9284f8b7d2349f44107a9ac2e6bb"
+}

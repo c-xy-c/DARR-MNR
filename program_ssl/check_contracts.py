@@ -5,6 +5,7 @@ from pathlib import Path
 import random
 import tempfile
 import numpy as np
+import cv2
 import torch
 from sspredrnet.model import SSPredRNet
 from .model import ComponentProgram
@@ -35,6 +36,26 @@ def main():
         changed, _, _ = dataset[0]
         assert torch.equal(known, changed)
         assert tuple(known.shape) == (2, 6, 80, 80)
+        directory = Path(temporary) / 'in_center_single_out_center_single'
+        directory.mkdir()
+        panel = np.full((80, 80), 255, np.uint8)
+        cv2.rectangle(panel, (10, 10), (70, 70), 0, 2)
+        cv2.circle(panel, (40, 40), 7, 0, 2)
+        nested = np.repeat(cv2.resize(panel, (160, 160),
+                                      interpolation=cv2.INTER_NEAREST)[None], 16, axis=0)
+        sample = directory / 'RAVEN_0_train.npz'
+        np.savez(sample, image=nested)
+        dataset = KnownRowTraining(temporary)
+        index = next(i for i, p in enumerate(dataset.paths)
+                     if p.parent.name == directory.name)
+        random.seed(12345)
+        before, _, _ = dataset[index]
+        nested[5] = 255  # Changes the target from separable to ambiguous.
+        np.savez(sample, image=nested)
+        random.seed(12345)
+        after, _, _ = dataset[index]
+        assert torch.equal(before[:, :5], after[:, :5])
+        assert not torch.equal(before[:, 5], after[:, 5])
     original = SSPredRNet().cuda().eval()
     original.load_state_dict(state, strict=True)
     model = ComponentProgram().cuda().eval()
@@ -85,17 +106,26 @@ def main():
         assert float((active - unif).abs().max()) > 0
         assert float((active - removed).abs().max()) > 0
         assert torch.allclose(model(reordered), active[:, permutation], atol=1e-6, rtol=1e-6)
+        model.verification_mode = 'support_evidence_ratio'
+        ratio = model(images)
+        ratio_uniform = model(images, intervention='uniform_program')
+        assert torch.equal(ratio_uniform, removed)
+        assert float((ratio - removed).abs().max()) > 0
+        assert torch.allclose(model(reordered), ratio[:, permutation], atol=1e-6, rtol=1e-6)
     report = {'removed_program_matches_baseline_max_difference': difference,
               'candidate_permutation_equivariant_before_and_after_updates': True,
               'ssl_rejects_candidate_containing_inputs': True,
               'training_preprocessing_independent_of_last_ten_panels': True,
               'training_sample_does_not_require_answer_field': True,
+              'raw_target_cannot_change_observed_views_in_nested_layout': True,
               'compiled_weights_and_query_predictions_independent_of_query_target': True,
               'support_programs_vary_before_training': True,
               'all_trainable_parameters_have_finite_fp16_gradients': True,
               'operators_and_prior_have_nonzero_gradients': True,
               'active_minus_uniform_max_score_change': float((active - unif).abs().max()),
               'active_minus_no_program_max_score_change': float((active - removed).abs().max())}
+    report['evidence_ratio_uniform_exactly_removes_context_evidence'] = True
+    report['evidence_ratio_candidate_permutation_equivariant'] = True
     Path(args.output).write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report), flush=True)
 

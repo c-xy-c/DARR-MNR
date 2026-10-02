@@ -1,0 +1,15 @@
+{
+  "accuracy_macro": 69.73571428571428,
+  "accuracy_micro": 69.73571428571428,
+  "by_configuration": {
+    "center_single": 94.15,
+    "distribute_four": 46.75,
+    "distribute_nine": 34.55,
+    "in_center_single_out_center_single": 90.05,
+    "in_distribute_four_out_center_single": 36.55,
+    "left_center_single_right_center_single": 92.9,
+    "up_center_single_down_center_single": 93.2
+  },
+  "correct": 9763,
+  "total": 14000
+}

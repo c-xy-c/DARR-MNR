@@ -1,0 +1,6 @@
+{
+  "epochs": 8,
+  "best_epoch": 2,
+  "best_validation_accuracy": 69.85714285714286,
+  "test_evaluated": false
+}

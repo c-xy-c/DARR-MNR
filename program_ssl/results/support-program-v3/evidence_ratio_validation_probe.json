@@ -1,0 +1,90 @@
+{
+  "split": "val",
+  "checkpoint_selected_before_probe": true,
+  "candidate_scores": {
+    "posterior_minus_uniform": {
+      "0.05": {
+        "correct": 9824,
+        "changed": 45,
+        "vs_baseline": {
+          "full_minus_intervention_pp": 0.0,
+          "paired_bootstrap_95_ci_pp": [
+            -0.07857142857142857,
+            0.07857142857142857
+          ],
+          "help": 17,
+          "hurt": 17
+        }
+      },
+      "0.1": {
+        "correct": 9823,
+        "changed": 87,
+        "vs_baseline": {
+          "full_minus_intervention_pp": -0.0071428571428571435,
+          "paired_bootstrap_95_ci_pp": [
+            -0.12142857142857143,
+            0.10714285714285714
+          ],
+          "help": 31,
+          "hurt": 32
+        }
+      },
+      "0.2": {
+        "correct": 9802,
+        "changed": 179,
+        "vs_baseline": {
+          "full_minus_intervention_pp": -0.15714285714285714,
+          "paired_bootstrap_95_ci_pp": [
+            -0.32142857142857145,
+            0.0
+          ],
+          "help": 53,
+          "hurt": 75
+        }
+      }
+    },
+    "swapped_minus_uniform": {
+      "0.05": {
+        "correct": 9821,
+        "changed": 46,
+        "vs_baseline": {
+          "full_minus_intervention_pp": -0.02142857142857143,
+          "paired_bootstrap_95_ci_pp": [
+            -0.10714285714285714,
+            0.06428571428571428
+          ],
+          "help": 16,
+          "hurt": 19
+        }
+      },
+      "0.1": {
+        "correct": 9813,
+        "changed": 106,
+        "vs_baseline": {
+          "full_minus_intervention_pp": -0.07857142857142857,
+          "paired_bootstrap_95_ci_pp": [
+            -0.2,
+            0.04285714285714286
+          ],
+          "help": 32,
+          "hurt": 43
+        }
+      },
+      "0.2": {
+        "correct": 9807,
+        "changed": 202,
+        "vs_baseline": {
+          "full_minus_intervention_pp": -0.12142857142857141,
+          "paired_bootstrap_95_ci_pp": [
+            -0.29285714285714287,
+            0.043035714285711686
+          ],
+          "help": 64,
+          "hurt": 81
+        }
+      }
+    }
+  },
+  "base_correct": 9824,
+  "total": 14000
+}

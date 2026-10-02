@@ -1,0 +1,28 @@
+{
+  "factorization_exact": true,
+  "cached_frozen_encoder_control_parity": {
+    "accuracy_macro": 71.27857142857142,
+    "accuracy_micro": 71.27857142857142,
+    "by_configuration": {
+      "center_single": 96.85,
+      "distribute_four": 46.6,
+      "distribute_nine": 34.05,
+      "in_center_single_out_center_single": 91.9,
+      "in_distribute_four_out_center_single": 36.95,
+      "left_center_single_right_center_single": 96.0,
+      "up_center_single_down_center_single": 96.6
+    },
+    "correct": 9979,
+    "total": 14000
+  },
+  "dependencies": {
+    "program_ssl/model.py": "1655075cd1ab3483c23bbc9b51c15ae6ce423b1708e44dba7f9e0f3249a03ed9",
+    "program_ssl/evaluate.py": "0fcaa489048993f1bdfb363043cd2e067be4108eb5c79b421d38a7e34ee0a074",
+    "program_ssl/feature_cache.py": "ce91ee89073ce29c267cb874ff4425e99f086d01fe00cb2c68adacdcb5811209",
+    "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+    "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+    "sspredrnet/model.py": "fd5a739e244a0a0a374cffe2fafa6aafad443aecc47c50a355bc286c061efa0b",
+    "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+    "sspredrnet/evaluate.py": "464155a4658c7240f2fcd49b5a01962a3203b2686ab250fc350e0eb9bb20d3fb"
+  }
+}

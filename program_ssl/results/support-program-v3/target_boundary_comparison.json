@@ -1,0 +1,16 @@
+{
+  "fixture": "/LCT-AVR/TTT/datasets/RAVEN/in_center_single_out_center_single/RAVEN_0_train.npz",
+  "fixture_sha256": "5d0beb44d70d293b736cfce423fcee79b375483031c9f3755a893eb5227f56b0",
+  "v2_source_sha256": "576c880c1c9c11445ab12be013a9e6010e038b55cf6cd129cca54a9cc53f14d9",
+  "results": {
+    "v2": {
+      "observed_view_pixels_changed": 2671,
+      "target_view_changed": true
+    },
+    "v3": {
+      "observed_view_pixels_changed": 0,
+      "target_view_changed": true
+    }
+  },
+  "only_query_target_replaced": true
+}

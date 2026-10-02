@@ -1,0 +1,13 @@
+{
+  "removed_program_matches_baseline_max_difference": 0.0,
+  "candidate_permutation_equivariant_before_and_after_updates": true,
+  "ssl_rejects_candidate_containing_inputs": true,
+  "training_preprocessing_independent_of_last_ten_panels": true,
+  "training_sample_does_not_require_answer_field": true,
+  "compiled_weights_and_query_predictions_independent_of_query_target": true,
+  "support_programs_vary_before_training": true,
+  "all_trainable_parameters_have_finite_fp16_gradients": true,
+  "operators_and_prior_have_nonzero_gradients": true,
+  "active_minus_uniform_max_score_change": 6.012618541717529e-05,
+  "active_minus_no_program_max_score_change": 0.001599535346031189
+}

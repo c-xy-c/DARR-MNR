@@ -1,0 +1,44 @@
+{
+  "baseline": {
+    "complete_validation_equal": true,
+    "counts": {
+      "accuracy_macro": 70.17142857142856,
+      "accuracy_micro": 70.17142857142858,
+      "by_configuration": {
+        "center_single": 94.95,
+        "distribute_four": 46.65,
+        "distribute_nine": 33.6,
+        "in_center_single_out_center_single": 90.85,
+        "in_distribute_four_out_center_single": 36.45,
+        "left_center_single_right_center_single": 94.25,
+        "up_center_single_down_center_single": 94.45
+      },
+      "correct": 9824,
+      "total": 14000
+    },
+    "validation_generator_equal": true,
+    "cuda_rng_unchanged": true
+  },
+  "program": {
+    "complete_validation_equal": true,
+    "counts": {
+      "accuracy_macro": 69.82857142857144,
+      "accuracy_micro": 69.82857142857142,
+      "by_configuration": {
+        "center_single": 94.3,
+        "distribute_four": 46.9,
+        "distribute_nine": 34.5,
+        "in_center_single_out_center_single": 90.2,
+        "in_distribute_four_out_center_single": 36.7,
+        "left_center_single_right_center_single": 92.95,
+        "up_center_single_down_center_single": 93.25
+      },
+      "correct": 9776,
+      "total": 14000
+    },
+    "validation_generator_equal": true,
+    "cuda_rng_unchanged": true
+  },
+  "cache_fingerprint": "efe707642b192a1156cf5794abeca94044d60b3eea08d7e442b2ec95d6d0f4e0",
+  "training_source_unchanged": true
+}

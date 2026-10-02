@@ -1,0 +1,36 @@
+{
+  "split": "val",
+  "ranking_counts_grid": {
+    "program": {
+      "0.05": 9794,
+      "0.1": 9776,
+      "0.2": 9731
+    },
+    "uniform_program": {
+      "0.05": 9798,
+      "0.1": 9785,
+      "0.2": 9770
+    }
+  },
+  "completion_metrics": {
+    "program": {
+      "positive_energy": 0.21019411487238748,
+      "conditional_nce": 4.176856408527919,
+      "loss": 4.387050530569894,
+      "retrieval_accuracy": 0.14157142858845848
+    },
+    "program-no-ssl": {
+      "positive_energy": 0.15667329597473145,
+      "conditional_nce": 4.411206671851022,
+      "loss": 4.567879982539585,
+      "retrieval_accuracy": 0.12017857146263122
+    },
+    "uniform_program": {
+      "positive_energy": 0.2645434960297176,
+      "conditional_nce": 4.228682649884905,
+      "loss": 4.4932261627742225,
+      "retrieval_accuracy": 0.13128571428571428
+    }
+  },
+  "total": 14000
+}
