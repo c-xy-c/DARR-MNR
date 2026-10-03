@@ -9,26 +9,30 @@
   "initial_scores_bitwise_equal_to_anchor": true,
   "heldout_target_cannot_change_visible_encoding_or_compilation": true,
   "object_masking_keeps_four_complete_visible_panels": true,
+  "ssl_does_not_mutate_input_pixels_or_proposals": true,
+  "exact_pixel_groups_match_hamming_zero_including_signed_zero": true,
   "fixed_object_targets_are_fp32_and_bitwise_equal_under_autocast": true,
   "ssl_rejects_candidates": true,
   "frozen_anchor_buffers_unchanged": true,
   "all_trainable_parameters_have_finite_gradients": true,
+  "activation_checkpointing_preserves_outputs_and_gradients": true,
+  "activation_checkpointing_gradient_max_error": 0.0,
   "gradient_norms": {
-    "perception": 0.21764685213565826,
-    "compiler": 0.028621846809983253,
-    "pav": 0.30199506878852844,
-    "masked_object": 0.5001177191734314
+    "perception": 0.21147146821022034,
+    "compiler": 0.028542175889015198,
+    "pav": 0.3017207384109497,
+    "masked_object": 0.4941178858280182
   },
   "losses": [
-    0.9388340711593628,
-    0.771040141582489,
-    0.6903927326202393
+    0.9407718777656555,
+    0.771725594997406,
+    0.6895572543144226
   ],
   "training_statistics": {
-    "retrieval": 0.5284231901168823,
-    "completion": 1.1101794242858887,
-    "masked_object": 0.5095160007476807,
-    "reference_error": 0.3086269795894623,
+    "retrieval": 0.5284232497215271,
+    "completion": 1.1094646453857422,
+    "masked_object": 0.5018754005432129,
+    "reference_error": 0.3070389926433563,
     "eligible_queries": 8,
     "retrieval_correct": 6,
     "proposal_overflow_panels": 0
@@ -36,8 +40,8 @@
   "candidate_permutation_max_error": 0.0,
   "target_object_permutation_max_error": 1.1920928955078125e-07,
   "support_changes_dynamic_parameters_max": 0.08646350353956223,
-  "post_update_score_change_max": 3.255903720855713e-06,
-  "trained_gate": -0.00039663005736656487,
+  "post_update_score_change_max": 2.9653310775756836e-06,
+  "trained_gate": -0.0003588212130125612,
   "blank_panels_and_no_legal_negatives_finite": true,
   "proposal_overflow_merges_and_records": true
 }

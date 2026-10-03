@@ -1,0 +1,49 @@
+{
+  "archive": "RAVEN-10000.zip",
+  "archive_sha256": "db866f6c4395d7d5f8bd0f51a8ee97493836ef750692e795293f71132ff3fddc",
+  "source_drive_id": "1fUSmWZpCsoP6sLsmqrxbnD_RO2o1zj1S",
+  "safe_extraction_checked": true,
+  "configuration_counts": {
+    "center_single": {
+      "val": 2000,
+      "train": 6000,
+      "test": 2000
+    },
+    "distribute_four": {
+      "val": 2000,
+      "train": 6000,
+      "test": 2000
+    },
+    "distribute_nine": {
+      "val": 2000,
+      "train": 6000,
+      "test": 2000
+    },
+    "in_center_single_out_center_single": {
+      "val": 2000,
+      "train": 6000,
+      "test": 2000
+    },
+    "in_distribute_four_out_center_single": {
+      "val": 2000,
+      "train": 6000,
+      "test": 2000
+    },
+    "left_center_single_right_center_single": {
+      "val": 2000,
+      "train": 6000,
+      "test": 2000
+    },
+    "up_center_single_down_center_single": {
+      "val": 2000,
+      "train": 6000,
+      "test": 2000
+    }
+  },
+  "total_counts": {
+    "train": 42000,
+    "val": 14000,
+    "test": 14000
+  },
+  "test_contents_opened": false
+}

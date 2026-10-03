@@ -9,6 +9,7 @@ from sspredrnet.data import CONFIGS, loader
 from .data import ObjectRaven, to_device
 from .model import StructuredCompletion
 from .train import anchor_hash, digest, source_hashes
+from .runtime import resolve_device
 
 
 def summary(predictions, labels, configs):
@@ -85,7 +86,10 @@ def main():
     parser.add_argument('--device', default='cuda:0')
     parser.add_argument('--workers', type=int, default=8)
     args = parser.parse_args()
-    root, device = Path(args.run_dir), torch.device(args.device)
+    root, device = Path(args.run_dir), resolve_device(args.device)
+    config = json.loads((root / 'config.json').read_text())
+    if str(device) != config['device']:
+        raise RuntimeError('sealed evaluation must use the training execution device')
     output = root / f'{args.split}_evaluation.json'
     if output.exists():
         raise FileExistsError('preserve existing evaluation record')

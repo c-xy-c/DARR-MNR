@@ -1,0 +1,61 @@
+{
+  "fixture": "128 official RAVEN training puzzles, seven configurations",
+  "full_raven_evaluation": false,
+  "device": "mps",
+  "torch": "2.11.0",
+  "activation_checkpointing": true,
+  "precision": "float16 autocast with MPS GradScaler",
+  "steps": [
+    {
+      "step_seconds": 3.0664092089864425,
+      "loss": 0.627187967300415,
+      "driver_bytes": 6206881792,
+      "current_bytes": 317630720,
+      "statistics": {
+        "retrieval": 0.22737626731395721,
+        "completion": 2.0348966121673584,
+        "masked_object": 1.9632201194763184,
+        "reference_error": 0.4823894500732422,
+        "eligible_queries": 256,
+        "retrieval_correct": 234,
+        "proposal_overflow_panels": 0
+      }
+    },
+    {
+      "step_seconds": 2.785653833998367,
+      "loss": 0.4716428220272064,
+      "driver_bytes": 7458881536,
+      "current_bytes": 313697280,
+      "statistics": {
+        "retrieval": 0.22737625241279602,
+        "completion": 1.4477887153625488,
+        "masked_object": 0.9948768615722656,
+        "reference_error": 0.3964371681213379,
+        "eligible_queries": 256,
+        "retrieval_correct": 234,
+        "proposal_overflow_panels": 0
+      }
+    },
+    {
+      "step_seconds": 2.7234807920176536,
+      "loss": 0.4005105495452881,
+      "driver_bytes": 7454687232,
+      "current_bytes": 314101760,
+      "statistics": {
+        "retrieval": 0.22737625241279602,
+        "completion": 1.1585570573806763,
+        "masked_object": 0.5727856755256653,
+        "reference_error": 0.36210596561431885,
+        "eligible_queries": 256,
+        "retrieval_correct": 234,
+        "proposal_overflow_panels": 0
+      }
+    }
+  ],
+  "finite_forward_backward": true,
+  "pack_unchanged_after_ssl": true,
+  "recommended_max_bytes": 12713115648,
+  "metal_and_cpu_rng_restoration_bitwise_equal": true,
+  "fp32_validation_forward_finite": true,
+  "duplicate_filter": "exact_cpu_byte_groups"
+}

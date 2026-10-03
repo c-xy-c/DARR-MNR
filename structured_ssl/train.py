@@ -12,14 +12,16 @@ import time
 import numpy as np
 import torch
 
-from sspredrnet.checkpoint import rng_state, restore_rng, save_checkpoint
+from sspredrnet.checkpoint import save_checkpoint
 from sspredrnet.data import CONFIGS, loader
 from .data import ObjectRaven, to_device
 from .model import StructuredCompletion
+from .runtime import resolve_device, execution_record, rng_state, restore_rng
 
 
 SOURCE_FILES = ('structured_ssl/model.py', 'structured_ssl/data.py', 'structured_ssl/train.py',
                 'structured_ssl/evaluate.py', 'attention_ssl/model.py', 'program_ssl/model.py',
+                'structured_ssl/runtime.py',
                 'program_ssl/data.py', 'sspredrnet/model.py', 'sspredrnet/layers.py',
                 'sspredrnet/views.py', 'sspredrnet/data.py', 'sspredrnet/checkpoint.py')
 
@@ -67,13 +69,12 @@ def main():
     parser.add_argument('--workers', type=int, default=8)
     parser.add_argument('--seed', type=int, default=12345)
     parser.add_argument('--lr', type=float, default=3e-4)
+    parser.add_argument('--device', default='cuda:0')
     parser.add_argument('--resume', action='store_true')
     args = parser.parse_args()
     if args.epochs < 1 or args.batch_size < 1 or args.workers < 0 or not math.isfinite(args.lr) or args.lr <= 0:
         parser.error('epochs, batch size and lr must be positive; workers nonnegative')
-    if not torch.cuda.is_available():
-        raise RuntimeError('full RAVEN adaptation requires CUDA')
-    device, root = torch.device('cuda:0'), Path(args.run_dir)
+    device, root = resolve_device(args.device), Path(args.run_dir)
     if not args.resume:
         root.mkdir(parents=True, exist_ok=False)
     random.seed(args.seed)
@@ -98,13 +99,14 @@ def main():
     selection_budget = anchor_config['total_training_selection_budget_epochs']
     parameters = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.Adam(parameters, lr=args.lr, weight_decay=1e-5)
-    scaler = torch.amp.GradScaler('cuda')
+    scaler = torch.amp.GradScaler(device.type)
     train, validation = ObjectRaven(args.dataset_root, 'train'), ObjectRaven(args.dataset_root, 'val')
     if len(train) != 42000 or len(validation) != 14000:
         raise RuntimeError('complete RAVEN 42000/14000 splits required')
     train_generator = torch.Generator().manual_seed(args.seed)
     val_generator = torch.Generator().manual_seed(args.seed + 1)
     config = {**vars(args), 'schema_version': 1, 'method': 'structured-object-support-pav',
+              'execution': execution_record(device), 'perception_activation_checkpointing': True,
               'source_epoch': source_epoch, 'anchor_checkpoint_epoch': anchor['epoch'],
               'anchor_training_selection_budget_epochs': selection_budget,
               'total_training_selection_budget_epochs': selection_budget + args.epochs,
@@ -132,7 +134,7 @@ def main():
             raise RuntimeError('resume checkpoint changed anchor')
         optimizer.load_state_dict(checkpoint['optimizer'])
         scaler.load_state_dict(checkpoint['scaler'])
-        restore_rng(checkpoint['rng'], train_generator, val_generator)
+        restore_rng(checkpoint['rng'], train_generator, val_generator, device=device)
         start, best, best_epoch = checkpoint['epoch'], checkpoint['best_accuracy'], checkpoint['best_epoch']
         history = [json.loads(line) for line in (root / 'history.jsonl').read_text().splitlines()]
         if [line['epoch'] for line in history] != list(range(1, start + 1)):
@@ -151,7 +153,7 @@ def main():
         for pack, _, configs in loader(train, args.batch_size, args.workers, train_generator, training=True):
             pack, configs = to_device(pack, device), configs.to(device)
             optimizer.zero_grad(set_to_none=True)
-            with torch.autocast(device_type='cuda', dtype=torch.float16):
+            with torch.autocast(device_type=device.type, dtype=torch.float16):
                 loss, statistics = model.ssl(pack, configs)
             if not torch.isfinite(loss):
                 raise RuntimeError('nonfinite loss')
@@ -167,6 +169,10 @@ def main():
             summed += float(loss.detach()) * batch
             for key, value in statistics.items():
                 metrics[key] = metrics.get(key, 0.) + value * (1 if key.endswith(('queries', 'correct', 'panels')) else batch)
+            if samples % (args.batch_size * 32) == 0:
+                print(json.dumps({'phase': 'training', 'epoch': epoch + 1, 'training_seen': samples,
+                                  'training_total': 42000, 'mean_loss': summed / samples,
+                                  'elapsed_seconds': time.monotonic() - started}), flush=True)
         if samples != 42000:
             raise RuntimeError('incomplete training epoch')
         model.eval()
@@ -176,7 +182,7 @@ def main():
             best, best_epoch = observed['accuracy_macro'], epoch + 1
         checkpoint = {'epoch': epoch + 1, 'source_epoch': source_epoch, 'model': model.state_dict(),
                       'optimizer': optimizer.state_dict(), 'scaler': scaler.state_dict(),
-                      'rng': rng_state(train_generator, val_generator), 'best_accuracy': best, 'best_epoch': best_epoch}
+                      'rng': rng_state(train_generator, val_generator, device=device), 'best_accuracy': best, 'best_epoch': best_epoch}
         save_checkpoint(checkpoint, root / 'last.pt')
         if improved:
             shutil.copyfile(root / 'last.pt', root / 'best.pt')

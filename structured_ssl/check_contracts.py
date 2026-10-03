@@ -9,7 +9,7 @@ import numpy as np
 import torch
 
 from .data import proposal_pack, proposals, to_device
-from .model import StructuredCompletion, set_energy
+from .model import StructuredCompletion, set_energy, pixel_duplicates
 
 
 def fixture():
@@ -39,6 +39,7 @@ def main():
     frozen = {k: v.clone() for k, v in model.anchor.state_dict().items()}
     pack = to_device(fixture(), device)
     short = {k: v[:, :, :6].clone() for k, v in pack.items()}
+    untouched = {k: v.clone() for k, v in short.items()}
     altered = {k: v.clone() for k, v in short.items()}
     altered['views'][:, :, 5] = -1
     altered['geometry'][:, :, 5] = .8
@@ -48,6 +49,13 @@ def main():
     for k in reordered:
         reordered[k][:, :, 8:] = pack[k][:, :, 8:][:, :, permutation]
     with torch.no_grad():
+        equality_fixture = torch.randn(12, 6400, device=device)
+        equality_fixture[3] = equality_fixture[1]
+        equality_fixture[7] = equality_fixture[5]
+        assert torch.equal(pixel_duplicates(equality_fixture), torch.cdist(equality_fixture, equality_fixture, p=0).eq(0))
+        zero_fixture = torch.zeros(2, 10, device=device)
+        zero_fixture[1] = -zero_fixture[1]
+        assert pixel_duplicates(zero_fixture).all()
         initial, anchor = model(pack), model.anchor(pack['views'])
         assert torch.equal(initial, anchor)
         before, _ = model.encode(short, 5)
@@ -77,6 +85,22 @@ def main():
     except ValueError:
         pass
     parameters = [p for p in model.parameters() if p.requires_grad]
+    model.perception.train()
+    perception_inputs = [short[key].flatten(0, 2)[:10]
+                         for key in ('views', 'masks', 'geometry', 'valid')]
+    perception_parameters = tuple(model.perception.parameters())
+    direct = model.perception(*perception_inputs)
+    direct_gradients = torch.autograd.grad(direct.square().mean(), perception_parameters)
+    model.perception.activation_checkpointing = False
+    stored = model.perception(*perception_inputs)
+    stored_gradients = torch.autograd.grad(stored.square().mean(), perception_parameters)
+    model.perception.activation_checkpointing = True
+    assert torch.equal(direct, stored), 'activation checkpointing changed perception output'
+    checkpoint_gradient_error = max(float((a - b).abs().max())
+                                    for a, b in zip(direct_gradients, stored_gradients))
+    assert all(torch.allclose(a, b, atol=1e-6, rtol=1e-5)
+               for a, b in zip(direct_gradients, stored_gradients)), 'checkpoint gradient mismatch'
+    del direct, stored, direct_gradients, stored_gradients
     optimizer = torch.optim.Adam(parameters, lr=3e-4)
     scaler = torch.amp.GradScaler('cuda', enabled=device.type == 'cuda')
     losses = []
@@ -96,6 +120,7 @@ def main():
         scaler.update()
         losses.append(float(loss.detach()))
         assert all(torch.equal(v, model.anchor.state_dict()[k]) for k, v in frozen.items())
+        assert all(torch.equal(v, short[k]) for k, v in untouched.items()), 'SSL changed its input data'
     gradients = {name: float(sum((p.grad.float().square().sum() for p in module.parameters() if p.grad is not None),
                                 torch.zeros((), device=device)).sqrt())
                  for name, module in (('perception', model.perception), ('compiler', model.pav.compiler),
@@ -137,9 +162,13 @@ def main():
               'initial_scores_bitwise_equal_to_anchor': True,
               'heldout_target_cannot_change_visible_encoding_or_compilation': True,
               'object_masking_keeps_four_complete_visible_panels': True,
+              'ssl_does_not_mutate_input_pixels_or_proposals': True,
+              'exact_pixel_groups_match_hamming_zero_including_signed_zero': True,
               'fixed_object_targets_are_fp32_and_bitwise_equal_under_autocast': True,
               'ssl_rejects_candidates': True, 'frozen_anchor_buffers_unchanged': True,
               'all_trainable_parameters_have_finite_gradients': True,
+              'activation_checkpointing_preserves_outputs_and_gradients': True,
+              'activation_checkpointing_gradient_max_error': checkpoint_gradient_error,
               'gradient_norms': gradients, 'losses': losses, 'training_statistics': statistics,
               'candidate_permutation_max_error': candidate_equivariance,
               'target_object_permutation_max_error': object_equivariance,

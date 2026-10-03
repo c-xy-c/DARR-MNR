@@ -1,0 +1,32 @@
+{
+  "fixture": "synthetic tensors and NPZs",
+  "full_raven_evaluation": false,
+  "device": "cpu",
+  "torch": "2.11.0",
+  "reference_commit": "f43cf58",
+  "reference_source_sha256": {
+    "model": "9198c6c88e7870332c2ad5bf3f171d99e7e1c3a39354690fb32e99816394e9f4",
+    "data": "e4cc27a32ee482e588e773b2f1c549549c2478c864d7f463be802187dc04754b"
+  },
+  "native_source_sha256": {
+    "research/structured-ssl-2026/original_continuation.py": "d3b20cdb6755de521d4af552f9f8cac3567e14d653b3ef5edffc989e3912111a",
+    "structured_ssl/runtime.py": "0b60c4e99596d28efdeb3f4221557e1406f2b1e9da496d4aa155cc4892c2c743",
+    "sspredrnet/model.py": "fd5a739e244a0a0a374cffe2fafa6aafad443aecc47c50a355bc286c061efa0b",
+    "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+    "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+    "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+    "sspredrnet/evaluate.py": "464155a4658c7240f2fcd49b5a01962a3203b2686ab250fc350e0eb9bb20d3fb",
+    "sspredrnet/checkpoint.py": "05ffb212da7e12e8a78a8ac2be2da1f102c1060a31e41396eeef0ba4bec3ca34"
+  },
+  "foundation_sha256": "8a383fcc609127a7c35bfb9c6a2ffe064ce5285f66d8525b3668385ec915928c",
+  "native_eval_bitwise_equal_to_earlier_control": true,
+  "native_training_errors_bitwise_equal_to_earlier_control": true,
+  "native_margin_loss_equal": true,
+  "native_gradient_max_difference": 0.0,
+  "trainable_parameters": 165824,
+  "only_original_prbs_trainable": true,
+  "cnn_and_batchnorm_buffers_unchanged_after_update": true,
+  "all_seven_layouts_data_equal_to_earlier_control": true,
+  "target_or_candidates_cannot_change_five_visible_panels": true,
+  "object_dtype_answer_field_was_not_read": true
+}

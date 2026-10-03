@@ -71,5 +71,8 @@ class ObjectRaven(Dataset):
 
 
 def to_device(pack, device):
-    return {k: ((v.to(device, non_blocking=True) / 255 - .5) * 2 if k == 'views'
-                else v.to(device, non_blocking=True)) for k, v in pack.items()}
+    # CUDA loader batches are pinned. Metal inputs are ordinary CPU allocations;
+    # complete those copies before the caller can release the CPU batch.
+    non_blocking = torch.device(device).type == 'cuda'
+    return {k: ((v.to(device, non_blocking=non_blocking) / 255 - .5) * 2 if k == 'views'
+                else v.to(device, non_blocking=non_blocking)) for k, v in pack.items()}

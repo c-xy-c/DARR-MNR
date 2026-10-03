@@ -1,0 +1,18 @@
+{
+  "fixture": "synthetic full batch128",
+  "full_raven_evaluation": false,
+  "device": "mps",
+  "precision": "float16 autocast with MPS GradScaler",
+  "step_seconds": [
+    30.940499750024173,
+    98.0457154159667
+  ],
+  "finite_forward_backward": true,
+  "pack_unchanged_after_ssl": true,
+  "driver_allocated_bytes": [
+    12146032640,
+    13421101056
+  ],
+  "recommended_max_bytes": 12713115648,
+  "duplicate_filter": "exact_cpu_byte_groups"
+}

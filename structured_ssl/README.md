@@ -73,7 +73,11 @@ python -m structured_ssl.evaluate \
   --dataset-root /path/to/RAVEN --run-dir runs/structured-raven8-seed12345 --split test
 ```
 
-Full training requires CUDA and exactly 42,000/14,000 train/validation puzzles.
+Full training supports CUDA or explicit `--device mps` and requires exactly
+42,000/14,000 train/validation puzzles. Evaluation uses the recorded device.
+Metal runs retain batch128, FP16 adaptation, FP32 teacher/evaluation, and capture
+Metal RNG for resume. Perception activation checkpointing preserves the
+architecture and loss; CPU outputs and gradients match without recomputation.
 Test opens only after the selected best passes the complete validation audit.
 Best/final source and checkpoint hashes are sealed. Resume with unchanged
 arguments and `--resume`. Evaluation refuses to overwrite an existing result.
@@ -84,6 +88,26 @@ CPU contracts in [cpu_contracts.json](../research/structured-ssl-2026/cpu_contra
 use synthetic shapes, verify real gradients and candidate/object permutations,
 and explicitly have `full_raven_evaluation: false`. They do not verify CUDA
 memory use, mixed precision or benchmark accuracy.
+
+The official archive hash and all split counts were verified locally. Three
+Metal updates on 128 actual training puzzles used about 7.46 GB of driver
+allocation, with finite FP16 gradients, unchanged inputs, and successful CPU/
+Metal RNG replay. This capacity check is not a complete epoch or accuracy result.
+
+The matched native continuation is available as:
+
+```bash
+PYTHONPATH=. python research/structured-ssl-2026/original_continuation.py \
+  --dataset-root /path/to/RAVEN --run-dir runs/structured-original16 \
+  --baseline program_ssl/results/support-program-v3/control/best.pt \
+  --epochs 16 --seed 12345
+```
+
+For a local Metal suite use `research/structured-ssl-2026/run_metal_suite.sh`
+with separately sealed primary and contribution-control source exports. It runs
+the primary, the native continuation, two controls and two further adaptation
+seeds sequentially. A failed primary validation gate defers that test without
+changing the fixed designs or training budgets.
 
 The reference test score is 71.2357%; earlier original continuation final
 reached 71.41%. Neither number is a new result of this redesign. A matched

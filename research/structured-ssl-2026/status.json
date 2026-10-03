@@ -1,5 +1,5 @@
 {
-  "status": "implemented_cpu_verified_awaiting_remote_access",
+  "status": "local_metal_full_suite_started_initial_validation",
   "full_raven_result_claimed": false,
   "current_model_test_accuracy": null,
   "reference_anchor": "research/ssl-attention-2026/results/seed12345/best.pt",
@@ -16,14 +16,19 @@
     "zero-mask-objective isolated control",
     "static-support-parameter isolated control",
     "old attention primary source/best/final seals preserved",
-    "training/evaluation CLI entrypoints import and compile"
+    "training/evaluation CLI entrypoints import and compile",
+    "current primary and contribution CPU checks refreshed",
+    "native inference/loss/gradients bitwise replay with prior control",
+    "official RAVEN archive SHA256 and all 42000/14000/14000 split counts",
+    "perception activation checkpointing bitwise output and gradient equality on CPU/Metal",
+    "three actual full-batch128 FP16 Metal updates with unchanged inputs and finite gradients",
+    "Metal/CPU/loader RNG restoration bitwise replay"
   ],
   "missing": [
-    "current remote SSH authentication",
-    "CUDA FP16 and memory verification",
-    "full RAVEN main and matched controls",
-    "multiple adaptation seeds",
-    "sealed full validation/test with best/final and seven configurations"
+    "completed full RAVEN main and matched controls",
+    "completed multiple adaptation seeds",
+    "sealed full validation/test with best/final and seven configurations",
+    "empirical nonregression and independent contribution evidence"
   ],
   "remote_access_observation": {
     "host": "xj-member.bitahub.com",
@@ -35,21 +40,36 @@
   },
   "source_sha256": {
     "structured_ssl/__init__.py": "fad28d655f5693e57664ddc8179659e235fcc6b3011e2a3734dd8ffb8d3fb37b",
-    "structured_ssl/check_contracts.py": "f022df3965e8f4f9ddfd79fea3d037dde3d337c11c735ecf0682da30f302fa09",
-    "structured_ssl/data.py": "7940501c7e23ed0f23606b442de2a9c5fcbe09f0d2325a99621a388f2e2bbb33",
-    "structured_ssl/evaluate.py": "36377535e3e6b0f088bc733d18a8d01398daf64c294e0addbd4ba5a3bf212138",
-    "structured_ssl/model.py": "c08892816d8b9a4948d5a8b12df1dafe829b61786d49f2ebeaa319632a6559c4",
-    "structured_ssl/train.py": "6333f2f9dc069cbfff79f4a56c148871637db45e88e248cea9c17c0b4c5fbc58"
+    "structured_ssl/check_contracts.py": "b741af87049b253154803aee306c13baf58858081ce4f06e41478225d17a3ec0",
+    "structured_ssl/data.py": "0d87a1dfda73dbc498399a3d1851946fe11d942c54f5c595d77d1f013a01e3ac",
+    "structured_ssl/evaluate.py": "48bc83c33a180d2e269d3724ac30a4529469fd128c1044358e93958e7472c933",
+    "structured_ssl/model.py": "9af8d4abafc3e51c9a660f9e9774627dab21d0c123a5c9f60a7e060e3a772804",
+    "structured_ssl/runtime.py": "0b60c4e99596d28efdeb3f4221557e1406f2b1e9da496d4aa155cc4892c2c743",
+    "structured_ssl/train.py": "1f8c11d48fe84a38baf89146e6d5e5116fddba4772ac9e0e936360c12e7f0b84"
   },
   "check_artifact_sha256": {
-    "no_object_masking_cpu_contracts.json": "507d56af1e3c60d2e23b2f654965786c1e7459156dd30f37319df84a37ea7a83",
-    "cpu_contracts.json": "b1b641275e59938946829162f0456e6d674e4e8b7c4f0586c430a78baf28e790",
-    "static_parameters_cpu_contracts.json": "f6bc3e6bce51fb569ac190bc0746466e5e84b0569bcc548884cea24bfed6973e"
+    "cpu_contracts.json": "28e67206391e5c4728d75aa1d329feb09005264418c71614af532adcbb538d44",
+    "no_object_masking_cpu_contracts.json": "42ecb1c7247e0e994879662e75a58c206eaa5682184c88fd0d1121652bb0ba57",
+    "static_parameters_cpu_contracts.json": "7633b679e76b739ec528ef5b4655cdee154c40f1b959c4750145288e0a149eda",
+    "native_control_cpu_contracts.json": "424398227bcfb6689977b128b985f4ab4c8fb7653f2c51d6ea317e00939dfd73",
+    "mps_contracts.json": "f3e27364efd0deff8f2fcbaf0ba37f5e20dd7cd13c3141d8bad099f61c950e40",
+    "mps_real_batch_feasibility.json": "2eb04a9456094a2b485005683c192b29e6a72fa527d4e8908b69e5a85613e8a7",
+    "local_data_manifest.json": "ec42a2440bdceec21a3a4ae52adf40f6af4246fba20d316322cda4757d5dc00f"
   },
   "publication": {
     "remote": "git@github.com:c-xy-c/DARR-MNR.git",
     "branch": "codex/component-program-ssl",
     "ssh_authenticated_account": "wozhendetainanle",
     "stage": "experimental_implementation_no_full_accuracy"
+  },
+  "status_as_of_utc": "2026-10-03T09:11:16.695829+00:00",
+  "execution": {
+    "device": "mps",
+    "batch_size": 128,
+    "workers": 2,
+    "run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-metal-20261003-170906",
+    "suite_process_pid": 40205,
+    "fixed_preregistered_jobs": 6,
+    "note": "Metal platform disclosed separately from historical CUDA; full initial validation must replay anchor count before adaptation."
   }
 }

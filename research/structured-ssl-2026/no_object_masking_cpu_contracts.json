@@ -9,10 +9,14 @@
   "initial_scores_bitwise_equal_to_anchor": true,
   "heldout_target_cannot_change_visible_encoding_or_compilation": true,
   "object_masking_keeps_four_complete_visible_panels": true,
+  "ssl_does_not_mutate_input_pixels_or_proposals": true,
+  "exact_pixel_groups_match_hamming_zero_including_signed_zero": true,
   "fixed_object_targets_are_fp32_and_bitwise_equal_under_autocast": true,
   "ssl_rejects_candidates": true,
   "frozen_anchor_buffers_unchanged": true,
   "all_trainable_parameters_have_finite_gradients": true,
+  "activation_checkpointing_preserves_outputs_and_gradients": true,
+  "activation_checkpointing_gradient_max_error": 0.0,
   "gradient_norms": {
     "perception": 0.08377115428447723,
     "compiler": 0.03026561252772808,
@@ -27,7 +31,7 @@
   "training_statistics": {
     "retrieval": 0.5284231901168823,
     "completion": 1.1112779378890991,
-    "masked_object": 2.0291872024536133,
+    "masked_object": 2.0196056365966797,
     "reference_error": 0.3529779016971588,
     "eligible_queries": 8,
     "retrieval_correct": 6,

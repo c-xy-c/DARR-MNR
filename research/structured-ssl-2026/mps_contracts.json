@@ -1,7 +1,7 @@
 {
   "fixture": "synthetic contours and tensors",
   "full_raven_evaluation": false,
-  "device": "cpu",
+  "device": "mps",
   "torch": "2.11.0",
   "anchor_sha256": "de3ea68bdd26272a9991fa394a38aa5d1c0b4d55078d10a968f67cec0a1c5b88",
   "trainable_parameters": 2182902,
@@ -18,30 +18,30 @@
   "activation_checkpointing_preserves_outputs_and_gradients": true,
   "activation_checkpointing_gradient_max_error": 0.0,
   "gradient_norms": {
-    "perception": 0.21376854181289673,
-    "compiler": 0.04688594490289688,
-    "pav": 0.31717243790626526,
-    "masked_object": 0.49374502897262573
+    "perception": 0.2176467627286911,
+    "compiler": 0.028621846809983253,
+    "pav": 0.30199509859085083,
+    "masked_object": 0.5001177191734314
   },
   "losses": [
-    0.9414601922035217,
-    0.7714036703109741,
-    0.6902486681938171
+    0.9388324022293091,
+    0.7710385918617249,
+    0.6903911828994751
   ],
   "training_statistics": {
-    "retrieval": 0.5284231901168823,
-    "completion": 1.1157456636428833,
-    "masked_object": 0.5025087594985962,
-    "reference_error": 0.16744743287563324,
+    "retrieval": 0.5284216403961182,
+    "completion": 1.1101796627044678,
+    "masked_object": 0.5095159411430359,
+    "reference_error": 0.30862700939178467,
     "eligible_queries": 8,
     "retrieval_correct": 6,
     "proposal_overflow_panels": 0
   },
   "candidate_permutation_max_error": 0.0,
-  "target_object_permutation_max_error": 1.1920928955078125e-07,
-  "support_changes_dynamic_parameters_max": 0.0,
-  "post_update_score_change_max": 2.032145857810974e-06,
-  "trained_gate": 0.00024040357675403357,
+  "target_object_permutation_max_error": 2.384185791015625e-07,
+  "support_changes_dynamic_parameters_max": 0.08646346628665924,
+  "post_update_score_change_max": 3.259629011154175e-06,
+  "trained_gate": -0.00039678282337263227,
   "blank_panels_and_no_legal_negatives_finite": true,
   "proposal_overflow_merges_and_records": true
 }

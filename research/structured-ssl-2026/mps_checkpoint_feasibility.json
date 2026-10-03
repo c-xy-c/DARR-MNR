@@ -1,0 +1,59 @@
+{
+  "fixture": "synthetic full batch128, seven configuration IDs",
+  "full_raven_evaluation": false,
+  "device": "mps",
+  "torch": "2.11.0",
+  "activation_checkpointing": true,
+  "precision": "float16 autocast with MPS GradScaler",
+  "steps": [
+    {
+      "step_seconds": 3.280502667010296,
+      "loss": 2.493516445159912,
+      "driver_bytes": 6173343744,
+      "current_bytes": 318454016,
+      "statistics": {
+        "retrieval": 2.078430652618408,
+        "completion": 2.005112886428833,
+        "masked_object": 2.1457464694976807,
+        "reference_error": 0.3805415630340576,
+        "eligible_queries": 256,
+        "retrieval_correct": 35,
+        "proposal_overflow_panels": 0
+      }
+    },
+    {
+      "step_seconds": 2.7810445000068285,
+      "loss": 2.31880521774292,
+      "driver_bytes": 7419052032,
+      "current_bytes": 314364928,
+      "statistics": {
+        "retrieval": 2.078430414199829,
+        "completion": 1.4019196033477783,
+        "masked_object": 1.0018285512924194,
+        "reference_error": 0.32705995440483093,
+        "eligible_queries": 256,
+        "retrieval_correct": 35,
+        "proposal_overflow_panels": 0
+      }
+    },
+    {
+      "step_seconds": 2.666064082994126,
+      "loss": 2.2409636974334717,
+      "driver_bytes": 7425343488,
+      "current_bytes": 314802176,
+      "statistics": {
+        "retrieval": 2.078430652618408,
+        "completion": 1.1089116334915161,
+        "masked_object": 0.5164197683334351,
+        "reference_error": 0.305512398481369,
+        "eligible_queries": 256,
+        "retrieval_correct": 35,
+        "proposal_overflow_panels": 0
+      }
+    }
+  ],
+  "finite_forward_backward": true,
+  "pack_unchanged_after_ssl": true,
+  "recommended_max_bytes": 12713115648,
+  "duplicate_filter": "exact_cpu_byte_groups"
+}

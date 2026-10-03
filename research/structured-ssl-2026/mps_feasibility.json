@@ -1,0 +1,15 @@
+{
+  "fixture": "synthetic full batch128",
+  "full_raven_evaluation": false,
+  "device": "mps",
+  "precision": "float32",
+  "torch": "2.11.0",
+  "training_step_seconds": 54.86651666695252,
+  "loss": 2.342435359954834,
+  "gradient_norm": 1.5619102716445923,
+  "allocated_bytes": 314052608,
+  "driver_allocated_bytes": 15428059136,
+  "recommended_max_bytes": 12713115648,
+  "finite_backward": true,
+  "cpu_operator_fallback_enabled": true
+}

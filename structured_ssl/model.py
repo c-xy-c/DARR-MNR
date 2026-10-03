@@ -9,6 +9,7 @@ import math
 import torch
 from torch import nn
 from torch.nn import functional as F
+from torch.utils.checkpoint import checkpoint
 
 from attention_ssl.model import AttentionCompletion
 from program_ssl.model import operator_energy
@@ -55,21 +56,24 @@ class ObjectPerception(nn.Module):
         self.geometry = nn.Linear(6, WIDTH)
         self.layers = nn.ModuleList([SelfBlock() for _ in range(STAGES)])
         self.poolers = nn.ModuleList([CrossBlock() for _ in range(STAGES)])
+        self.activation_checkpointing = True
 
     def forward(self, images, masks, geometry, valid):
         tokens = self.patches(images[:, None]).flatten(2).transpose(1, 2)
         tokens = tokens + self.position(self.coordinates.to(tokens))
         weights = masks.to(tokens) / masks.to(tokens).sum(-1, keepdim=True).clamp_min(1e-6)
-        outside = masks <= 0
         # Inactive objects use one harmless key, then their outputs are erased.
-        outside = outside.clone()
-        outside[..., 0] &= valid
+        first_key = torch.arange(100, device=masks.device).eq(0)
+        outside = (masks <= 0) & (valid[..., None] | ~first_key)
         outside = outside.repeat_interleave(6, dim=0)
         levels = []
         for layer, pooler in zip(self.layers, self.poolers):
-            tokens = layer(tokens)
+            recompute = self.training and torch.is_grad_enabled() and self.activation_checkpointing
+            tokens = checkpoint(layer, tokens, use_reentrant=False) if recompute else layer(tokens)
             mean = weights @ tokens
-            objects = pooler(mean + self.geometry(geometry.to(tokens)), tokens, mask=outside)
+            query = mean + self.geometry(geometry.to(tokens))
+            objects = (checkpoint(pooler, query, tokens, mask=outside, use_reentrant=False)
+                       if recompute else pooler(query, tokens, mask=outside))
             objects = objects * valid[..., None]
             scene = tokens.mean(1, keepdim=True)
             levels.append(torch.cat((objects, scene), 1))
@@ -112,6 +116,30 @@ def dynamic(x, factors):
     with torch.autocast(device_type=x.device.type, enabled=False):
         a, b = factors.float().unbind(1)
         return ((x.float() @ a.transpose(1, 2)) @ b) / math.sqrt(RANK)
+
+
+def dense_energy(predictions, targets):
+    # The inherited helper disables CUDA autocast. Also guard the actual
+    # device, so a Metal/CPU autocast context cannot change the fixed energy.
+    with torch.autocast(device_type=predictions.device.type, enabled=False):
+        return operator_energy(predictions.float(), targets.float())
+
+
+def pixel_duplicates(images):
+    """Exact known-target equality without a quadratic pixel-distance tensor.
+
+    Byte keys compare their complete contents, so hash collisions cannot create
+    false duplicates. Canonicalize signed zero to match numerical equality.
+    """
+    pixels = images.detach().float().cpu()
+    if not torch.isfinite(pixels).all():
+        raise ValueError('known-target pixels must be finite')
+    array = pixels.numpy().copy()
+    array[array == 0] = 0
+    groups = {}
+    labels = [groups.setdefault(row.tobytes(), len(groups)) for row in array]
+    labels = torch.tensor(labels, device=images.device)
+    return labels[:, None].eq(labels[None])
 
 
 def target_objects(features, masks, geometry, valid):
@@ -270,7 +298,7 @@ class StructuredCompletion(nn.Module):
             stage_energies = []
             for output in (predicted, prior):
                 dense, representation, presence = output
-                dense_error = operator_energy(dense[:, None], features[:, targets])[:, 0]
+                dense_error = dense_energy(dense[:, None], features[:, targets])[:, 0]
                 objects_error = set_energy(representation, presence, objects[:, targets], valid[:, targets])
                 stage_energies.append(dense_error + .25 * objects_error)
             conditional.append(stage_energies[0])
@@ -290,15 +318,20 @@ class StructuredCompletion(nn.Module):
         return sum(scores).reshape(len(pack['views']), 2, 8).mean(1)
 
     def masked_loss(self, pack, target_objects_fixed):
-        flat = {k: v.flatten(0, 1)[:, :5].clone() for k, v in pack.items()}
+        flat = {k: v.flatten(0, 1)[:, :5] for k, v in pack.items()}
         n = len(flat['views'])
-        available_panels = flat['valid'].any(-1)
-        active = available_panels.any(-1)
-        panel_probabilities = available_panels.float() + (~active)[:, None].float()
-        panels = torch.multinomial(panel_probabilities, 1).squeeze(-1)
-        rows = torch.arange(n, device=panels.device)
-        object_probabilities = flat['valid'][rows, panels].float() + (~active)[:, None].float()
-        selected = torch.multinomial(object_probabilities, 1).squeeze(-1)
+        # Tiny discrete draws use the checkpointed CPU RNG. This also avoids
+        # device-specific multinomial behavior; metadata never changes in place.
+        valid_cpu = flat['valid'].detach().cpu()
+        available_panels = valid_cpu.any(-1)
+        active_cpu = available_panels.any(-1)
+        panel_probabilities = available_panels.float() + (~active_cpu)[:, None].float()
+        panels_cpu = torch.multinomial(panel_probabilities, 1).squeeze(-1)
+        object_probabilities = valid_cpu[torch.arange(n), panels_cpu].float() + (~active_cpu)[:, None].float()
+        selected_cpu = torch.multinomial(object_probabilities, 1).squeeze(-1)
+        device = flat['views'].device
+        panels, selected, active = panels_cpu.to(device), selected_cpu.to(device), active_cpu.to(device)
+        rows = torch.arange(n, device=device)
         centers = flat['geometry'][rows, panels, selected, :2].clone().unsqueeze(1)
         boxes = flat['boxes'][rows, panels, selected]
         grid = torch.arange(80, device=selected.device)
@@ -308,16 +341,19 @@ class StructuredCompletion(nn.Module):
                  (grid[None, :, None] < boxes[..., 3, None, None]))
         # One object in one panel per component query; four complete panels
         # remain even for center_single, where each panel has only one object.
-        flat['views'][rows, panels] = flat['views'][rows, panels].masked_fill(erase, 1.)
+        panel_mask = F.one_hot(panels, 5).bool()
+        erase = panel_mask[..., None, None] & erase[:, None]
+        masked_views = flat['views'].masked_fill(erase, 1.)
         # Removing clean mask/geometry prevents the masked head reading shape,
         # area or colour through proposal metadata. Only the center stays in q.
-        flat['masks'][rows, panels, selected] = 0
-        flat['geometry'][rows, panels, selected] = 0
-        flat['valid'][rows, panels, selected] = False
-        levels = self.perception(flat['views'].flatten(0, 1), flat['masks'].flatten(0, 1),
-                                 flat['geometry'].flatten(0, 1), flat['valid'].flatten(0, 1))
+        selected_slot = panel_mask[..., None] & F.one_hot(selected, OBJECTS).bool()[:, None] & active[:, None, None]
+        masked_masks = flat['masks'].masked_fill(selected_slot[..., None], 0)
+        masked_geometry = flat['geometry'].masked_fill(selected_slot[..., None], 0)
+        masked_valid = flat['valid'] & ~selected_slot
+        levels = self.perception(masked_views.flatten(0, 1), masked_masks.flatten(0, 1),
+                                 masked_geometry.flatten(0, 1), masked_valid.flatten(0, 1))
         levels = levels.reshape(n, 5, STAGES, OBJECTS + 1, WIDTH)
-        predicted = self.masked(levels, flat['valid'], centers, panels[:, None])
+        predicted = self.masked(levels, masked_valid, centers, panels[:, None])
         truth = target_objects_fixed[:, :5][rows, panels, selected, :32].unsqueeze(1)
         discrepancy = (F.normalize(predicted.float(), dim=-1, eps=1e-3) -
                        F.normalize(truth.float(), dim=-1, eps=1e-3)).square().sum(-1)
@@ -334,11 +370,11 @@ class StructuredCompletion(nn.Module):
         configs = configurations.repeat_interleave(2)
         with torch.no_grad():
             target = features[:, 5]
-            distance = operator_energy(F.relu(target)[:, None], target)[:, 0]
+            distance = dense_energy(F.relu(target)[:, None], target)[:, 0]
             group = ((configs[:, None] == configs[None]) &
                      (ids[:, None].remainder(2) == ids[None].remainder(2)))
             pixels = pack['views'].flatten(0, 1)[:, 5].flatten(1).float()
-            duplicate = torch.cdist(pixels, pixels, p=0).eq(0)
+            duplicate = pixel_duplicates(pixels)
             distance.masked_fill_(~group | duplicate, torch.inf)
             negative_distance, negative_ids = distance.topk(min(7, n - 1), largest=False)
             selected = torch.cat((ids[:, None], negative_ids), 1)
