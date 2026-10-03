@@ -1,0 +1,44 @@
+{
+  "epoch": 1,
+  "training_count": 42000,
+  "validation": {
+    "correct": 10004,
+    "total": 14000,
+    "by_configuration": {
+      "center_single": 97.05,
+      "distribute_four": 46.65,
+      "distribute_nine": 33.9,
+      "in_center_single_out_center_single": 92.2,
+      "in_distribute_four_out_center_single": 37.4,
+      "left_center_single_right_center_single": 96.25,
+      "up_center_single_down_center_single": 96.75
+    },
+    "accuracy_macro": 71.45714285714286
+  },
+  "same_platform_anchor_validation_correct": 10012,
+  "delta_vs_anchor_validation_pp": -0.05714285714285714,
+  "gate": 0.11369045078754425,
+  "wall_seconds": 1328.6148961670115,
+  "full_validation_split": true,
+  "full_8_epoch_experiment_complete": false,
+  "test_opened": false,
+  "checkpoint_source_locked_and_unchanged": true,
+  "source_sha256": {
+    "structured_ssl/__init__.py": "f2caf0d06be65b728d19e06f01c80b3654e654d82cbab32b49ffebb20c80ee06",
+    "structured_ssl/model.py": "d96544a77b4bbda5f3ea3d2e5b474e3a27e2952923eacc22186cc10e1bb88c8c",
+    "structured_ssl/data.py": "0d87a1dfda73dbc498399a3d1851946fe11d942c54f5c595d77d1f013a01e3ac",
+    "structured_ssl/train.py": "d2453e7e8b8fe692ea24f0ca6aaf8068f56fe03d6c356fc4a35e8da761070c10",
+    "structured_ssl/evaluate.py": "96978bce4d50d9e568f28afa4835f25aaeaf82de9f460d8b17a72c946d3aa353",
+    "attention_ssl/model.py": "b0b92b8da4ec6450cb12578a8ee6528ae85bb71d274b9af08e14922c25254f47",
+    "program_ssl/model.py": "4ea98923999b755f0152ba7220be63cb1fb370330921205466fae623f6bb225b",
+    "structured_ssl/runtime.py": "d542503b0d8e26d7d7461f30edd92438483f3f4c368dff427d1a0805bd06a765",
+    "program_ssl/data.py": "2e445c5aa496507db5af5ef320aed1508c39b5ea38984b938195305b921a238a",
+    "sspredrnet/model.py": "074387187e363a38a8204b065753d0b485e975e3f3476d7dd4506df2ca224978",
+    "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+    "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+    "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+    "sspredrnet/checkpoint.py": "05ffb212da7e12e8a78a8ac2be2da1f102c1060a31e41396eeef0ba4bec3ca34"
+  },
+  "selection_budget_epochs": 44,
+  "not_proof_of_empirical_nonregression_or_independent_contributions": true
+}

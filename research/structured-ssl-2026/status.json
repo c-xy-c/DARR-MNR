@@ -1,5 +1,5 @@
 {
-  "status": "native_control_completed_v3_real_metal_preflight_passed_primary_process_running",
+  "status": "native_completed_v3_first_full_epoch_below_anchor_fixed_training_continues",
   "full_raven_result_claimed": false,
   "current_model_test_accuracy": null,
   "reference_anchor": "research/ssl-attention-2026/results/seed12345/best.pt",
@@ -78,7 +78,7 @@
     "stage": "experimental_v3_sealed_and_queued_no_v3_full_accuracy",
     "last_verified_remote_sha_before_current_changes": "0dcc131d9da0698eb06484e0fb525e168ff27fd6"
   },
-  "status_as_of_utc": "2026-10-03T14:33:47.605677+00:00",
+  "status_as_of_utc": "2026-10-03T14:52:47.423311+00:00",
   "execution": {
     "device": "mps",
     "batch_size": 128,
@@ -281,7 +281,13 @@
       "training_total": 42000,
       "mean_loss": 0.31470240538732874,
       "elapsed_seconds": 833.3567580000381
-    }
+    },
+    "completed_epochs": 1,
+    "latest_validation_correct": 10004,
+    "latest_validation_accuracy": 71.45714285714286,
+    "best_validation_accuracy": 71.45714285714286,
+    "best_epoch": 1,
+    "early_full_validation_record": "v3_first_epoch_validation.json"
   },
   "native_recovery_observation": {
     "completed_epochs": 16,
