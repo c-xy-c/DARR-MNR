@@ -83,3 +83,16 @@ original-reasoner continuation. The [contribution definitions](research/componen
 evaluation records document those limits. The current runtime retains one CECS
 training task and one SER-PaV inference path; historical ablation code is
 available at commit `f43cf58`. See [the current commands](program_ssl/README.md).
+
+[attention_ssl/](attention_ssl/) aligns the known-panel self-supervised ranking
+loss with deployment and replaces six discrete support hypotheses with an
+attention relation encoder and a differentiable support-fitted completion map.
+Three full eight-epoch adaptations achieved validation-selected test scores of
+71.24%, 71.24%, and 71.17% (mean 71.22%, sample standard deviation 0.04%), against
+the same frozen validation-selected baseline's 71.04%. All three final scores
+also exceeded that baseline. The baseline's prior training selection budget is
+28 epochs; each adaptation adds eight. These results show a small matched
+overall gain; they do not establish better perception or semantic rule discovery.
+See [the 2026 paper-based design](research/ssl-attention-2026/design.md),
+[full results and controls](research/ssl-attention-2026/results.md), and
+[training/evaluation commands](attention_ssl/README.md).

@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "method": "attention-support-completion",
+  "source_sha256": {
+    "attention_ssl/model.py": "b0b92b8da4ec6450cb12578a8ee6528ae85bb71d274b9af08e14922c25254f47",
+    "attention_ssl/train.py": "6ec85b0b239e4e7a93b7a01bac010016c5aa8bfb53acbf85b8257a3598c9c995",
+    "attention_ssl/evaluate.py": "012f9c5c7b35dbbc846336aa7bd520601a7dfd4e1d50111f8763cb5084a27236",
+    "program_ssl/model.py": "4ea98923999b755f0152ba7220be63cb1fb370330921205466fae623f6bb225b",
+    "program_ssl/data.py": "2e445c5aa496507db5af5ef320aed1508c39b5ea38984b938195305b921a238a",
+    "sspredrnet/model.py": "fd5a739e244a0a0a374cffe2fafa6aafad443aecc47c50a355bc286c061efa0b",
+    "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+    "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+    "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+    "sspredrnet/evaluate.py": "464155a4658c7240f2fcd49b5a01962a3203b2686ab250fc350e0eb9bb20d3fb",
+    "sspredrnet/checkpoint.py": "05ffb212da7e12e8a78a8ac2be2da1f102c1060a31e41396eeef0ba4bec3ca34"
+  },
+  "baseline_sha256": "8a383fcc609127a7c35bfb9c6a2ffe064ce5285f66d8525b3668385ec915928c",
+  "evidence_weight": 0.2,
+  "frozen_reasoner_sha256": "59f6cb6138a87327e339a800150cba57233c568ba47c0372e303bb1673d2eb57",
+  "checkpoint_sha256": {
+    "best": "afe5863e8fea5651e943902f4ad79cfadb54ca2ea6ec99b04d3664b909ce35fe",
+    "final": "5b09f69a83b92ddc2d22aaac86def14bcc52972103f6a499130eb9d8fcd46e44"
+  },
+  "best_epoch": 4,
+  "epochs": 8,
+  "test_opened": false
+}

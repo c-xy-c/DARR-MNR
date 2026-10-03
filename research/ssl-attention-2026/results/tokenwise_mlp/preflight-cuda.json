@@ -1,0 +1,33 @@
+{
+  "device": "cuda:0",
+  "torch": "2.11.0+cu128",
+  "baseline_sha256": "8a383fcc609127a7c35bfb9c6a2ffe064ce5285f66d8525b3668385ec915928c",
+  "model_source_sha256": "5178f49a3778d36b7d7062d5883e3f5ae544d1526523f37b296b0b31b820fcfe",
+  "fixture": "synthetic tensors",
+  "full_raven_evaluation": false,
+  "initial_scores_bitwise_equal_to_baseline": true,
+  "ssl_rejects_candidate_inputs": true,
+  "query_target_cannot_change_support_fit": true,
+  "zero_gate_support_swap_keeps_original_baseline_scores": true,
+  "support_swap_changes_completion_max": 0.25349175930023193,
+  "candidate_permutation_equivariant_before_and_after_training": true,
+  "finite_training_gradients": true,
+  "frozen_baseline_weights_and_buffers_unchanged": true,
+  "gradient_precision": "float16",
+  "tokenwise_mlp_and_gate_have_nonzero_gradients_after_updates": true,
+  "losses": [
+    0.6982918381690979,
+    0.6982914209365845,
+    0.6982837915420532
+  ],
+  "last_training_statistics": {
+    "contrastive": 0.6975040435791016,
+    "alignment": 0.007797475904226303,
+    "eligible_component_queries": 28,
+    "retrieval_correct": 13,
+    "baseline_retrieval_correct": 13,
+    "negative_count_mean": 1.0
+  },
+  "all_duplicate_targets_have_finite_loss_without_false_negatives": true,
+  "post_update_max_score_change": 8.940696716308594e-07
+}

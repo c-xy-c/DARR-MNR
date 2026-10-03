@@ -1,0 +1,92 @@
+{
+  "checked_on": "2026-10-03",
+  "papers": [
+    {
+      "arxiv_id": "2607.02404",
+      "title": "Object-centric LeJEPA",
+      "authors": [
+        "Geusen, Jakob",
+        "Konukoglu, Ender"
+      ],
+      "first_posted": "2026/07/02",
+      "version_date": "2026/07/02",
+      "url": "https://arxiv.org/abs/2607.02404",
+      "method_text": "sources/2607.02404-paper.txt",
+      "peer_review_acceptance_verified": false
+    },
+    {
+      "arxiv_id": "2606.31668",
+      "title": "SAMBA: A Scatter-Guided Masked Bidirectional Mamba Foundation Model for SAR Target Recognition",
+      "authors": [
+        "Wang, Ke",
+        "Pan, Xiaoyi",
+        "Gu, Zhaoyu",
+        "Ai, Xiaofeng",
+        "Xu, Zhiming",
+        "Zhao, Feng",
+        "Xiao, Shunping"
+      ],
+      "first_posted": "2026/06/30",
+      "version_date": "2026/07/07",
+      "url": "https://arxiv.org/abs/2606.31668",
+      "method_text": "sources/2606.31668-paper.txt",
+      "peer_review_acceptance_verified": false
+    },
+    {
+      "arxiv_id": "2602.17171",
+      "title": "In-Context Learning in Linear vs. Quadratic Attention Models: An Empirical Study on Regression Tasks",
+      "authors": [
+        "Goel, Ayush",
+        "Kohli, Arjun",
+        "Somvanshi, Sarvagya"
+      ],
+      "first_posted": "2026/02/19",
+      "version_date": "2026/02/19",
+      "url": "https://arxiv.org/abs/2602.17171",
+      "method_text": "sources/2602.17171-paper.txt",
+      "peer_review_acceptance_verified": false
+    },
+    {
+      "arxiv_id": "2607.15819",
+      "title": "In-context learning of closed form solution to simple linear regression task using transformer with linear self-attention",
+      "authors": [
+        "Hagiwara, Katsuyuki"
+      ],
+      "first_posted": "2026/07/17",
+      "version_date": "2026/07/17",
+      "url": "https://arxiv.org/abs/2607.15819",
+      "method_text": "sources/2607.15819-paper.txt",
+      "peer_review_acceptance_verified": false
+    },
+    {
+      "arxiv_id": "2602.06358",
+      "title": "SHINE: A Scalable In-Context Hypernetwork for Mapping Context to LoRA in a Single Pass",
+      "authors": [
+        "Liu, Yewei",
+        "Wang, Xiyuan",
+        "Mao, Yansheng",
+        "Gelbery, Yoav",
+        "Maron, Haggai",
+        "Zhang, Muhan"
+      ],
+      "first_posted": "2026/02/06",
+      "version_date": "2026/07/04",
+      "url": "https://arxiv.org/abs/2602.06358",
+      "method_text": "sources/2602.06358-paper.txt",
+      "peer_review_acceptance_verified": false
+    }
+  ],
+  "search_scope": "targeted 2026 self-supervision and attention/Mamba, not exhaustive",
+  "source_sha256": {
+    "2602.06358-abstract.html": "7f6247dc337f25b14bac8efa6a611ac5dc4982cbe7348f32741c02c30fe604b3",
+    "2602.06358-paper.txt": "8eb24d8f3f5645c90e12a4f963d699b8a32552b8cbc886fc8e2fc15095deaa5a",
+    "2602.17171-abstract.html": "4c60d95157f5398c20156eaa91830e765076c2be21daedf1fcae895784de5400",
+    "2602.17171-paper.txt": "7f1787da86085b115fdb7592ed5929410198f61338e9d33ffe79d8f871be74b1",
+    "2606.31668-abstract.html": "2e9cbebc1d1e55ce9f2361405095f9aea53d68e30e11bfabd5a2f1e03a0ea31b",
+    "2606.31668-paper.txt": "57cf58d19fe2b188142e8f3a8ed3e2cea47a297ee959f206da585843bdd5cbe3",
+    "2607.02404-abstract.html": "95638c43537d80f84eb1cd55e1e48e7c75319a43d10336c80f069b2967fd34af",
+    "2607.02404-paper.txt": "c4a6f6050963a0b81786cd7c2bdef0b1f4fd6646ceae524f2850cb0e9da4b13b",
+    "2607.15819-abstract.html": "48a8c0f7334f41d15632469899d9ee0558601edbdd9e62fcc837ad7fbaba5cb7",
+    "2607.15819-paper.txt": "67d6ad7b4b976c86ee0add8e4dd041d04dbbc1ea1c2368e3809ae9c0fb3640cf"
+  }
+}

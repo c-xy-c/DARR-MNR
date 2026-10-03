@@ -1,0 +1,103 @@
+{
+  "status": "verified_full_raven_nonregression",
+  "goal": "improve SSL and SER-PaV using 2026 work with no matched performance regression",
+  "runtime": "attention_ssl",
+  "paper_manifest": "research/ssl-attention-2026/papers.json",
+  "reference_baseline": "program_ssl/results/support-program-v3/control/best.pt",
+  "reference_baseline_sha256": "8a383fcc609127a7c35bfb9c6a2ffe064ce5285f66d8525b3668385ec915928c",
+  "baseline_choice": "validation-selected original-reasoner continuation; performance is not attributed to prototype",
+  "verified": [
+    "five 2026 primary abstracts and method texts",
+    "CPU synthetic model contracts",
+    "evaluation entrypoint and test-boundary checks",
+    "CUDA FP16 with GradScaler model contracts on RTX 4090 / Torch 2.11.0+cu128",
+    "synthetic full batch128 training and native FP32 evaluation",
+    "official extracted RAVEN has 42000/14000/14000 exact split counts",
+    "native complete validation baseline replay exactly 9979/14000",
+    "prototype complete initial validation exactly 9979/14000",
+    "primary run reached epoch4, validation 10014/14000, trained gate0.3373",
+    "primary completed 8 full epochs; best validation epoch4=10014, final=9985, baseline=9979",
+    "random-negative and tokenwise-MLP ablations passed CUDA contracts and reached epoch2",
+    "primary seed12345 full best/final test = 9973/9962 of 14000 vs baseline9945",
+    "seed12346 full best/final test = 9974/9959 of 14000 vs baseline9945",
+    "seed12347 full best/final test = 9964/9963 of 14000 vs baseline9945",
+    "all main best/final tests passed nonregression and active support branch audit",
+    "random-negative, tokenwise-MLP and completion-energy-only full 8-epoch studies complete",
+    "discrete-support full 8-epoch matched comparator complete: best/final test9941/14000 vs9945 baseline",
+    "all seven run phase=complete, exit=0, no active attention processes",
+    "all seven source seals reproduced from current primary and isolated ablation builder; all best/final bytes match SHA256; historical runtime seal intact"
+  ],
+  "missing": [],
+  "access_observations": [
+    {
+      "host": "xj-member.bitahub.com",
+      "port": 42514,
+      "state": "connection_refused"
+    },
+    {
+      "host": "xj-member.bitahub.com",
+      "port": 42016,
+      "state": "host_key_changed_not_verified"
+    },
+    {
+      "host": "xj-member.bitahub.com",
+      "port": 42046,
+      "state": "authenticated_existing_control_socket_verified",
+      "control_socket": "/private/tmp/3dgen-cup-original-42046.sock",
+      "hostname": "bitahub-a21375643609853952103339"
+    }
+  ],
+  "full_raven_result_claimed": true,
+  "prototype_source_sha256": {
+    "attention_ssl/__init__.py": "5f415682495822d2012597cd932e93ac5898dc6f17b137ca6146360071f2bba6",
+    "attention_ssl/check_contracts.py": "e56aeb99acb786964eb022b48a3bf4b058f6344a304ab061eb707b155b4aef85",
+    "attention_ssl/evaluate.py": "012f9c5c7b35dbbc846336aa7bd520601a7dfd4e1d50111f8763cb5084a27236",
+    "attention_ssl/model.py": "b0b92b8da4ec6450cb12578a8ee6528ae85bb71d274b9af08e14922c25254f47",
+    "attention_ssl/train.py": "6ec85b0b239e4e7a93b7a01bac010016c5aa8bfb53acbf85b8257a3598c9c995"
+  },
+  "remote": {
+    "source": "/LCT-AVR/3dgen/deployment/sspredrnet-attention-20261003",
+    "python": "/tmp/sspredrnet-attention-env-20261003/bin/python",
+    "data_session": "sspredrnet-attention-data",
+    "experiment_session": "sspredrnet-attention-raven8",
+    "run_directory": "/LCT-AVR/3dgen/deployment/sspredrnet-attention-20261003/runs/attention-raven8-20261003",
+    "gpu_policy": "idle GPU 1, 2 or 3 only; leave GPU 0 for existing cup work",
+    "primary_gpu": 1
+  },
+  "last_verified_at_utc": "2026-10-03T05:12:42.518919+00:00",
+  "ablations": {
+    "plan": "research/ssl-attention-2026/ablation_protocol.md",
+    "snapshots_builder": "research/ssl-attention-2026/build_ablations.py",
+    "random_negatives": {
+      "session": "sspredrnet-attention-random8",
+      "gpu": 2,
+      "state": "complete_full_val_test"
+    },
+    "tokenwise_mlp": {
+      "session": "sspredrnet-attention-mlp8",
+      "gpu": 3,
+      "state": "complete_full_val_test"
+    },
+    "completion_energy_training": {
+      "state": "complete_full_val_test_test_below_baseline"
+    },
+    "discrete_support": {
+      "session": "sspredrnet-attention-discrete8",
+      "gpu": 1,
+      "state": "complete_full_val_test_test_below_baseline",
+      "introduced_after_primary_seed_and_two_ablations": true
+    }
+  },
+  "main_results": {
+    "best_mean_accuracy": 71.21666666666667,
+    "best_sample_std": 0.039339789623476805,
+    "baseline_test_accuracy": 71.03571428571429,
+    "all_three_best_and_final_nonregression": true,
+    "summary": "research/ssl-attention-2026/results/summary.json"
+  },
+  "publication": {
+    "remote": "git@github.com:c-xy-c/DARR-MNR.git",
+    "branch": "codex/component-program-ssl",
+    "ssh_authenticated_account": "wozhendetainanle"
+  }
+}

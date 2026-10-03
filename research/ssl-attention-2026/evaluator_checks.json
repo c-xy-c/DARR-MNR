@@ -1,0 +1,25 @@
+{
+  "fixture": "synthetic inputs plus mocked full-split summary/data scoring",
+  "full_raven_evaluation": false,
+  "initial_native_and_audit_predictions_match": true,
+  "zero_gate_support_exchange_does_not_touch_baseline": true,
+  "incomplete_split_rejected": true,
+  "test_requires_validation_nonregression_and_active_branch": true,
+  "both_checkpoint_states_loaded_and_frozen_baseline_verified": true,
+  "evaluation_overwrite_rejected": true,
+  "published_runtime_seal_unchanged": true,
+  "runtime_source_sha256": {
+    "attention_ssl/model.py": "b0b92b8da4ec6450cb12578a8ee6528ae85bb71d274b9af08e14922c25254f47",
+    "attention_ssl/train.py": "6ec85b0b239e4e7a93b7a01bac010016c5aa8bfb53acbf85b8257a3598c9c995",
+    "attention_ssl/evaluate.py": "012f9c5c7b35dbbc846336aa7bd520601a7dfd4e1d50111f8763cb5084a27236",
+    "program_ssl/model.py": "4ea98923999b755f0152ba7220be63cb1fb370330921205466fae623f6bb225b",
+    "program_ssl/data.py": "2e445c5aa496507db5af5ef320aed1508c39b5ea38984b938195305b921a238a",
+    "sspredrnet/model.py": "fd5a739e244a0a0a374cffe2fafa6aafad443aecc47c50a355bc286c061efa0b",
+    "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+    "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+    "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+    "sspredrnet/evaluate.py": "464155a4658c7240f2fcd49b5a01962a3203b2686ab250fc350e0eb9bb20d3fb",
+    "sspredrnet/checkpoint.py": "05ffb212da7e12e8a78a8ac2be2da1f102c1060a31e41396eeef0ba4bec3ca34"
+  },
+  "detached_gate_reporting_rechecked_without_warnings": true
+}

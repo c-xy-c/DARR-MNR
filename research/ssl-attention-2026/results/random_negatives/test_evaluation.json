@@ -1,0 +1,145 @@
+{
+  "split": "test",
+  "seal": {
+    "schema_version": 1,
+    "method": "attention-support-completion",
+    "experiment_variant": "random_negatives",
+    "source_sha256": {
+      "attention_ssl/model.py": "6205bbc04a94c92474c4d2e55071a3dabad84cfe2d8eabae90626b724c58ff20",
+      "attention_ssl/train.py": "440e54afe08e37143baac47e280256adae91a4d326753f8c4fdd13c6f4a8d4e2",
+      "attention_ssl/evaluate.py": "012f9c5c7b35dbbc846336aa7bd520601a7dfd4e1d50111f8763cb5084a27236",
+      "program_ssl/model.py": "4ea98923999b755f0152ba7220be63cb1fb370330921205466fae623f6bb225b",
+      "program_ssl/data.py": "2e445c5aa496507db5af5ef320aed1508c39b5ea38984b938195305b921a238a",
+      "sspredrnet/model.py": "fd5a739e244a0a0a374cffe2fafa6aafad443aecc47c50a355bc286c061efa0b",
+      "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+      "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+      "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+      "sspredrnet/evaluate.py": "464155a4658c7240f2fcd49b5a01962a3203b2686ab250fc350e0eb9bb20d3fb",
+      "sspredrnet/checkpoint.py": "05ffb212da7e12e8a78a8ac2be2da1f102c1060a31e41396eeef0ba4bec3ca34"
+    },
+    "baseline_sha256": "8a383fcc609127a7c35bfb9c6a2ffe064ce5285f66d8525b3668385ec915928c",
+    "evidence_weight": 0.2,
+    "frozen_reasoner_sha256": "59f6cb6138a87327e339a800150cba57233c568ba47c0372e303bb1673d2eb57",
+    "checkpoint_sha256": {
+      "best": "e7a53e3c3bf58e41f02940e5ab847d58e8998792ec3bfb8f1053668dd0746312",
+      "final": "bc3803c90c7c8f502dd355b217d98cadc4895230aacae1eba4d80d9794cb0e75"
+    },
+    "best_epoch": 4,
+    "epochs": 8,
+    "test_opened": false
+  },
+  "device": "cuda:0",
+  "torch": "2.11.0+cu128",
+  "checkpoints": {
+    "best": {
+      "full": {
+        "accuracy_macro": 71.2,
+        "correct": 9968,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 96.75,
+          "distribute_four": 44.7,
+          "distribute_nine": 32.85,
+          "in_center_single_out_center_single": 92.1,
+          "in_distribute_four_out_center_single": 38.9,
+          "left_center_single_right_center_single": 96.5,
+          "up_center_single_down_center_single": 96.6
+        }
+      },
+      "baseline": {
+        "accuracy_macro": 71.03571428571429,
+        "correct": 9945,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 96.5,
+          "distribute_four": 44.5,
+          "distribute_nine": 32.4,
+          "in_center_single_out_center_single": 92.1,
+          "in_distribute_four_out_center_single": 38.9,
+          "left_center_single_right_center_single": 96.35,
+          "up_center_single_down_center_single": 96.5
+        }
+      },
+      "swapped_support": {
+        "accuracy_macro": 70.93571428571428,
+        "correct": 9931,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 96.6,
+          "distribute_four": 44.35,
+          "distribute_nine": 32.7,
+          "in_center_single_out_center_single": 91.9,
+          "in_distribute_four_out_center_single": 38.35,
+          "left_center_single_right_center_single": 96.2,
+          "up_center_single_down_center_single": 96.45
+        }
+      },
+      "changed_answers_vs_baseline": 258,
+      "changed_answers_vs_swapped_support": 324,
+      "helped": 101,
+      "hurt": 78,
+      "max_score_change_vs_baseline": 0.1354215145111084,
+      "completion_gate": 0.33749958872795105,
+      "support_swap_preserves_baseline_scoring": true,
+      "swap_scope": "within evaluation batch, same public layout and component",
+      "nonregression_and_active_branch": true,
+      "epoch": 4,
+      "lineage_epoch": 24
+    },
+    "final": {
+      "full": {
+        "accuracy_macro": 71.19285714285714,
+        "correct": 9967,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 97.0,
+          "distribute_four": 45.0,
+          "distribute_nine": 31.85,
+          "in_center_single_out_center_single": 92.35,
+          "in_distribute_four_out_center_single": 38.8,
+          "left_center_single_right_center_single": 96.55,
+          "up_center_single_down_center_single": 96.8
+        }
+      },
+      "baseline": {
+        "accuracy_macro": 71.03571428571429,
+        "correct": 9945,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 96.5,
+          "distribute_four": 44.5,
+          "distribute_nine": 32.4,
+          "in_center_single_out_center_single": 92.1,
+          "in_distribute_four_out_center_single": 38.9,
+          "left_center_single_right_center_single": 96.35,
+          "up_center_single_down_center_single": 96.5
+        }
+      },
+      "swapped_support": {
+        "accuracy_macro": 70.7,
+        "correct": 9898,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 96.55,
+          "distribute_four": 43.75,
+          "distribute_nine": 31.6,
+          "in_center_single_out_center_single": 92.15,
+          "in_distribute_four_out_center_single": 38.15,
+          "left_center_single_right_center_single": 96.05,
+          "up_center_single_down_center_single": 96.65
+        }
+      },
+      "changed_answers_vs_baseline": 472,
+      "changed_answers_vs_swapped_support": 518,
+      "helped": 169,
+      "hurt": 147,
+      "max_score_change_vs_baseline": 0.16370081901550293,
+      "completion_gate": 0.5754716992378235,
+      "support_swap_preserves_baseline_scoring": true,
+      "swap_scope": "within evaluation batch, same public layout and component",
+      "nonregression_and_active_branch": true,
+      "epoch": 8,
+      "lineage_epoch": 28
+    }
+  }
+}

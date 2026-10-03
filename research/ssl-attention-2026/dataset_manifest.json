@@ -1,0 +1,47 @@
+{
+  "official_project": "https://wellyzhang.github.io/project/raven.html",
+  "official_download_url": "https://drive.google.com/file/d/1fUSmWZpCsoP6sLsmqrxbnD_RO2o1zj1S/view?usp=sharing",
+  "archive_sha256": "db866f6c4395d7d5f8bd0f51a8ee97493836ef750692e795293f71132ff3fddc",
+  "archive_bytes": 1353612230,
+  "dataset_root": "/LCT-AVR/3dgen/deployment/sspredrnet-attention-20261003/datasets/RAVEN",
+  "images": 70000,
+  "counts": {
+    "center_single": {
+      "train": 6000,
+      "val": 2000,
+      "test": 2000
+    },
+    "distribute_four": {
+      "train": 6000,
+      "val": 2000,
+      "test": 2000
+    },
+    "distribute_nine": {
+      "train": 6000,
+      "val": 2000,
+      "test": 2000
+    },
+    "in_center_single_out_center_single": {
+      "train": 6000,
+      "val": 2000,
+      "test": 2000
+    },
+    "in_distribute_four_out_center_single": {
+      "train": 6000,
+      "val": 2000,
+      "test": 2000
+    },
+    "left_center_single_right_center_single": {
+      "train": 6000,
+      "val": 2000,
+      "test": 2000
+    },
+    "up_center_single_down_center_single": {
+      "train": 6000,
+      "val": 2000,
+      "test": 2000
+    }
+  },
+  "npz_contents_opened_for_selection": false,
+  "xml_used": false
+}

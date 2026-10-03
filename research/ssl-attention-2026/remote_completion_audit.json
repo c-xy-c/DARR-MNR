@@ -1,0 +1,61 @@
+{
+  "runs": {
+    "seed12345": {
+      "phase": "complete",
+      "exit_code": 0,
+      "run_directory": "/LCT-AVR/3dgen/deployment/sspredrnet-attention-20261003/runs/attention-raven8-20261003",
+      "best_test": 71.23571428571428,
+      "final_test": 71.15714285714286
+    },
+    "seed12346": {
+      "phase": "complete",
+      "exit_code": 0,
+      "run_directory": "/LCT-AVR/3dgen/deployment/sspredrnet-attention-20261003/runs/attention-raven8-seed12346-20261003",
+      "best_test": 71.24285714285715,
+      "final_test": 71.13571428571429
+    },
+    "seed12347": {
+      "phase": "complete",
+      "exit_code": 0,
+      "run_directory": "/LCT-AVR/3dgen/deployment/sspredrnet-attention-20261003/runs/attention-raven8-seed12347-20261003",
+      "best_test": 71.17142857142856,
+      "final_test": 71.16428571428571
+    },
+    "random_negatives": {
+      "phase": "complete",
+      "exit_code": 0,
+      "run_directory": "/LCT-AVR/3dgen/deployment/sspredrnet-attention-20261003/ablations/sspredrnet-ablation-random-20261003/run",
+      "best_test": 71.2,
+      "final_test": 71.19285714285714
+    },
+    "tokenwise_mlp": {
+      "phase": "complete",
+      "exit_code": 0,
+      "run_directory": "/LCT-AVR/3dgen/deployment/sspredrnet-attention-20261003/ablations/sspredrnet-ablation-mlp-20261003/run",
+      "best_test": 71.18571428571428,
+      "final_test": 71.06428571428572
+    },
+    "completion_energy_training": {
+      "phase": "complete",
+      "exit_code": 0,
+      "run_directory": "/LCT-AVR/3dgen/deployment/sspredrnet-attention-20261003/ablations/sspredrnet-ablation-energy-20261003/run",
+      "best_test": 71.00714285714285,
+      "final_test": 70.92857142857143
+    },
+    "discrete_support": {
+      "phase": "complete",
+      "exit_code": 0,
+      "run_directory": "/LCT-AVR/3dgen/deployment/sspredrnet-attention-20261003/ablations/sspredrnet-ablation-discrete-20261003-v2/run",
+      "best_test": 71.00714285714285,
+      "final_test": 71.00714285714285
+    }
+  },
+  "gpu_state": [
+    "0, 1, 0",
+    "1, 1, 0",
+    "2, 1, 0",
+    "3, 1, 0"
+  ],
+  "all_seven_runs_terminal_success": true,
+  "active_attention_processes": []
+}

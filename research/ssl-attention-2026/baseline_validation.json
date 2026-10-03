@@ -1,0 +1,23 @@
+{
+  "split": "val",
+  "scope": "complete native 14000-puzzle matched baseline",
+  "historical_reference_correct": 9979,
+  "observed": {
+    "accuracy_macro": 71.27857142857142,
+    "accuracy_micro": 71.27857142857142,
+    "by_configuration": {
+      "center_single": 96.85,
+      "distribute_four": 46.6,
+      "distribute_nine": 34.05,
+      "in_center_single_out_center_single": 91.9,
+      "in_distribute_four_out_center_single": 36.95,
+      "left_center_single_right_center_single": 96.0,
+      "up_center_single_down_center_single": 96.6
+    },
+    "correct": 9979,
+    "total": 14000
+  },
+  "torch": "2.11.0+cu128",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "validation_replay_within_0_1pp": true
+}

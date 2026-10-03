@@ -1,0 +1,146 @@
+{
+  "split": "test",
+  "seal": {
+    "schema_version": 1,
+    "method": "attention-support-completion",
+    "experiment_variant": "discrete_support",
+    "source_sha256": {
+      "attention_ssl/discrete_support.py": "c2713f6b2474bbda54d5e949bac8ef9fc1f71b7bc3bcb8b6bad979e0acd60635",
+      "attention_ssl/model.py": "87da72748adb0e68b414073091270a95ddea03aed2bf03a939bc615bca55ee6f",
+      "attention_ssl/train.py": "76fb34e9ffdc9f88c49875245feafeda9d626fbe7ab584b10a5c84d8fadd2992",
+      "attention_ssl/evaluate.py": "012f9c5c7b35dbbc846336aa7bd520601a7dfd4e1d50111f8763cb5084a27236",
+      "program_ssl/model.py": "4ea98923999b755f0152ba7220be63cb1fb370330921205466fae623f6bb225b",
+      "program_ssl/data.py": "2e445c5aa496507db5af5ef320aed1508c39b5ea38984b938195305b921a238a",
+      "sspredrnet/model.py": "fd5a739e244a0a0a374cffe2fafa6aafad443aecc47c50a355bc286c061efa0b",
+      "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+      "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+      "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+      "sspredrnet/evaluate.py": "464155a4658c7240f2fcd49b5a01962a3203b2686ab250fc350e0eb9bb20d3fb",
+      "sspredrnet/checkpoint.py": "05ffb212da7e12e8a78a8ac2be2da1f102c1060a31e41396eeef0ba4bec3ca34"
+    },
+    "baseline_sha256": "8a383fcc609127a7c35bfb9c6a2ffe064ce5285f66d8525b3668385ec915928c",
+    "evidence_weight": 0.2,
+    "frozen_reasoner_sha256": "59f6cb6138a87327e339a800150cba57233c568ba47c0372e303bb1673d2eb57",
+    "checkpoint_sha256": {
+      "best": "95484ed925746c26dbdba636b9250c285e7352d9e8c60394e32053ef82279a8d",
+      "final": "95484ed925746c26dbdba636b9250c285e7352d9e8c60394e32053ef82279a8d"
+    },
+    "best_epoch": 8,
+    "epochs": 8,
+    "test_opened": false
+  },
+  "device": "cuda:0",
+  "torch": "2.11.0+cu128",
+  "checkpoints": {
+    "best": {
+      "full": {
+        "accuracy_macro": 71.00714285714285,
+        "correct": 9941,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 96.45,
+          "distribute_four": 44.35,
+          "distribute_nine": 32.6,
+          "in_center_single_out_center_single": 92.0,
+          "in_distribute_four_out_center_single": 38.75,
+          "left_center_single_right_center_single": 96.35,
+          "up_center_single_down_center_single": 96.55
+        }
+      },
+      "baseline": {
+        "accuracy_macro": 71.03571428571429,
+        "correct": 9945,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 96.5,
+          "distribute_four": 44.5,
+          "distribute_nine": 32.4,
+          "in_center_single_out_center_single": 92.1,
+          "in_distribute_four_out_center_single": 38.9,
+          "left_center_single_right_center_single": 96.35,
+          "up_center_single_down_center_single": 96.5
+        }
+      },
+      "swapped_support": {
+        "accuracy_macro": 71.04285714285713,
+        "correct": 9946,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 96.55,
+          "distribute_four": 44.35,
+          "distribute_nine": 32.65,
+          "in_center_single_out_center_single": 92.05,
+          "in_distribute_four_out_center_single": 38.8,
+          "left_center_single_right_center_single": 96.35,
+          "up_center_single_down_center_single": 96.55
+        }
+      },
+      "changed_answers_vs_baseline": 43,
+      "changed_answers_vs_swapped_support": 26,
+      "helped": 12,
+      "hurt": 16,
+      "max_score_change_vs_baseline": 0.03149688243865967,
+      "completion_gate": 0.425961434841156,
+      "support_swap_preserves_baseline_scoring": true,
+      "swap_scope": "within evaluation batch, same public layout and component",
+      "nonregression_and_active_branch": false,
+      "epoch": 8,
+      "lineage_epoch": 28
+    },
+    "final": {
+      "full": {
+        "accuracy_macro": 71.00714285714285,
+        "correct": 9941,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 96.45,
+          "distribute_four": 44.35,
+          "distribute_nine": 32.6,
+          "in_center_single_out_center_single": 92.0,
+          "in_distribute_four_out_center_single": 38.75,
+          "left_center_single_right_center_single": 96.35,
+          "up_center_single_down_center_single": 96.55
+        }
+      },
+      "baseline": {
+        "accuracy_macro": 71.03571428571429,
+        "correct": 9945,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 96.5,
+          "distribute_four": 44.5,
+          "distribute_nine": 32.4,
+          "in_center_single_out_center_single": 92.1,
+          "in_distribute_four_out_center_single": 38.9,
+          "left_center_single_right_center_single": 96.35,
+          "up_center_single_down_center_single": 96.5
+        }
+      },
+      "swapped_support": {
+        "accuracy_macro": 71.04285714285713,
+        "correct": 9946,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 96.55,
+          "distribute_four": 44.35,
+          "distribute_nine": 32.65,
+          "in_center_single_out_center_single": 92.05,
+          "in_distribute_four_out_center_single": 38.8,
+          "left_center_single_right_center_single": 96.35,
+          "up_center_single_down_center_single": 96.55
+        }
+      },
+      "changed_answers_vs_baseline": 43,
+      "changed_answers_vs_swapped_support": 26,
+      "helped": 12,
+      "hurt": 16,
+      "max_score_change_vs_baseline": 0.03149688243865967,
+      "completion_gate": 0.425961434841156,
+      "support_swap_preserves_baseline_scoring": true,
+      "swap_scope": "within evaluation batch, same public layout and component",
+      "nonregression_and_active_branch": false,
+      "epoch": 8,
+      "lineage_epoch": 28
+    }
+  }
+}

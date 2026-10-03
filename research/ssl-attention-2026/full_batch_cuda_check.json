@@ -1,0 +1,42 @@
+{
+  "device": "NVIDIA GeForce RTX 4090",
+  "torch": "2.11.0+cu128",
+  "fixture": "synthetic full-size batches",
+  "full_raven_evaluation": false,
+  "batch_size": 128,
+  "fp16_training_steps": 2,
+  "training_seconds": 1.0818847226910293,
+  "losses": [
+    2.1054611206054688,
+    2.1054604053497314
+  ],
+  "last_statistics": {
+    "contrastive": 2.1046085357666016,
+    "alignment": 0.008517969399690628,
+    "eligible_component_queries": 256,
+    "retrieval_correct": 30,
+    "baseline_retrieval_correct": 30,
+    "negative_count_mean": 7.0
+  },
+  "evaluation_shape": [
+    128,
+    8
+  ],
+  "peak_cuda_allocated_mib": 2584.2890625,
+  "frozen_reasoner_sha256": "59f6cb6138a87327e339a800150cba57233c568ba47c0372e303bb1673d2eb57",
+  "source_sha256": {
+    "attention_ssl/model.py": "b0b92b8da4ec6450cb12578a8ee6528ae85bb71d274b9af08e14922c25254f47",
+    "attention_ssl/train.py": "6ec85b0b239e4e7a93b7a01bac010016c5aa8bfb53acbf85b8257a3598c9c995",
+    "attention_ssl/evaluate.py": "012f9c5c7b35dbbc846336aa7bd520601a7dfd4e1d50111f8763cb5084a27236",
+    "program_ssl/model.py": "4ea98923999b755f0152ba7220be63cb1fb370330921205466fae623f6bb225b",
+    "program_ssl/data.py": "2e445c5aa496507db5af5ef320aed1508c39b5ea38984b938195305b921a238a",
+    "sspredrnet/model.py": "fd5a739e244a0a0a374cffe2fafa6aafad443aecc47c50a355bc286c061efa0b",
+    "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+    "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+    "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+    "sspredrnet/evaluate.py": "464155a4658c7240f2fcd49b5a01962a3203b2686ab250fc350e0eb9bb20d3fb",
+    "sspredrnet/checkpoint.py": "05ffb212da7e12e8a78a8ac2be2da1f102c1060a31e41396eeef0ba4bec3ca34"
+  },
+  "finite_scaled_gradients": true,
+  "native_fp32_evaluation_finite": true
+}

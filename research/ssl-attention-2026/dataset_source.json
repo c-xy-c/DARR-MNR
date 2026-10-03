@@ -1,0 +1,17 @@
+{
+  "official_repository": "https://github.com/WellyZhang/RAVEN",
+  "project_url": "https://wellyzhang.github.io/project/raven.html",
+  "download_links": [
+    "https://drive.google.com/file/d/1DcMFFdmeUxvRQE1XHJbxqMqHHM8DAeHw/view?usp=sharing",
+    "https://drive.google.com/file/d/1L3I-ik33k3Mq1n4SjZBr4BpgyBBmCOAR/view?usp=sharing",
+    "https://drive.google.com/file/d/1lraZSAh78pAbEHj2Kj7nyb6zlud8b2OV/view?usp=sharing",
+    "https://github.com/WellyZhang/RAVEN",
+    "/blog/2019/03/07/RAVEN",
+    "https://drive.google.com/file/d/1DcMFFdmeUxvRQE1XHJbxqMqHHM8DAeHw/view?usp=sharing",
+    "https://drive.google.com/file/d/1fUSmWZpCsoP6sLsmqrxbnD_RO2o1zj1S/view?usp=sharing",
+    "https://pan.baidu.com/s/1fL_T6W7XZLoMFqfjH5LhXw?pwd=kwj5",
+    "https://github.com/WellyZhang/RAVEN/tree/master/assets",
+    "https://github.com/WellyZhang/RAVEN"
+  ],
+  "download_section": ") Paper / Supplementary / Poster / Code / Blog Team Chi Zhang 1,2 Feng Gao 1,2 Baoxiong Jia 1 Yixin Zhu 1,2 Song-Chun Zhu 1,2 1 UCLA Center for Vision, Cognition, Learning, and Autonomy 2 International Center for AI and Robot Autonomy (CARA) Dataset Download RAVEN-10000 from Google Drive or from BaiduNetdisk : there are 10,000 problems for each figure configuration. Check our GitHub for dataset organization. The dataset is generated using Attributed Stochastic Image Grammar. In total, we have 7 configurations. Try it yourself! Code View on GitHub Bibtex @inproceedings{zhang2019raven, title={RAVEN: A Dataset for Relational and Analogical Visual rEasoNing}, author={Zhang, Chi and Gao, Feng and Jia, Baoxiong and Zhu, Yixin and Zhu, Song-Chun}, booktitle={Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, year={2019} }"
+}
