@@ -9,7 +9,10 @@ import numpy as np
 import torch
 
 from .data import proposal_pack, proposals, to_device
-from .model import StructuredCompletion, set_energy, pixel_duplicates, support_residuals, pack_factors, dynamic, STAGES, WIDTH, RANK
+from .model import StructuredCompletion
+from .objectives import set_energy, pixel_duplicates, support_residuals, masked_object_loss
+from .pav import pack_factors, dynamic
+from .constants import STAGES, WIDTH, RANK
 from . import ARCHITECTURE_REVISION
 
 
@@ -150,7 +153,7 @@ def main():
         assert model.pav.feedback[0](feedback_state, feedback_state, zero_residuals).eq(0).all()
         captured = []
         handle = model.perception.register_forward_pre_hook(lambda _, inputs: captured.append(inputs[0].clone()))
-        model.masked_loss(short, fixed_objects)
+        masked_object_loss(model, short, fixed_objects)
         handle.remove()
         masked_pixels = captured[-1].reshape(-1, 5, 80, 80)
         changed_panels = (masked_pixels != short['views'].flatten(0, 1)[:, :5]).flatten(2).any(-1).sum(-1)

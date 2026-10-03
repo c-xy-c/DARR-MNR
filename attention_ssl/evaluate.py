@@ -11,7 +11,7 @@ import torch
 
 from sspredrnet.data import CONFIGS, Raven, loader, normalize
 from .model import AttentionCompletion
-from .train import digest, source_hashes, reasoner_hash
+from .provenance import digest, source_hashes, reasoner_hash
 
 
 def summary(predictions, labels, configs):

@@ -14,7 +14,7 @@ from torch.nn import functional as F
 from attention_ssl.model import AttentionCompletion
 from sspredrnet.data import CONFIGS
 from structured_ssl.data import ObjectRaven, to_device
-from structured_ssl.model import dense_energy
+from sspredrnet.energy import operator_energy as dense_energy
 
 
 def target_objects(features, masks, geometry, valid):

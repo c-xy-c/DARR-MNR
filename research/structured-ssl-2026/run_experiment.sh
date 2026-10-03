@@ -30,7 +30,7 @@ printf 'training\n' > "$run_meta/phase.txt"
 printf 'validation_audit\n' > "$run_meta/phase.txt"
 "$task_python" -m structured_ssl.evaluate --dataset-root "$dataset_root" --run-dir "$run_dir" --split val
 printf 'locked_test\n' > "$run_meta/phase.txt"
-# Main evaluator requires complete validation nonregression and a real active
+# Main evaluator requires complete validation >=70% and a real active
 # support branch. Isolated preregistered controls use their sealed full-val gate.
 "$task_python" -m structured_ssl.evaluate --dataset-root "$dataset_root" --run-dir "$run_dir" --split test
 printf 'complete\n' > "$run_meta/phase.txt"

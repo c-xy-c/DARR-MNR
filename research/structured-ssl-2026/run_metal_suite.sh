@@ -30,13 +30,13 @@ adapt() {
     "$task_python" -u -m structured_ssl.evaluate --dataset-root "$dataset_root" \
         --run-dir "$run" --split val --device mps --workers 2 >> "$run.console.log" 2>&1
     if [[ "$variant" != primary ]] || "$task_python" -c \
-        'import json,sys; r=json.load(open(sys.argv[1])); sys.exit(0 if r["checkpoints"]["best"]["nonregression_and_active_branch"] else 1)' \
+        'import json,sys; from structured_ssl.policy import validation_allows_test; r=json.load(open(sys.argv[1])); sys.exit(0 if validation_allows_test(r["checkpoints"]["best"]) else 1)' \
         "$run/val_evaluation.json"; then
         printf '%s\n' "$variant-seed$seed:locked_test" > "$meta/phase.txt"
         "$task_python" -u -m structured_ssl.evaluate --dataset-root "$dataset_root" \
             --run-dir "$run" --split test --device mps --workers 2 >> "$run.console.log" 2>&1
     else
-        printf '%s\n' 'Test deferred: complete validation failed nonregression/active-support gate.' \
+        printf '%s\n' 'Test deferred: complete validation failed 70-percent/active-support gate.' \
             > "$run/test_deferred.txt"
     fi
     printf '%s\n' '0' > "$run/job_exit_code.txt"

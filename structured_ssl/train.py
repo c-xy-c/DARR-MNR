@@ -1,6 +1,5 @@
 """Full RAVEN adaptation; validation selects epochs, never test accuracy."""
 import argparse
-import hashlib
 import json
 import math
 import os
@@ -18,30 +17,8 @@ from .data import ObjectRaven, to_device
 from .model import StructuredCompletion
 from . import ARCHITECTURE_REVISION
 from .runtime import resolve_device, execution_record, rng_state, restore_rng, validation_reference
-
-
-SOURCE_FILES = ('structured_ssl/__init__.py', 'structured_ssl/model.py', 'structured_ssl/data.py', 'structured_ssl/train.py',
-                'structured_ssl/evaluate.py', 'attention_ssl/model.py', 'program_ssl/model.py',
-                'structured_ssl/runtime.py',
-                'program_ssl/data.py', 'sspredrnet/model.py', 'sspredrnet/layers.py',
-                'sspredrnet/views.py', 'sspredrnet/data.py', 'sspredrnet/checkpoint.py')
-
-
-def digest(path):
-    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
-
-
-def source_hashes():
-    root = Path(__file__).resolve().parents[1]
-    return {name: digest(root / name) for name in SOURCE_FILES}
-
-
-def anchor_hash(model):
-    result = hashlib.sha256()
-    for key, value in model.anchor.state_dict().items():
-        result.update(key.encode())
-        result.update(value.detach().cpu().contiguous().numpy().tobytes())
-    return result.hexdigest()
+from .policy import MINIMUM_ACCURACY_PERCENT
+from .provenance import anchor_hash, digest, source_hashes
 
 
 def score(model, dataset_root, split, device, batch_size, workers, generator):
@@ -126,6 +103,8 @@ def main():
               'anchor_sha256': digest(args.anchor), 'frozen_anchor_sha256': anchor_hash(model),
               'source_sha256': source_hashes(), 'training_count': len(train),
               'validation_count': len(validation), 'selection_split': 'val',
+              'evaluation_policy': {'minimum_accuracy_percent': MINIMUM_ACCURACY_PERCENT,
+                                    'active_support_branch_required': True},
               'baseline_and_batchnorm_frozen': True, 'new_pixel_encoder_trainable': True,
               'answer_candidates_in_adaptation': False, 'answer_labels_or_xml_in_adaptation': False,
               'visible_panel_count': 5, 'target_panel_count': 1,

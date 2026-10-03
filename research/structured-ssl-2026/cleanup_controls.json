@@ -1,0 +1,16 @@
+{
+  "policy_70_percent_boundary_checks_passed": true,
+  "exported_contribution_controls": [
+    {
+      "variant": "no_object_masking",
+      "all_gradients_finite": true,
+      "trainable_parameters": 2275350
+    },
+    {
+      "variant": "static_parameters",
+      "all_gradients_finite": true,
+      "trainable_parameters": 2275350
+    }
+  ],
+  "full_raven_evaluation": false
+}

@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 VARIANTS = ('completion_energy_training', 'random_negatives', 'tokenwise_mlp', 'discrete_support')
-PACKAGES = ('attention_ssl', 'program_ssl', 'sspredrnet')
+PACKAGES = ('attention_ssl', 'sspredrnet')
 
 
 def replace_once(source, before, after):
@@ -45,8 +45,8 @@ def export(repository, destination, variant):
                         'attended = self.attention(normed)')
                 elif variant == 'discrete_support':
                     source = replace_once(source,
-                        'from program_ssl.model import operator_energy',
-                        'from program_ssl.model import operator_energy\nfrom .discrete_support import DiscreteSupport')
+                        'from sspredrnet.energy import operator_energy',
+                        'from sspredrnet.energy import operator_energy\nfrom .discrete_support import DiscreteSupport')
                     source = replace_once(source,
                         'self.completion = SupportCompletion()',
                         'self.completion = DiscreteSupport()')
@@ -82,11 +82,11 @@ def export(repository, destination, variant):
         target = destination / relative
         target.write_text(source)
         exported_hashes[relative] = hashlib.sha256(target.read_bytes()).hexdigest()
-        trainer = destination / 'attention_ssl/train.py'
+        trainer = destination / 'attention_ssl/provenance.py'
         trainer.write_text(replace_once(trainer.read_text(),
-            "SOURCE_FILES = ('attention_ssl/model.py',",
-            "SOURCE_FILES = ('attention_ssl/discrete_support.py', 'attention_ssl/model.py',"))
-        exported_hashes['attention_ssl/train.py'] = hashlib.sha256(trainer.read_bytes()).hexdigest()
+            "SOURCE_FILES = (\n",
+            "SOURCE_FILES = (\n    'attention_ssl/discrete_support.py',\n"))
+        exported_hashes['attention_ssl/provenance.py'] = hashlib.sha256(trainer.read_bytes()).hexdigest()
         relative = 'attention_ssl/check_contracts.py'
         target = destination / relative
         target.write_text(Path(__file__).with_name('check_discrete.py').read_text())

@@ -17,29 +17,28 @@ def replace_once(source, before, after):
 def export(repository, destination, variant):
     destination.mkdir(parents=True, exist_ok=False)
     original, exported = {}, {}
-    for package in ('structured_ssl', 'attention_ssl', 'program_ssl', 'sspredrnet'):
+    for package in ('structured_ssl', 'attention_ssl', 'sspredrnet'):
         for path in sorted((repository / package).glob('*.py')):
             relative = str(path.relative_to(repository))
             source = path.read_text()
             original[relative] = hashlib.sha256(path.read_bytes()).hexdigest()
-            if relative == 'structured_ssl/model.py':
-                if variant == 'no_object_masking':
-                    source = replace_once(source, 'loss = retrieval + .1 * completion + .1 * masked',
-                                          'loss = retrieval + .1 * completion + 0. * masked')
-                else:
-                    source = replace_once(source,
-                        '        if factors is None:\n            factors = self.compiler(support, support_valid)',
-                        '        support = torch.zeros_like(support)\n'
-                        '        support_valid = torch.ones_like(support_valid)\n'
-                        '        support_target = torch.zeros_like(support_target)\n'
-                        '        support_objects = torch.zeros_like(support_objects)\n'
-                        '        support_object_valid = torch.zeros_like(support_object_valid)\n'
-                        '        if factors is None:\n            factors = self.compiler(support, support_valid)')
-                    source = replace_once(source,
-                        '        n = len(support)\n        padding = torch.cat',
-                        '        support = torch.zeros_like(support)\n'
-                        '        valid = torch.ones_like(valid)\n'
-                        '        n = len(support)\n        padding = torch.cat')
+            if relative == 'structured_ssl/objectives.py' and variant == 'no_object_masking':
+                source = replace_once(source, 'loss = retrieval + .1 * completion + .1 * masked',
+                                      'loss = retrieval + .1 * completion + 0. * masked')
+            if relative == 'structured_ssl/pav.py' and variant == 'static_parameters':
+                source = replace_once(source,
+                    '        factors = self.compiler(support, support_valid)',
+                    '        support = torch.zeros_like(support)\n'
+                    '        support_valid = torch.ones_like(support_valid)\n'
+                    '        support_target = torch.zeros_like(support_target)\n'
+                    '        support_objects = torch.zeros_like(support_objects)\n'
+                    '        support_object_valid = torch.zeros_like(support_object_valid)\n'
+                    '        factors = self.compiler(support, support_valid)')
+                source = replace_once(source,
+                    '        n = len(support)\n        padding = torch.cat',
+                    '        support = torch.zeros_like(support)\n'
+                    '        valid = torch.ones_like(valid)\n'
+                    '        n = len(support)\n        padding = torch.cat')
             if relative == 'structured_ssl/check_contracts.py':
                 if variant == 'no_object_masking':
                     source = replace_once(source, 'assert all(value > 0 for value in gradients.values())',
@@ -59,7 +58,7 @@ def export(repository, destination, variant):
                 # Preregistered controls report declines too. They must have
                 # sealed, complete validation; they need not pass main acceptance.
                 source = replace_once(source,
-                    "validation['seal'] != seal or not validation['checkpoints']['best']['nonregression_and_active_branch']",
+                    "validation['seal'] != seal or not validation_allows_test(validation['checkpoints']['best'])",
                     "validation['seal'] != seal or validation['checkpoints']['best']['full']['total'] != 14000")
             target = destination / relative
             target.parent.mkdir(parents=True, exist_ok=True)

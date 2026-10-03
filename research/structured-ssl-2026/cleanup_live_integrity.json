@@ -1,0 +1,11 @@
+{
+  "run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-priority-metal-20261003-213645",
+  "sealed_source_files_verified": {
+    "primary": 30,
+    "no_object_masking": 27,
+    "static_parameters": 27
+  },
+  "original_training_exports_modified": false,
+  "training_process_interrupted": false,
+  "full_raven_evaluation": false
+}

@@ -15,9 +15,10 @@ import torch
 from torch.nn import functional as F
 
 from attention_ssl.model import AttentionCompletion
-from program_ssl.data import KnownRowTraining
+from sspredrnet.data import KnownRowTraining
 from sspredrnet.data import CONFIGS, Raven, normalize
-from structured_ssl.model import dense_energy, pixel_duplicates
+from sspredrnet.energy import operator_energy as dense_energy
+from structured_ssl.objectives import pixel_duplicates
 
 
 def statistics(values):

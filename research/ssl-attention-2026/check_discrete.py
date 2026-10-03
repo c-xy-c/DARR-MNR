@@ -7,7 +7,7 @@ from pathlib import Path
 import torch
 
 from attention_ssl.model import AttentionCompletion
-from attention_ssl.train import reasoner_hash, source_hashes
+from attention_ssl.provenance import reasoner_hash, source_hashes
 from sspredrnet.model import SSPredRNet
 
 

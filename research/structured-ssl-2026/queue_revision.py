@@ -16,6 +16,7 @@ import sys
 import time
 
 from structured_ssl import ARCHITECTURE_REVISION
+from structured_ssl.policy import validation_allows_test
 
 
 def digest(path):
@@ -178,11 +179,11 @@ def main():
             set_phase(job.name + ':validation_audit')
             run(['-m', 'structured_ssl.evaluate', *base, '--split', 'val'], source, log)
             audit = json.loads((job / 'val_evaluation.json').read_text())
-            if variant != 'primary' or audit['checkpoints']['best']['nonregression_and_active_branch']:
+            if variant != 'primary' or validation_allows_test(audit['checkpoints']['best']):
                 set_phase(job.name + ':locked_test')
                 run(['-m', 'structured_ssl.evaluate', *base, '--split', 'test'], source, log)
             else:
-                (job / 'test_deferred.txt').write_text('Test deferred: complete validation failed nonregression/active-support gate.\n')
+                (job / 'test_deferred.txt').write_text('Test deferred: complete validation failed 70-percent/active-support gate.\n')
             (job / 'job_exit_code.txt').write_text('0\n')
         set_phase('collect_completed_revision')
         run(['research/structured-ssl-2026/collect_results.py', '--run-root', str(root),

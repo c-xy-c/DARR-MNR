@@ -141,7 +141,18 @@ def collect(run_root):
             for checkpoint in ('best', 'final'):
                 if validation['checkpoints'][checkpoint]['anchor']['correct'] != config['platform_anchor_validation_correct']:
                     raise RuntimeError('validation changed its immutable attention anchor')
-            passed = validation['checkpoints']['best']['nonregression_and_active_branch']
+            # Historical seals retain their recorded nonregression criterion.
+            # New runs declare the user's 70% criterion before training.
+            best_report = validation['checkpoints']['best']
+            if 'evaluation_policy' in config:
+                declared = config['evaluation_policy']
+                if declared != {'minimum_accuracy_percent': 70., 'active_support_branch_required': True}:
+                    raise RuntimeError('unexpected declared evaluation policy')
+                passed = (100 * best_report['full']['correct'] / 14000 >= 70.
+                          and best_report['changed_answers_vs_anchor'] > 0
+                          and best_report['changed_answers_vs_swapped_support'] > 0)
+            else:
+                passed = best_report['nonregression_and_active_branch']
             if rejected and passed:
                 raise RuntimeError('test was declared validation-rejected despite a passed gate')
             if variant == 'primary' and not rejected and not passed:

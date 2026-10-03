@@ -8,8 +8,9 @@ import torch
 from sspredrnet.data import CONFIGS, loader
 from .data import ObjectRaven, to_device
 from .model import StructuredCompletion
-from .train import anchor_hash, digest, source_hashes
+from .provenance import anchor_hash, digest, source_hashes
 from .runtime import resolve_device
+from .policy import validation_allows_test, MINIMUM_ACCURACY_PERCENT
 
 
 def summary(predictions, labels, configs):
@@ -105,14 +106,14 @@ def main():
             raise RuntimeError(f'{name} checkpoint bytes changed')
     if args.split == 'test':
         validation = json.loads((root / 'val_evaluation.json').read_text())
-        if validation['seal'] != seal or not validation['checkpoints']['best']['nonregression_and_active_branch']:
-            raise RuntimeError('best has not passed complete validation nonregression/active-support audit')
+        if validation['seal'] != seal or not validation_allows_test(validation['checkpoints']['best']):
+            raise RuntimeError('best has not passed complete validation 70-percent/active-support audit')
     torch.set_num_threads(4)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     model = StructuredCompletion().to(device).eval()
     report = {'split': args.split, 'seal': seal, 'torch': str(torch.__version__),
-              'device': str(device), 'checkpoints': {}}
+              'device': str(device), 'minimum_accuracy_percent': MINIMUM_ACCURACY_PERCENT, 'checkpoints': {}}
     for name in ('best', 'final'):
         checkpoint = torch.load(root / f'{name}.pt', map_location=device, weights_only=False)
         model.load_state_dict(checkpoint['model'], strict=True)

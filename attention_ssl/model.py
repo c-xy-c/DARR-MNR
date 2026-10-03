@@ -9,7 +9,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from program_ssl.model import operator_energy
+from sspredrnet.energy import operator_energy
 from sspredrnet.model import Reasoner
 
 

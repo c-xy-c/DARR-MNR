@@ -4,11 +4,8 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-from program_ssl.data import KnownRowTraining
-from sspredrnet.data import Raven
-
-
-OBJECTS = 10
+from sspredrnet.data import KnownRowTraining, Raven
+from .constants import OBJECTS
 
 
 def proposals(panel):

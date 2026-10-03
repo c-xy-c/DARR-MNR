@@ -1,6 +1,5 @@
 """Adapt attention completion on known panels; select with the deployed energy."""
 import argparse
-import hashlib
 import json
 import math
 import os
@@ -12,34 +11,11 @@ import time
 import numpy as np
 import torch
 
-from program_ssl.data import KnownRowTraining
 from sspredrnet.checkpoint import rng_state, restore_rng, save_checkpoint
-from sspredrnet.data import Raven, loader, normalize
+from sspredrnet.data import KnownRowTraining, Raven, loader, normalize
 from sspredrnet.evaluate import score
 from .model import AttentionCompletion
-
-
-SOURCE_FILES = ('attention_ssl/model.py', 'attention_ssl/train.py', 'attention_ssl/evaluate.py',
-                'program_ssl/model.py', 'program_ssl/data.py', 'sspredrnet/model.py',
-                'sspredrnet/layers.py', 'sspredrnet/views.py', 'sspredrnet/data.py',
-                'sspredrnet/evaluate.py', 'sspredrnet/checkpoint.py')
-
-
-def digest(path):
-    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
-
-
-def source_hashes():
-    root = Path(__file__).resolve().parents[1]
-    return {name: digest(root / name) for name in SOURCE_FILES}
-
-
-def reasoner_hash(model):
-    fingerprint = hashlib.sha256()
-    for name, tensor in model.reasoner.state_dict().items():
-        fingerprint.update(name.encode())
-        fingerprint.update(tensor.detach().cpu().contiguous().numpy().tobytes())
-    return fingerprint.hexdigest()
+from .provenance import reasoner_hash, digest, source_hashes
 
 
 def main():

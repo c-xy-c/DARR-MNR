@@ -12,7 +12,7 @@ import torch
 
 from structured_ssl.data import ObjectRaven, to_device
 from structured_ssl.model import StructuredCompletion
-from structured_ssl.train import source_hashes
+from structured_ssl.provenance import source_hashes
 
 
 def main():
