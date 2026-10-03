@@ -1,4 +1,4 @@
-"""CUDA checks for support dependence and target/candidate exclusion."""
+"""Checks for support dependence and target/candidate exclusion."""
 import argparse
 import json
 from pathlib import Path
@@ -16,11 +16,14 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--baseline', required=True)
     parser.add_argument('--output', required=True)
+    parser.add_argument('--device', default='cuda:0' if torch.cuda.is_available() else 'cpu')
     args = parser.parse_args()
+    device = torch.device(args.device)
+    torch.set_num_threads(4)
     torch.manual_seed(12345)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-    state = torch.load(args.baseline, map_location='cuda', weights_only=False)['model']
+    state = torch.load(args.baseline, map_location=device, weights_only=False)['model']
     with tempfile.TemporaryDirectory(prefix='program-ssl-contract-') as temporary:
         directory = Path(temporary) / 'center_single'
         directory.mkdir()
@@ -56,19 +59,19 @@ def main():
         after, _, _ = dataset[index]
         assert torch.equal(before[:, :5], after[:, :5])
         assert not torch.equal(before[:, 5], after[:, 5])
-    original = SSPredRNet().cuda().eval()
+    original = SSPredRNet().to(device).eval()
     original.load_state_dict(state, strict=True)
-    model = ComponentProgram().cuda().eval()
+    model = ComponentProgram().to(device).eval()
     model.load_baseline(state)
-    images = torch.rand(4, 2, 16, 80, 80, device='cuda') * 2 - 1
-    configurations = torch.zeros(4, dtype=torch.long, device='cuda')
+    images = torch.rand(4, 2, 16, 80, 80, device=device) * 2 - 1
+    configurations = torch.zeros(4, dtype=torch.long, device=device)
     with torch.no_grad():
         base = original(images)
-        removed = model(images, intervention='no_program')
+        removed = model.score_components(model.features(images), len(images))[0]
         difference = float((base - removed).abs().max())
         assert torch.allclose(base, removed, atol=1e-6, rtol=1e-6)
         active = model(images)
-        permutation = torch.tensor([6, 2, 7, 0, 1, 5, 3, 4], device='cuda')
+        permutation = torch.tensor([6, 2, 7, 0, 1, 5, 3, 4], device=device)
         reordered = images.clone()
         reordered[:, :, 8:] = images[:, :, 8:][:, :, permutation]
         assert torch.allclose(model(reordered), active[:, permutation], atol=1e-6, rtol=1e-6)
@@ -88,7 +91,8 @@ def main():
     optimizer = torch.optim.Adam([p for p in model.parameters() if p.requires_grad], lr=3e-4)
     for _ in range(2):
         optimizer.zero_grad(set_to_none=True)
-        with torch.autocast(device_type='cuda', dtype=torch.float16):
+        with torch.autocast(device_type=device.type, dtype=torch.float16,
+                            enabled=device.type == 'cuda'):
             loss, _ = model.ssl(images[:, :, :6], configurations)
         assert torch.isfinite(loss)
         loss.backward()
@@ -101,17 +105,9 @@ def main():
     model.eval()
     with torch.no_grad():
         active = model(images)
-        unif = model(images, intervention='uniform_program')
-        removed = model(images, intervention='no_program')
-        assert float((active - unif).abs().max()) > 0
+        removed = model.score_components(model.features(images), len(images))[0]
         assert float((active - removed).abs().max()) > 0
         assert torch.allclose(model(reordered), active[:, permutation], atol=1e-6, rtol=1e-6)
-        model.verification_mode = 'support_evidence_ratio'
-        ratio = model(images)
-        ratio_uniform = model(images, intervention='uniform_program')
-        assert torch.equal(ratio_uniform, removed)
-        assert float((ratio - removed).abs().max()) > 0
-        assert torch.allclose(model(reordered), ratio[:, permutation], atol=1e-6, rtol=1e-6)
     report = {'removed_program_matches_baseline_max_difference': difference,
               'candidate_permutation_equivariant_before_and_after_updates': True,
               'ssl_rejects_candidate_containing_inputs': True,
@@ -120,12 +116,11 @@ def main():
               'raw_target_cannot_change_observed_views_in_nested_layout': True,
               'compiled_weights_and_query_predictions_independent_of_query_target': True,
               'support_programs_vary_before_training': True,
-              'all_trainable_parameters_have_finite_fp16_gradients': True,
+              'all_trainable_parameters_have_finite_gradients': True,
+              'gradient_precision': 'float16' if device.type == 'cuda' else 'float32',
+              'device': str(device),
               'operators_and_prior_have_nonzero_gradients': True,
-              'active_minus_uniform_max_score_change': float((active - unif).abs().max()),
               'active_minus_no_program_max_score_change': float((active - removed).abs().max())}
-    report['evidence_ratio_uniform_exactly_removes_context_evidence'] = True
-    report['evidence_ratio_candidate_permutation_equivariant'] = True
     Path(args.output).write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report), flush=True)
 

@@ -13,28 +13,7 @@ import torch
 from .data import Raven, loader, normalize
 from .evaluate import score
 from .model import SSPredRNet, prediction_loss
-
-
-def save_checkpoint(checkpoint, path):
-    temporary = path.with_suffix('.tmp')
-    torch.save(checkpoint, temporary)
-    os.replace(temporary, path)
-
-
-def rng_state(train_generator, val_generator):
-    return {'python': random.getstate(), 'numpy': np.random.get_state(),
-            'torch': torch.get_rng_state(), 'cuda': torch.cuda.get_rng_state_all(),
-            'train_generator': train_generator.get_state(),
-            'val_generator': val_generator.get_state()}
-
-
-def restore_rng(state, train_generator, val_generator):
-    random.setstate(state['python'])
-    np.random.set_state(state['numpy'])
-    torch.set_rng_state(state['torch'].cpu())
-    torch.cuda.set_rng_state_all([s.cpu() for s in state['cuda']])
-    train_generator.set_state(state['train_generator'].cpu())
-    val_generator.set_state(state['val_generator'].cpu())
+from .checkpoint import save_checkpoint, rng_state, restore_rng
 
 
 def main():

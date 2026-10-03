@@ -3,7 +3,6 @@
 Only validation/test evaluation is cached. Training views and gradients are
 untouched. Test caches may be built only by the checkpoint-locked evaluator.
 """
-import argparse
 import fcntl
 import hashlib
 import json
@@ -15,8 +14,6 @@ import numpy as np
 import torch
 
 from sspredrnet.data import CONFIGS, Raven, loader, normalize
-from sspredrnet.evaluate import score as native_score
-from .model import ComponentProgram
 
 
 def encoder_digest(model):
@@ -48,7 +45,8 @@ class FrozenFeatureCache:
                     'source_sha256': {str(p.relative_to(package)):
                         hashlib.sha256(p.read_bytes()).hexdigest() for p in code_paths},
                     'torch': str(torch.__version__), 'numpy': str(np.__version__),
-                    'opencv': str(cv2.__version__), 'gpu': torch.cuda.get_device_name(device),
+                    'opencv': str(cv2.__version__), 'device': str(device),
+                    'gpu': torch.cuda.get_device_name(device) if device.type == 'cuda' else None,
                     'cudnn_deterministic': torch.backends.cudnn.deterministic,
                     'cudnn_benchmark': torch.backends.cudnn.benchmark,
                     'matmul_tf32': torch.backends.cuda.matmul.allow_tf32,
@@ -74,7 +72,7 @@ class FrozenFeatureCache:
     def _build(self, model, dataset, metadata, workers):
         model.eval()
         features, answers, configurations = [], [], []
-        with torch.inference_mode(), torch.autocast(device_type='cuda', enabled=False):
+        with torch.inference_mode(), torch.autocast(device_type=self.device.type, enabled=False):
             for images, labels, configs in loader(dataset, self.batch_size, workers,
                     torch.Generator().manual_seed(12346)):
                 images = normalize(images.to(self.device, non_blocking=True))
@@ -96,7 +94,7 @@ class FrozenFeatureCache:
         # that draw so checkpoint RNG states retain the same val-generator path.
         torch.empty((), dtype=torch.int64).random_(generator=generator)
         correct, total = [0] * 7, [0] * 7
-        with torch.inference_mode(), torch.autocast(device_type='cuda', enabled=False):
+        with torch.inference_mode(), torch.autocast(device_type=self.device.type, enabled=False):
             for start in range(0, len(self.features), self.batch_size):
                 stop = min(start + self.batch_size, len(self.features))
                 features = self.features[start:stop].flatten(0, 1)
@@ -112,49 +110,3 @@ class FrozenFeatureCache:
         return {'accuracy_macro': sum(by_config.values()) / 7,
                 'accuracy_micro': 100 * sum(correct) / sum(total),
                 'by_configuration': by_config, 'correct': sum(correct), 'total': sum(total)}
-
-
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--dataset-root', required=True)
-    parser.add_argument('--cache-root', required=True)
-    parser.add_argument('--baseline', required=True)
-    parser.add_argument('--program-checkpoint', required=True)
-    parser.add_argument('--output', required=True)
-    args = parser.parse_args()
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-    torch.set_num_threads(4)
-    device = torch.device('cuda:0')
-    baseline = ComponentProgram(use_program=False).to(device).eval()
-    baseline.load_baseline(torch.load(args.baseline, map_location=device, weights_only=False)['model'])
-    cache = FrozenFeatureCache(baseline, args.dataset_root, 'val', args.cache_root, device)
-    program = ComponentProgram().to(device).eval()
-    program.load_state_dict(torch.load(args.program_checkpoint, map_location=device,
-                                       weights_only=False)['model'], strict=True)
-    reports = {}
-    for name, model, verification in (('baseline', baseline, 'posterior'),
-                                     ('program', program, 'posterior'),
-                                     ('evidence_ratio', program, 'support_evidence_ratio')):
-        model.verification_mode = verification
-        first = torch.Generator().manual_seed(12346)
-        second = torch.Generator().manual_seed(12346)
-        cuda_before = torch.cuda.get_rng_state_all()
-        native = native_score(model, args.dataset_root, 'val', device, generator=first)
-        cached = cache.score(model, generator=second)
-        if native != cached:
-            raise RuntimeError(f'{name}: full native/cache validation mismatch')
-        if not torch.equal(first.get_state(), second.get_state()):
-            raise RuntimeError('cached scoring changes validation RNG state')
-        if not all(torch.equal(a, b) for a, b in zip(cuda_before, torch.cuda.get_rng_state_all())):
-            raise RuntimeError('evaluation unexpectedly consumes CUDA RNG')
-        reports[name] = {'complete_validation_equal': True, 'counts': native,
-                         'validation_generator_equal': True, 'cuda_rng_unchanged': True}
-    reports['cache_fingerprint'] = cache.fingerprint
-    reports['training_source_unchanged'] = True
-    Path(args.output).write_text(json.dumps(reports, indent=2) + '\n')
-    print(json.dumps(reports), flush=True)
-
-
-if __name__ == '__main__':
-    main()

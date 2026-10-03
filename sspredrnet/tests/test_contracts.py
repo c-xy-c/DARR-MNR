@@ -11,7 +11,7 @@ from torch import nn
 from sspredrnet.data import Raven
 from sspredrnet.model import SSPredRNet, prediction_loss
 from sspredrnet.views import component_views
-from sspredrnet.train import rng_state, restore_rng
+from sspredrnet.checkpoint import rng_state, restore_rng
 
 
 class FakeReasoner(nn.Module):

@@ -1,82 +1,98 @@
-# Component-conditioned predictive programs
+# CECS + SER-PaV
 
-Research code based on the published SSPredRNet component-view checkpoint.
-The [method and experiment contract](../research/component-program-ssl/design.md)
-defines CECS self-supervision and support evidence ratio PaV verification.
+The runnable method has one self-supervised training task and one inference
+formula, built on the component-view SSPredRNet checkpoint. See the
+[method](../research/component-program-ssl/design.md) and
+[measured results](../research/component-program-ssl/results.md).
 
-This is an eight-epoch adaptation study initialized from the validation-selected
-epoch-17 checkpoint of a completed 20-epoch run. It is not training from scratch.
-The full method freezes the complete baseline and learns completion operators
-using six known panels. Its earlier baseline pretraining used answer candidates
-as unlabeled negatives.
+## Pipeline
+
+1. Training reads only the first six known panels and makes two component views.
+   Only the five observed panels determine a global split fallback; an ambiguous
+   target falls back independently. Answer indices and candidates are excluded.
+2. The complete pretrained SSPredRNet, including its BatchNorm buffers, is frozen.
+3. Six learned completion operators predict a query ending. Support-row
+   prediction errors and a bounded prior determine the operator weights.
+4. CECS learns the known sixth panel using positive completion energy and
+   InfoNCE against other known targets of the same layout and component.
+5. At inference, both complete rows determine fixed operator weights. The
+   evidence ratio subtracts uniform-operator compatibility from posterior
+   compatibility. Candidate energy is baseline PaV energy plus 0.05 times this
+   ratio; the lowest of eight scores wins.
+
+This is adaptation from a pretrained baseline, not training from scratch. The
+baseline's original training used answer candidates as unlabeled negatives.
+No collapse regularizer or bidirectional task is included.
+
+## Commands
+
+Run from the repository root with dependencies in
+[sspredrnet/requirements.txt](../sspredrnet/requirements.txt).
 
 ```bash
 python -m program_ssl.check_contracts \
-  --baseline sspredrnet/results/raven-20epoch/best.pt --output preflight.json
+  --baseline sspredrnet/results/raven-20epoch/best.pt \
+  --device cpu --output preflight.json
 
 python -m program_ssl.train \
   --dataset-root /path/to/RAVEN --run-dir runs/program \
-  --baseline sspredrnet/results/raven-20epoch/best.pt --study program --epochs 8
+  --baseline sspredrnet/results/raven-20epoch/best.pt \
+  --epochs 8 --lr 3e-4
+
+python -m program_ssl.evaluate \
+  --dataset-root /path/to/RAVEN --run-dir runs/program \
+  --split test --output runs/program/test-evaluation.json
 ```
 
-Run the same command with separate output directories and studies `control`,
-`program-no-ssl`, and `program-static` to complete the comparison.
+Training requires CUDA. Contract checks support CPU or CUDA. For a new run,
+validation selects the best checkpoint using baseline plus 0.1 times posterior
+completion energy. Inference uses the fixed 0.05 evidence ratio. These separate
+roles preserve the measured checkpoint-selection protocol; they are not
+user-selectable scoring modes. Training never opens the test split.
 
-After all four runs complete, validation audits lock the checkpoints before test:
+Use `--resume` with the same arguments to resume a run made by this trainer
+(config version 4). Historical version-3 runs require their original source.
+Completed training writes `inference.json`, sealing source files, both
+checkpoints and the inference weight. Evaluation verifies that seal before
+opening data, and refuses to overwrite an explicitly named output file.
+Optional `--cache-root /path/to/cache` reuses frozen FP32 evaluation features;
+training does not use this cache.
 
-```bash
-python -m program_ssl.evaluate \
-  --dataset-root /path/to/RAVEN --experiment-root runs
-python -m program_ssl.evaluate \
-  --dataset-root /path/to/RAVEN --experiment-root runs --test
-```
-
-The published `sspredrnet` package and its 70.38% result are unchanged. The new
-model was evaluated after validation selection and checkpoint locking. Its
-selected checkpoint scores **70.257143%** (9836/14000) on test. The final
-checkpoint scores **70.264286%** (9837/14000). Both meet the requested 70% gate,
-while remaining below the baseline and the original-reasoner continuation.
-No result is inherited from the baseline or a rejected prototype.
-
-The four studies, eight checkpoints, validation audit, selection grid and test
-lock are included under [results/support-program-v3](results/support-program-v3).
-See the [results and limits](../research/component-program-ssl/results.md) and
-[two contribution definitions](../research/component-program-ssl/contributions.md).
-
-To replay the locked published test evaluation from the repository root:
+## Published checkpoints and historical evidence
 
 ```bash
 python -m program_ssl.evaluate \
   --dataset-root /path/to/RAVEN \
-  --experiment-root program_ssl/results/support-program-v3 --test
+  --run-dir program_ssl/results/support-program-v3/program \
+  --split test --output reproduced-test.json
 ```
 
-The checkpoints retain training state. The duplicate remote `last.pt` files are omitted from the published
-records. Remote run directories preserve full resume state.
+The original completed experiment reports **70.257143%** (9836/14000) for the
+validation-selected checkpoint and **70.264286%** (9837/14000) for the final
+checkpoint. These are historical full-RAVEN measurements. They are below the
+70.38% baseline; a candidate-ranking benefit is not established. CECS improved
+held-out known-panel retrieval by 2.14 percentage points against the original
+margin adaptation, which is a different metric.
 
-Version 3 isolates preprocessing of the masked target. Only the five observed
-predictor panels determine a global component fallback. An ambiguous target
-falls back independently. Version 2 was rejected for violating this boundary.
-Its records are preserved under `research/component-program-ssl/archive-v2`.
+The cleanup preserved checkpoint bytes and historical result/lock files.
+[cleanup_verification.json](results/support-program-v3/cleanup_verification.json)
+compares this implementation with commit `f43cf58`: preprocessing across all
+seven layouts, two loss/gradient/Adam steps, and all eight candidate scores
+from the published best and final checkpoints. These cleanup checks used
+synthetic fixtures on CPU, not a renewed complete RAVEN/GPU evaluation.
+[cleanup_contracts.json](results/support-program-v3/cleanup_contracts.json)
+checks candidate exclusion, target isolation, permutation equivariance and
+finite gradients. The separate `program/inference.json` seals the cleaned
+runtime and includes the historical test counts as replay expectations. It
+does not replace the original `test_lock.json` or retroactively preregister
+the experiment.
 
-After checkpoint selection, the auditor calibrates the positive weight over
-`[0.05, 0.1, 0.2]` and compares posterior energy with a support evidence ratio.
-The latter subtracts uniform operator compatibility from posterior energy.
-It was introduced after validation diagnostics showed that direct energy
-addition could duplicate candidate appearance preferences. This is a six-item
-validation grid, not an original preregistration. Checkpoints remain selected
-by the original training validation metric. The chosen formula and weight are
-locked for best and final test evaluation. Zero is only an intervention.
-
-Evaluation can reuse exact FP32 features from the frozen CNN. The cache does
-not affect training. Full native/cache validation counts and generator states
-were checked for the baseline and program. Test features are first generated
-after the evaluator checks the checkpoint and source lock. The selected full
-model's complete native test evaluation also matched cached scoring exactly.
-
-CECS improved held-out known-panel retrieval by 2.14 percentage points versus
-training the same new branch with the original margin objective. This is
-within-batch completion retrieval, not eight-choice RAVEN accuracy. Uniform
-support interventions reduce that retrieval result. Candidate accuracy gains
-from SER-PaV are not established. The proposal has one RAVEN seed and does not
-establish semantic rule discovery or generalization beyond this experiment.
+The four-study trainer, interventions, calibration grid, legacy scoring
+switches and server-specific launcher have been removed from current runtime.
+Their measurements remain under [results/support-program-v3](results/support-program-v3).
+To reproduce those historical studies and their original lock, use a separate
+checkout of commit `f43cf580250303f4c860c161df668502ea2aa1f3`.
+Rejected prototype records remain under `research/component-program-ssl/archive-v1`
+and `archive-v2`; obsolete prototype executables are not part of the current
+API. Checkpoints retain optimizer/RNG state; duplicate `last.pt` files are
+omitted from the published records.

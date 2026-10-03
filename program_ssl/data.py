@@ -8,17 +8,13 @@ from sspredrnet.views import split_layers
 
 
 class KnownRowTraining(Raven):
-    def __init__(self, root, *, include_candidates=False):
+    def __init__(self, root):
         super().__init__(root, 'train')
-        self.include_candidates = include_candidates
 
     def __getitem__(self, index):
         path = self.paths[index]
         with np.load(path, allow_pickle=False) as data:
-            raw = data['image'].reshape(16, 160, 160)
-            indices = [0, 1, 2, 3, 4, 5, 0, 1]
-            indices += list(range(8, 16)) if self.include_candidates else [0] * 8
-            raw = raw[indices]
+            raw = data['image'].reshape(16, 160, 160)[:6]
         panels = np.stack([cv2.resize(p, (80, 80), interpolation=cv2.INTER_NEAREST)
                            for p in raw]).astype(np.uint8)
         if random.random() < .5:
@@ -29,12 +25,10 @@ class KnownRowTraining(Raven):
         if any(layer is None for layer in layers[:5]):
             views = np.stack((panels, panels))
         else:
-            # Ambiguous target/candidate panels fall back independently. They
+            # An ambiguous target falls back independently. It
             # cannot change the views of support or query-prefix panels.
             layers = [np.stack((p, p)) if layer is None else layer
                       for p, layer in zip(panels, layers)]
             views = np.stack(layers, axis=1)
-        if not self.include_candidates:
-            views = views[:, :6]
         return (torch.from_numpy(views.astype(np.float32)), -1,
                 CONFIGS.index(path.parent.name))

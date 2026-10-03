@@ -80,4 +80,6 @@ achieved 70.26% test accuracy after validation selection. Known-panel retrieval
 improved, while candidate accuracy remained below the 70.38% baseline and
 original-reasoner continuation. The [contribution definitions](research/component-program-ssl/contributions.md),
 [complete results](research/component-program-ssl/results.md), checkpoints and
-locked evaluator document those limits.
+evaluation records document those limits. The current runtime retains one CECS
+training task and one SER-PaV inference path; historical ablation code is
+available at commit `f43cf58`. See [the current commands](program_ssl/README.md).

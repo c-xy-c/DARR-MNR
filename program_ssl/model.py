@@ -71,25 +71,17 @@ def operator_energy(predictions, targets):
 
 class ComponentProgram(nn.Module):
     """Frozen baseline plus candidate-independent completion programs."""
-    def __init__(self, *, use_program=True, program_weight=.1,
-                 support_temperature=.15, verify_temperature=.15,
-                 static_program=False, margin=.7, verification_mode='posterior'):
+    def __init__(self, *, program_weight=.05):
         super().__init__()
+        if not math.isfinite(program_weight) or program_weight <= 0:
+            raise ValueError('program_weight must be finite and positive')
         self.reasoner = Reasoner()
-        self.use_program, self.static_program = use_program, static_program
         self.program_weight = program_weight
-        self.support_temperature, self.verify_temperature = support_temperature, verify_temperature
-        self.margin = margin
-        if verification_mode not in ('posterior', 'support_evidence_ratio'):
-            raise ValueError('unknown verification energy')
-        self.verification_mode = verification_mode
-        if use_program:
-            self.operators = CompletionOperators()
-            if not static_program:
-                self.prior = ProgramPrior()
-        for name, parameter in self.reasoner.named_parameters():
-            if use_program or name.startswith(('res', 'channel_reducer')):
-                parameter.requires_grad_(False)
+        self.support_temperature = self.verify_temperature = .15
+        self.operators = CompletionOperators()
+        self.prior = ProgramPrior()
+        self.reasoner.requires_grad_(False)
+        self.reasoner.eval()
 
     def load_baseline(self, state):
         self.reasoner.load_state_dict({k.removeprefix('reasoner.'): v
@@ -97,24 +89,14 @@ class ComponentProgram(nn.Module):
 
     def train(self, mode=True):
         super().train(mode)
-        for module in self.modules():
-            if isinstance(module, nn.BatchNorm2d):
-                module.eval()
-        if self.use_program:
-            self.reasoner.eval()
-        else:
-            for index in range(4):
-                getattr(self.reasoner, f'res{index}').eval()
-            self.reasoner.channel_reducer.eval()
+        self.reasoner.eval()
         return self
 
     def features(self, views):
         with torch.no_grad():
             return self.reasoner._features(views.flatten(0, 1))
 
-    def compile(self, support, *, intervention=None):
-        if self.static_program or intervention == 'uniform_program':
-            return torch.full((len(support), 6), 1 / 6, device=support.device)
+    def compile(self, support):
         predicted_support = self.operators(support[:, :2])
         evidence = operator_energy(predicted_support, support[:, 2:3])[:, :, 0]
         # A bounded prior cannot drown out measured support disagreement.
@@ -124,27 +106,18 @@ class ComponentProgram(nn.Module):
 
     def verify(self, prefix, targets, alpha):
         energies = operator_energy(self.operators(prefix), targets)
+        return self.marginal_energy(energies, alpha)
+
+    def marginal_energy(self, energies, alpha):
         logits = alpha.clamp_min(1e-12).log()[:, :, None] - energies / self.verify_temperature
         return -self.verify_temperature * torch.logsumexp(logits, dim=1)
 
-    def verification_energy(self, prefix, targets, alpha):
-        posterior = self.verify(prefix, targets, alpha)
-        if self.verification_mode == 'posterior':
-            return posterior
-        uniform = torch.full_like(alpha, 1 / alpha.shape[-1])
-        return posterior - self.verify(prefix, targets, uniform)
+    def score_components(self, features, batch):
+        """Baseline, posterior completion, and support evidence ratio scores.
 
-    def training_errors(self, features, program_error=None):
-        targets = torch.cat((features[:, 5:6], features[:, 8:]), 1)
-        n, choices = targets.shape[:2]
-        context = features[:, :5].unsqueeze(1).expand(-1, choices, -1, -1, -1)
-        matrices = torch.cat((context, targets.unsqueeze(2)), 2)
-        errors = self.reasoner._errors(matrices)
-        if program_error is not None:
-            errors = [e + self.program_weight * program_error for e in errors]
-        return errors
-
-    def predict_features(self, features, batch, *, intervention=None):
+        Posterior scores select adaptation checkpoints under the measured
+        training protocol. The evidence ratio is the deployed ranking energy.
+        """
         errors = []
         for support_indices in ([0, 1, 2], [3, 4, 5]):
             context = torch.cat((features[:, support_indices], features[:, 6:8]), 1)
@@ -152,16 +125,25 @@ class ComponentProgram(nn.Module):
                                   features[:, 8:].unsqueeze(2)), 2)
             errors.append(self.reasoner._errors(matrices)[-1])
         base = (errors[0] + errors[1]).reshape(batch, 2, 8).mean(1)
-        if not self.use_program or intervention == 'no_program':
-            return base
-        first = self.compile(features[:, :3], intervention=intervention)
-        second = self.compile(features[:, 3:6], intervention=intervention)
+        first = self.compile(features[:, :3])
+        second = self.compile(features[:, 3:6])
         joint_log = .5 * (first.clamp_min(1e-12).log() + second.clamp_min(1e-12).log())
         alpha = joint_log.softmax(-1)
-        if intervention == 'swapped_program':
-            alpha = alpha.roll(2, 0)
-        program = self.verification_energy(features[:, 6:8], features[:, 8:], alpha)
-        return base + self.program_weight * program.reshape(batch, 2, 8).mean(1)
+        energies = operator_energy(self.operators(features[:, 6:8]), features[:, 8:])
+        posterior = self.marginal_energy(energies, alpha)
+        uniform = self.marginal_energy(energies, torch.full_like(alpha, 1 / 6))
+        ratio = (posterior - uniform).reshape(batch, 2, 8).mean(1)
+        return base, posterior.reshape(batch, 2, 8).mean(1), ratio
+
+    def predict_features(self, features, batch):
+        base, _, ratio = self.score_components(features, batch)
+        return base + self.program_weight * ratio
+
+    def selection_scores(self, views):
+        """Keep the recorded adaptation selection metric: posterior weight .1."""
+        self._check_ranking_input(views)
+        base, posterior, _ = self.score_components(self.features(views), len(views))
+        return base + .1 * posterior
 
     def ssl(self, views, configurations):
         """Only six known panels can physically enter the auxiliary task."""
@@ -181,20 +163,11 @@ class ComponentProgram(nn.Module):
         logits = (-energies / self.verify_temperature).masked_fill(mask | (duplicates & ~eye), -torch.inf)
         return energies.diagonal().mean() + F.cross_entropy(logits, ids), alpha
 
-    def forward(self, views, *, intervention=None):
+    @staticmethod
+    def _check_ranking_input(views):
         if tuple(views.shape[1:]) != (2, 16, 80, 80):
             raise ValueError('ranking requires sixteen panels per component view')
-        features = self.features(views)
-        if not self.training:
-            return self.predict_features(features, len(views), intervention=intervention)
-        alpha, program_error = None, None
-        if self.use_program:
-            alpha = self.compile(features[:, :3])
-            targets = torch.cat((features[:, 5:6], features[:, 8:]), 1)
-            program_error = self.verify(features[:, 3:5], targets, alpha)
-        errors = self.training_errors(features, program_error)
-        flat = views.flatten(0, 1)
-        identical = (flat[:, 8:] == flat[:, 5:6]).flatten(2).all(2)
-        errors = [torch.cat((e[:, :1], e[:, 1:].masked_fill(identical, self.margin)), 1)
-                  for e in errors]
-        return {'errors': errors, 'alpha': alpha}
+
+    def forward(self, views):
+        self._check_ranking_input(views)
+        return self.predict_features(self.features(views), len(views))

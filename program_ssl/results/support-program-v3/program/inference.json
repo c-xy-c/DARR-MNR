@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "method": "cecs-serpav",
+  "program_weight": 0.05,
+  "selection_split": "val",
+  "source_sha256": {
+    "program_ssl/model.py": "4ea98923999b755f0152ba7220be63cb1fb370330921205466fae623f6bb225b",
+    "program_ssl/data.py": "2e445c5aa496507db5af5ef320aed1508c39b5ea38984b938195305b921a238a",
+    "program_ssl/train.py": "2ce328084105b9b7640fad72696845392445503d0a1af81fbcdf58034b1776f0",
+    "program_ssl/evaluate.py": "f6ad090129ac10ebaac450ba010236b5e54d3b65e56514ae533be754fcaa80b9",
+    "program_ssl/feature_cache.py": "59fc3cca71d436e41511c7a3e3c93659a3f543508e1afa38118c25e054eeaa25",
+    "program_ssl/check_contracts.py": "8ce5db6eeb5c6958df36a9cef7feb126d1c22005aefebb5f1718dcd1b237aa31",
+    "sspredrnet/checkpoint.py": "05ffb212da7e12e8a78a8ac2be2da1f102c1060a31e41396eeef0ba4bec3ca34",
+    "sspredrnet/model.py": "fd5a739e244a0a0a374cffe2fafa6aafad443aecc47c50a355bc286c061efa0b",
+    "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+    "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+    "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+    "sspredrnet/evaluate.py": "464155a4658c7240f2fcd49b5a01962a3203b2686ab250fc350e0eb9bb20d3fb",
+    "sspredrnet/train.py": "e42d93ee5d956132ce3a36d08f72d874bc1445cf80aa4e9fbec42b8ed3c00c67"
+  },
+  "checkpoint_sha256": {
+    "best": "62813f9c4e66d56b8e301b55c9e57a6d2042c04e761417a706a5f731ccb98b78",
+    "final": "7c23982ce729e9a369ffdc01ca93a242e855596e8489edf8e39d9b554e1c1e12"
+  },
+  "expected": {
+    "best": {
+      "test": {
+        "accuracy_macro": 70.25714285714285,
+        "accuracy_micro": 70.25714285714285,
+        "by_configuration": {
+          "center_single": 95.3,
+          "distribute_four": 45.4,
+          "distribute_nine": 33.25,
+          "in_center_single_out_center_single": 89.9,
+          "in_distribute_four_out_center_single": 38.35,
+          "left_center_single_right_center_single": 94.65,
+          "up_center_single_down_center_single": 94.95
+        },
+        "correct": 9836,
+        "total": 14000
+      }
+    },
+    "final": {
+      "test": {
+        "accuracy_macro": 70.2642857142857,
+        "accuracy_micro": 70.26428571428572,
+        "by_configuration": {
+          "center_single": 95.3,
+          "distribute_four": 45.4,
+          "distribute_nine": 33.25,
+          "in_center_single_out_center_single": 89.85,
+          "in_distribute_four_out_center_single": 38.3,
+          "left_center_single_right_center_single": 94.7,
+          "up_center_single_down_center_single": 95.05
+        },
+        "correct": 9837,
+        "total": 14000
+      }
+    }
+  }
+}
