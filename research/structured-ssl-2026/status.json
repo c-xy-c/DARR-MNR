@@ -1,5 +1,5 @@
 {
-  "status": "v1_calibrated_metal_suite_running_v2_revision_preflight_and_queue",
+  "status": "v1_primary_validation_rejected_fixed_controls_running_v2_waiting",
   "full_raven_result_claimed": false,
   "current_model_test_accuracy": null,
   "reference_anchor": "research/ssl-attention-2026/results/seed12345/best.pt",
@@ -72,7 +72,7 @@
     "ssh_authenticated_account": "wozhendetainanle",
     "stage": "experimental_v2_implementation_and_queued_experiment_no_v2_full_accuracy"
   },
-  "status_as_of_utc": "2026-10-03T11:42:12.361231+00:00",
+  "status_as_of_utc": "2026-10-03T12:24:52.141864+00:00",
   "execution": {
     "device": "mps",
     "batch_size": 128,
@@ -93,22 +93,29 @@
       "native": 9979
     },
     "historical_discrepancy_cause_fully_identified": false,
-    "phase": "training"
+    "phase": "original:training_and_locked_evaluation"
   },
   "architecture_revision": "isolated-target-structured-feedback-v2",
   "v1_running_experiment": {
     "run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-metal-calibrated-20261003-173653",
     "architecture_revision": "whole_panel_region_targets_mean_support_feedback_v1",
-    "completed_primary_epochs": 7,
+    "completed_primary_epochs": 8,
     "best_epoch": 1,
     "best_validation_accuracy": 71.22857142857143,
-    "latest_epoch": 7,
-    "latest_validation_correct": 9751,
-    "latest_validation_accuracy": 69.65,
+    "latest_epoch": 8,
+    "latest_validation_correct": 9783,
+    "latest_validation_accuracy": 69.87857142857142,
     "same_platform_anchor_validation_accuracy": 71.51428571428572,
     "current_model_test_accuracy": null,
     "selection_split": "val",
-    "fixed_queue_and_source_exports_preserved": true
+    "fixed_queue_and_source_exports_preserved": true,
+    "independent_validation_audit_complete": true,
+    "primary_phase": "validation_rejected_test_deferred",
+    "primary_job_exit_code": 0,
+    "final_helped": 350,
+    "final_hurt": 579,
+    "final_correct_minus_swapped_support": 19,
+    "full_validation_audit_sha256": "4c3aa1450a6767016a4f68cd494a18da3b3c5b438f87736874d335ea0b8c1b89"
   },
   "revision_v2": {
     "run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-isolated-metal-20261003-193803",
@@ -158,5 +165,34 @@
       "no_object_masking": "36e54e9adf2210a0e10c46ebb141ef6a57a0a1cec5ff73618ecbc65fa2c60737",
       "static_parameters": "efbdfcd9dbb3eb8a76d53e992ad41cbfd14df8b062e0a8a91b121f4352a44e48"
     }
+  },
+  "negative_difficulty_diagnosis": {
+    "sampled_training_puzzles": 128,
+    "sampled_validation_puzzles": 56,
+    "parameter_updates": 0,
+    "test_opened": false,
+    "running_or_queued_design_modified": false,
+    "source": "research/structured-ssl-2026/check_negative_difficulty.py",
+    "artifact_sha256": "0e1cb0ee0f4d7ae7d83741ee817b8431544078712e94ba3c0b579c237a42dfc9",
+    "full_accuracy_or_causal_attribution_established": false
+  },
+  "compiler_rank_diagnosis": {
+    "sampled_validation_puzzles": 21,
+    "test_opened": false,
+    "parameter_updates": 0,
+    "final_effective_rank_medians": {
+      "stage1_P": 1.000002384185791,
+      "stage1_G": 1.0000054836273193,
+      "stage1_V": 1.0000901818275452,
+      "stage2_P": 1.0000041127204895,
+      "stage2_G": 1.0000026226043701,
+      "stage2_V": 1.0000624656677246,
+      "stage3_P": 1.0000030994415283,
+      "stage3_G": 1.000004529953003,
+      "stage3_V": 1.0000845193862915
+    },
+    "artifact_sha256": "550f46e9fe5ce1ef8adcee80d4c76ddb36e9006fe686969679e0ce6c069c4578",
+    "entire_model_rank_or_causal_failure_not_established": true,
+    "running_and_queued_design_modified": false
   }
 }

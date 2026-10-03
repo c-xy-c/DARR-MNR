@@ -1,0 +1,488 @@
+{
+  "fixture": "128 balanced sampled training puzzles and 56 sampled validation puzzles",
+  "seed": 12345,
+  "training_indices": [
+    26572,
+    26063,
+    19530,
+    19821,
+    18899,
+    8344,
+    32838,
+    2343,
+    36764,
+    25252,
+    25757,
+    26005,
+    21872,
+    10279,
+    22596,
+    20638,
+    19305,
+    16085,
+    23932,
+    36364,
+    14962,
+    8787,
+    35795,
+    29149,
+    22005,
+    33490,
+    31654,
+    36563,
+    28862,
+    38103,
+    15984,
+    27658,
+    10632,
+    1374,
+    27807,
+    31743,
+    21211,
+    7159,
+    37687,
+    10891,
+    15309,
+    7317,
+    14751,
+    26217,
+    4035,
+    14038,
+    36979,
+    38062,
+    33768,
+    1278,
+    25493,
+    36164,
+    9345,
+    32647,
+    22828,
+    35221,
+    13639,
+    32270,
+    17611,
+    13541,
+    34157,
+    34922,
+    24512,
+    20841,
+    30952,
+    17417,
+    17387,
+    28551,
+    15403,
+    4719,
+    30058,
+    8849,
+    4773,
+    13893,
+    15792,
+    41813,
+    35210,
+    5920,
+    18727,
+    36511,
+    35828,
+    5029,
+    28627,
+    13741,
+    4050,
+    36718,
+    41506,
+    13502,
+    4182,
+    1222,
+    41252,
+    8836,
+    31070,
+    3401,
+    37692,
+    20436,
+    6776,
+    41679,
+    10455,
+    19784,
+    27220,
+    14706,
+    3680,
+    3586,
+    8037,
+    13983,
+    19674,
+    6488,
+    41294,
+    6957,
+    38887,
+    20854,
+    31257,
+    27705,
+    1994,
+    31532,
+    1119,
+    3848,
+    37995,
+    1360,
+    28491,
+    7596,
+    8990,
+    24648,
+    6146,
+    1895,
+    10390,
+    23688
+  ],
+  "validation_indices": [
+    1889,
+    1400,
+    744,
+    850,
+    441,
+    1228,
+    1683,
+    1483,
+    3917,
+    3203,
+    3809,
+    2600,
+    3138,
+    3006,
+    2217,
+    3671,
+    5710,
+    5635,
+    4629,
+    5061,
+    4956,
+    4906,
+    4745,
+    5457,
+    6443,
+    7303,
+    6991,
+    7448,
+    6574,
+    7930,
+    7681,
+    6026,
+    8294,
+    9889,
+    9345,
+    8426,
+    9726,
+    8211,
+    9758,
+    8379,
+    10303,
+    11642,
+    10622,
+    11160,
+    10734,
+    10915,
+    10167,
+    10021,
+    12193,
+    13622,
+    13182,
+    13542,
+    13020,
+    13019,
+    12953,
+    12831
+  ],
+  "train_panels_per_component": 6,
+  "validation_panels_per_component": 16,
+  "teacher_device": "cpu",
+  "teacher_precision": "float32",
+  "anchor_sha256": "de3ea68bdd26272a9991fa394a38aa5d1c0b4d55078d10a968f67cec0a1c5b88",
+  "diagnostic_source_sha256": "69cf944efa571bbc4d39c3b271cc1c6406ab26deec84277b75cc21c7db2d9849",
+  "split_usage": {
+    "train": "known sixth only for mining, no answer candidates or indices",
+    "val": "true answer index used only for candidate distance diagnostic"
+  },
+  "test_opened": false,
+  "parameter_updates": 0,
+  "full_raven_evaluation": false,
+  "running_or_queued_design_modified": false,
+  "by_configuration": {
+    "center_single": {
+      "train_known_sixth_nearest_negative": {
+        "count": 38,
+        "median": 0.06666702032089233,
+        "p10": 0.011843687295913698,
+        "p90": 0.1504363656044008
+      },
+      "train_known_sixth_seven_nearest": {
+        "count": 266,
+        "median": 0.1860654354095459,
+        "p10": 0.06814175844192505,
+        "p90": 0.2881618142127991
+      },
+      "train_legal_donors": {
+        "count": 38,
+        "median": 18.0,
+        "p10": 17.7,
+        "p90": 18.0
+      },
+      "validation_true_answer_nearest_wrong_candidate": {
+        "count": 16,
+        "median": 0.01582583785057068,
+        "p10": 0.00500333309173584,
+        "p90": 0.03133895993232727
+      },
+      "validation_true_answer_nearest_pixel_distinct_wrong_candidate": {
+        "count": 16,
+        "median": 0.01582583785057068,
+        "p10": 0.00500333309173584,
+        "p90": 0.03133895993232727
+      },
+      "validation_seven_wrong_candidates": {
+        "count": 112,
+        "median": 0.07903334498405457,
+        "p10": 0.01746668815612793,
+        "p90": 0.19577316641807557
+      },
+      "validation_duplicate_component_candidates": 0
+    },
+    "distribute_four": {
+      "train_known_sixth_nearest_negative": {
+        "count": 38,
+        "median": 0.15179896354675293,
+        "p10": 0.10865195989608765,
+        "p90": 0.2667967081069948
+      },
+      "train_known_sixth_seven_nearest": {
+        "count": 266,
+        "median": 0.3131822943687439,
+        "p10": 0.17442673444747925,
+        "p90": 0.41923588514328003
+      },
+      "train_legal_donors": {
+        "count": 38,
+        "median": 18.0,
+        "p10": 18.0,
+        "p90": 18.0
+      },
+      "validation_true_answer_nearest_wrong_candidate": {
+        "count": 16,
+        "median": 0.006096899509429932,
+        "p10": 0.0034249424934387207,
+        "p90": 0.023883432149887085
+      },
+      "validation_true_answer_nearest_pixel_distinct_wrong_candidate": {
+        "count": 16,
+        "median": 0.006096899509429932,
+        "p10": 0.0034249424934387207,
+        "p90": 0.023883432149887085
+      },
+      "validation_seven_wrong_candidates": {
+        "count": 112,
+        "median": 0.0762384831905365,
+        "p10": 0.00560356378555298,
+        "p90": 0.47128484249115005
+      },
+      "validation_duplicate_component_candidates": 0
+    },
+    "distribute_nine": {
+      "train_known_sixth_nearest_negative": {
+        "count": 36,
+        "median": 0.19303417205810547,
+        "p10": 0.07684764266014099,
+        "p90": 0.2917509078979492
+      },
+      "train_known_sixth_seven_nearest": {
+        "count": 252,
+        "median": 0.32690584659576416,
+        "p10": 0.16785526275634766,
+        "p90": 0.47097863554954533
+      },
+      "train_legal_donors": {
+        "count": 36,
+        "median": 17.0,
+        "p10": 17.0,
+        "p90": 17.0
+      },
+      "validation_true_answer_nearest_wrong_candidate": {
+        "count": 16,
+        "median": 0.01955127716064453,
+        "p10": 0.0055956244468688965,
+        "p90": 0.04348000884056091
+      },
+      "validation_true_answer_nearest_pixel_distinct_wrong_candidate": {
+        "count": 16,
+        "median": 0.01955127716064453,
+        "p10": 0.0055956244468688965,
+        "p90": 0.04348000884056091
+      },
+      "validation_seven_wrong_candidates": {
+        "count": 112,
+        "median": 0.10940518975257874,
+        "p10": 0.012239992618560793,
+        "p90": 0.41072575449943555
+      },
+      "validation_duplicate_component_candidates": 0
+    },
+    "in_center_single_out_center_single": {
+      "train_known_sixth_nearest_negative": {
+        "count": 36,
+        "median": 0.04772871732711792,
+        "p10": 0.01164400577545166,
+        "p90": 0.12444809079170227
+      },
+      "train_known_sixth_seven_nearest": {
+        "count": 252,
+        "median": 0.12252533435821533,
+        "p10": 0.02572402954101563,
+        "p90": 0.21117768287658692
+      },
+      "train_legal_donors": {
+        "count": 36,
+        "median": 17.0,
+        "p10": 17.0,
+        "p90": 17.0
+      },
+      "validation_true_answer_nearest_wrong_candidate": {
+        "count": 16,
+        "median": 0.0,
+        "p10": 0.0,
+        "p90": 1.1920928955078125e-07
+      },
+      "validation_true_answer_nearest_pixel_distinct_wrong_candidate": {
+        "count": 16,
+        "median": 0.021296709775924683,
+        "p10": 0.011422216892242432,
+        "p90": 0.057563841342926025
+      },
+      "validation_seven_wrong_candidates": {
+        "count": 112,
+        "median": 0.006451845169067383,
+        "p10": 0.0,
+        "p90": 0.18070212006568928
+      },
+      "validation_duplicate_component_candidates": 55
+    },
+    "in_distribute_four_out_center_single": {
+      "train_known_sixth_nearest_negative": {
+        "count": 36,
+        "median": 0.09452995657920837,
+        "p10": 0.021457195281982422,
+        "p90": 0.17612165212631226
+      },
+      "train_known_sixth_seven_nearest": {
+        "count": 252,
+        "median": 0.1540021002292633,
+        "p10": 0.06999641060829163,
+        "p90": 0.3436316251754761
+      },
+      "train_legal_donors": {
+        "count": 36,
+        "median": 17.0,
+        "p10": 16.5,
+        "p90": 17.0
+      },
+      "validation_true_answer_nearest_wrong_candidate": {
+        "count": 16,
+        "median": 2.9802322387695312e-08,
+        "p10": 0.0,
+        "p90": 1.7881393432617188e-07
+      },
+      "validation_true_answer_nearest_pixel_distinct_wrong_candidate": {
+        "count": 15,
+        "median": 0.03534942865371704,
+        "p10": 0.002382338047027588,
+        "p90": 0.09914824962615967
+      },
+      "validation_seven_wrong_candidates": {
+        "count": 112,
+        "median": 0.0009876787662506104,
+        "p10": 0.0,
+        "p90": 0.2860101342201234
+      },
+      "validation_duplicate_component_candidates": 56
+    },
+    "left_center_single_right_center_single": {
+      "train_known_sixth_nearest_negative": {
+        "count": 36,
+        "median": 0.07803675532341003,
+        "p10": 0.028861790895462036,
+        "p90": 0.13567548990249634
+      },
+      "train_known_sixth_seven_nearest": {
+        "count": 252,
+        "median": 0.16391056776046753,
+        "p10": 0.07045004963874817,
+        "p90": 0.26943081617355347
+      },
+      "train_legal_donors": {
+        "count": 36,
+        "median": 17.0,
+        "p10": 17.0,
+        "p90": 17.0
+      },
+      "validation_true_answer_nearest_wrong_candidate": {
+        "count": 16,
+        "median": 0.0,
+        "p10": 0.0,
+        "p90": 5.960464477539063e-08
+      },
+      "validation_true_answer_nearest_pixel_distinct_wrong_candidate": {
+        "count": 16,
+        "median": 0.02243104577064514,
+        "p10": 0.009859025478363037,
+        "p90": 0.042076706886291504
+      },
+      "validation_seven_wrong_candidates": {
+        "count": 112,
+        "median": 0.0020062923431396484,
+        "p10": 0.0,
+        "p90": 0.1806141197681427
+      },
+      "validation_duplicate_component_candidates": 56
+    },
+    "up_center_single_down_center_single": {
+      "train_known_sixth_nearest_negative": {
+        "count": 36,
+        "median": 0.06544187664985657,
+        "p10": 0.020915746688842773,
+        "p90": 0.10638675093650818
+      },
+      "train_known_sixth_seven_nearest": {
+        "count": 252,
+        "median": 0.1338048279285431,
+        "p10": 0.061026746034622194,
+        "p90": 0.23454867005348207
+      },
+      "train_legal_donors": {
+        "count": 36,
+        "median": 17.0,
+        "p10": 17.0,
+        "p90": 17.0
+      },
+      "validation_true_answer_nearest_wrong_candidate": {
+        "count": 16,
+        "median": 0.0,
+        "p10": 0.0,
+        "p90": 1.1920928955078125e-07
+      },
+      "validation_true_answer_nearest_pixel_distinct_wrong_candidate": {
+        "count": 16,
+        "median": 0.01650005578994751,
+        "p10": 0.006723463535308838,
+        "p90": 0.10655152797698975
+      },
+      "validation_seven_wrong_candidates": {
+        "count": 112,
+        "median": 0.002568572759628296,
+        "p10": 0.0,
+        "p90": 0.14038647413253785
+      },
+      "validation_duplicate_component_candidates": 56
+    }
+  },
+  "limitations": [
+    "Balanced donor pool is a sample, not the random training batch sequence.",
+    "Distances use the dense frozen-teacher mining metric, not the complete scoring model.",
+    "Component duplicates can be distinguished by the other component at puzzle level.",
+    "Known-sixth and true-third-cell images are different tasks; this comparison is descriptive.",
+    "A distance gap alone does not prove it causes validation regression."
+  ]
+}

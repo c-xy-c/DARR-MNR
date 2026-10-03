@@ -114,8 +114,11 @@ interventions. Its real batch128 preflight and full experiment run separately;
 v1 memory/timing figures must not be attributed to v2.
 
 The v1 Metal run is preserved in
-`runs/structured-metal-calibrated-20261003-173653`. Its best through epoch6 is
-71.2286% validation (epoch1), below the same-platform frozen anchor's 71.5143%.
+`runs/structured-metal-calibrated-20261003-173653`. Its complete eight-epoch
+primary best is71.2286% validation (epoch1), final69.8786%, below the same-platform
+frozen anchor's71.5143%. The independent best/final validation audit replayed
+these counts and deferred test. See the [complete validation and sampled
+compiler-rank diagnosis](../research/structured-ssl-2026/v1_primary_diagnosis.md).
 V2 corrects two measured information losses; no v2 accuracy gain is established.
 See [revision details](../research/structured-ssl-2026/revision-v2.md).
 

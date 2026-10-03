@@ -1,0 +1,148 @@
+{
+  "split": "val",
+  "seal": {
+    "schema_version": 1,
+    "method": "structured-object-support-pav",
+    "source_sha256": {
+      "structured_ssl/model.py": "9af8d4abafc3e51c9a660f9e9774627dab21d0c123a5c9f60a7e060e3a772804",
+      "structured_ssl/data.py": "0d87a1dfda73dbc498399a3d1851946fe11d942c54f5c595d77d1f013a01e3ac",
+      "structured_ssl/train.py": "895f2816fe5140e722b0f3d295303088ba98904f77599b7200f8921bd662fe95",
+      "structured_ssl/evaluate.py": "393cd69b4beebd038f3832c2c15670d0c03bffb934742a9d25bc29e4cde1d49b",
+      "attention_ssl/model.py": "b0b92b8da4ec6450cb12578a8ee6528ae85bb71d274b9af08e14922c25254f47",
+      "program_ssl/model.py": "4ea98923999b755f0152ba7220be63cb1fb370330921205466fae623f6bb225b",
+      "structured_ssl/runtime.py": "d542503b0d8e26d7d7461f30edd92438483f3f4c368dff427d1a0805bd06a765",
+      "program_ssl/data.py": "2e445c5aa496507db5af5ef320aed1508c39b5ea38984b938195305b921a238a",
+      "sspredrnet/model.py": "fd5a739e244a0a0a374cffe2fafa6aafad443aecc47c50a355bc286c061efa0b",
+      "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+      "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+      "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+      "sspredrnet/checkpoint.py": "05ffb212da7e12e8a78a8ac2be2da1f102c1060a31e41396eeef0ba4bec3ca34"
+    },
+    "config_sha256": "d2c1d4c533e1db0bc6acaaa085dde52dc3a03ffff8a57403ffa0bac6373bbffc",
+    "anchor_sha256": "de3ea68bdd26272a9991fa394a38aa5d1c0b4d55078d10a968f67cec0a1c5b88",
+    "frozen_anchor_sha256": "2da66cd029fc0c20870f5af3cc7518ffff89faaf2a754262f148d4fdb0b3fa42",
+    "checkpoint_sha256": {
+      "best": "c0a4819d478ed89128764ac53940d8f0693cbbc37a9546612d53b502cdc5118d",
+      "final": "0de5ed12382afced8596c2f67479e7f20d5fde504de654f39984468d1f9c3444"
+    },
+    "best_epoch": 1,
+    "epochs": 8,
+    "test_opened": false
+  },
+  "torch": "2.11.0",
+  "device": "mps",
+  "checkpoints": {
+    "best": {
+      "full": {
+        "correct": 9972,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 97.15,
+          "distribute_four": 45.8,
+          "distribute_nine": 33.5,
+          "in_center_single_out_center_single": 91.95,
+          "in_distribute_four_out_center_single": 37.45,
+          "left_center_single_right_center_single": 96.15,
+          "up_center_single_down_center_single": 96.6
+        },
+        "accuracy_macro": 71.22857142857143
+      },
+      "anchor": {
+        "correct": 10012,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 97.1,
+          "distribute_four": 46.75,
+          "distribute_nine": 34.0,
+          "in_center_single_out_center_single": 92.2,
+          "in_distribute_four_out_center_single": 37.55,
+          "left_center_single_right_center_single": 96.25,
+          "up_center_single_down_center_single": 96.75
+        },
+        "accuracy_macro": 71.51428571428572
+      },
+      "swapped_support": {
+        "correct": 9973,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 97.15,
+          "distribute_four": 46.0,
+          "distribute_nine": 33.45,
+          "in_center_single_out_center_single": 91.9,
+          "in_distribute_four_out_center_single": 37.4,
+          "left_center_single_right_center_single": 96.15,
+          "up_center_single_down_center_single": 96.6
+        },
+        "accuracy_macro": 71.2357142857143
+      },
+      "changed_answers_vs_anchor": 217,
+      "changed_answers_vs_swapped_support": 20,
+      "helped": 50,
+      "hurt": 90,
+      "max_score_change_vs_anchor": 0.03463536500930786,
+      "max_factor_change_under_support_swap": 0.41294872760772705,
+      "gate": 0.13620051741600037,
+      "proposal_overflow_panels": 0,
+      "support_swap_preserves_entire_attention_anchor": true,
+      "nonregression_and_active_branch": false,
+      "epoch": 1,
+      "lineage_epoch": 25
+    },
+    "final": {
+      "full": {
+        "correct": 9783,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 96.7,
+          "distribute_four": 43.25,
+          "distribute_nine": 31.95,
+          "in_center_single_out_center_single": 90.25,
+          "in_distribute_four_out_center_single": 36.9,
+          "left_center_single_right_center_single": 95.05,
+          "up_center_single_down_center_single": 95.05
+        },
+        "accuracy_macro": 69.87857142857142
+      },
+      "anchor": {
+        "correct": 10012,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 97.1,
+          "distribute_four": 46.75,
+          "distribute_nine": 34.0,
+          "in_center_single_out_center_single": 92.2,
+          "in_distribute_four_out_center_single": 37.55,
+          "left_center_single_right_center_single": 96.25,
+          "up_center_single_down_center_single": 96.75
+        },
+        "accuracy_macro": 71.51428571428572
+      },
+      "swapped_support": {
+        "correct": 9764,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 96.65,
+          "distribute_four": 42.8,
+          "distribute_nine": 31.65,
+          "in_center_single_out_center_single": 90.2,
+          "in_distribute_four_out_center_single": 36.85,
+          "left_center_single_right_center_single": 95.05,
+          "up_center_single_down_center_single": 95.0
+        },
+        "accuracy_macro": 69.74285714285715
+      },
+      "changed_answers_vs_anchor": 1385,
+      "changed_answers_vs_swapped_support": 176,
+      "helped": 350,
+      "hurt": 579,
+      "max_score_change_vs_anchor": 0.6282107830047607,
+      "max_factor_change_under_support_swap": 0.5193406939506531,
+      "gate": 0.7031456828117371,
+      "proposal_overflow_panels": 0,
+      "support_swap_preserves_entire_attention_anchor": true,
+      "nonregression_and_active_branch": false,
+      "epoch": 8,
+      "lineage_epoch": 32
+    }
+  }
+}

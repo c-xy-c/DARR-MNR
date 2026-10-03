@@ -41,3 +41,11 @@ V2补充：支持验证保留25个局部/全局dense误差token与十个经trans
 较复杂结构已经实现；独立贡献、性能保持、统计显著性和整体新颖性仍未确立。
 当前V2约227万可训练参数，新增源码与实验已单独封存，详情见
 [revision-v2.md](revision-v2.md)。
+
+V1主种子已完成8轮并通过源码/checkpoint完整性和14k验证复核，性能门槛
+失败；best71.2286%、final69.8786%，基线71.5143%。额外21题参数诊断中，
+标称rank8更新的有效秩接近1；它们仍随支持题变化，不能据此证明无用或
+归因全部退步。这限制了“复杂参数编译充分利用方向容量”的主张，v2还
+需要同样诊断。另有128训练题/56验证题负例难度差距诊断，不是准确率。
+完整依据见[v1_primary_diagnosis.md](v1_primary_diagnosis.md)与
+[negative_difficulty_diagnosis.md](negative_difficulty_diagnosis.md)。
