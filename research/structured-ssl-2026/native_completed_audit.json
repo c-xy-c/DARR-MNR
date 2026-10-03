@@ -1,0 +1,142 @@
+{
+  "run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-priority-metal-20261003-213645",
+  "native_control": {
+    "variant": "original",
+    "seed": 12345,
+    "adaptation_epochs": 16,
+    "total_selection_budget_epochs": 44,
+    "source_lineage_epoch": 20,
+    "trainable_parameters": 165824,
+    "candidate_negatives_in_adaptation": true,
+    "phase": "evaluated",
+    "checkpoints": {
+      "best": {
+        "epoch": 16,
+        "lineage_epoch": 36,
+        "validation": {
+          "correct": 10025,
+          "total": 14000,
+          "accuracy": 71.60714285714286,
+          "by_configuration": {
+            "center_single": 96.95,
+            "distribute_four": 46.7,
+            "distribute_nine": 35.7,
+            "in_center_single_out_center_single": 92.5,
+            "in_distribute_four_out_center_single": 36.35,
+            "left_center_single_right_center_single": 96.25,
+            "up_center_single_down_center_single": 96.8
+          }
+        },
+        "test": {
+          "correct": 10006,
+          "total": 14000,
+          "accuracy": 71.47142857142858,
+          "by_configuration": {
+            "center_single": 97.35,
+            "distribute_four": 45.4,
+            "distribute_nine": 33.4,
+            "in_center_single_out_center_single": 91.9,
+            "in_distribute_four_out_center_single": 38.4,
+            "left_center_single_right_center_single": 96.85,
+            "up_center_single_down_center_single": 97.0
+          }
+        }
+      },
+      "final": {
+        "epoch": 16,
+        "lineage_epoch": 36,
+        "validation": {
+          "correct": 10025,
+          "total": 14000,
+          "accuracy": 71.60714285714286,
+          "by_configuration": {
+            "center_single": 96.95,
+            "distribute_four": 46.7,
+            "distribute_nine": 35.7,
+            "in_center_single_out_center_single": 92.5,
+            "in_distribute_four_out_center_single": 36.35,
+            "left_center_single_right_center_single": 96.25,
+            "up_center_single_down_center_single": 96.8
+          }
+        },
+        "test": {
+          "correct": 10006,
+          "total": 14000,
+          "accuracy": 71.47142857142858,
+          "by_configuration": {
+            "center_single": 97.35,
+            "distribute_four": 45.4,
+            "distribute_nine": 33.4,
+            "in_center_single_out_center_single": 91.9,
+            "in_distribute_four_out_center_single": 38.4,
+            "left_center_single_right_center_single": 96.85,
+            "up_center_single_down_center_single": 97.0
+          }
+        }
+      }
+    }
+  },
+  "migration": {
+    "repair": "exact_forward_l2_zero_subgradient",
+    "from_run": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-metal-calibrated-20261003-173653/original-seed12345",
+    "original_last_sha256": "f2843c602b5d97482f4e38f54f00f1f782ada17d0b9dfc9c540543f2820f003c",
+    "original_config_sha256": "ec612b82dd280cb05a4979c93040c9633a632c66574bf23c143cc102c563a63c",
+    "checkpoint_model_optimizer_scaler_rng_bytes_unchanged": true,
+    "resume_after_completed_epoch": 7,
+    "fixed_total_epochs": 16,
+    "failed_partial_epoch_replayed_from_last_completed_checkpoint": true,
+    "modified_source_files": [
+      "sspredrnet/model.py"
+    ],
+    "prior_source_sha256": {
+      "research/structured-ssl-2026/original_continuation.py": "171b9097252fb6e20a5e8cfb3fd666b603773cc101c8f43fda2437e13c06e95b",
+      "structured_ssl/runtime.py": "d542503b0d8e26d7d7461f30edd92438483f3f4c368dff427d1a0805bd06a765",
+      "sspredrnet/model.py": "fd5a739e244a0a0a374cffe2fafa6aafad443aecc47c50a355bc286c061efa0b",
+      "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+      "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+      "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+      "sspredrnet/evaluate.py": "464155a4658c7240f2fcd49b5a01962a3203b2686ab250fc350e0eb9bb20d3fb",
+      "sspredrnet/checkpoint.py": "05ffb212da7e12e8a78a8ac2be2da1f102c1060a31e41396eeef0ba4bec3ca34"
+    },
+    "repaired_source_sha256": {
+      "research/structured-ssl-2026/original_continuation.py": "171b9097252fb6e20a5e8cfb3fd666b603773cc101c8f43fda2437e13c06e95b",
+      "structured_ssl/runtime.py": "d542503b0d8e26d7d7461f30edd92438483f3f4c368dff427d1a0805bd06a765",
+      "sspredrnet/model.py": "074387187e363a38a8204b065753d0b485e975e3f3476d7dd4506df2ca224978",
+      "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+      "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+      "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+      "sspredrnet/evaluate.py": "464155a4658c7240f2fcd49b5a01962a3203b2686ab250fc350e0eb9bb20d3fb",
+      "sspredrnet/checkpoint.py": "05ffb212da7e12e8a78a8ac2be2da1f102c1060a31e41396eeef0ba4bec3ca34"
+    },
+    "actual_failed_batch_bitwise_loss_and_finite_backward_verified": true,
+    "diagnostic_sha256": "8ab1c774e442dc93d074a0da4633094c3651945b076c35d5f912ee271f08cf9c"
+  },
+  "seal": {
+    "method": "original-prb-continuation",
+    "epochs": 16,
+    "best_epoch": 16,
+    "config_sha256": "07a7eb5fb279ad6b8e70a3ca89c4c7e63472815eb0617a06d2f0048d904dbe6f",
+    "source_sha256": {
+      "research/structured-ssl-2026/original_continuation.py": "171b9097252fb6e20a5e8cfb3fd666b603773cc101c8f43fda2437e13c06e95b",
+      "structured_ssl/runtime.py": "d542503b0d8e26d7d7461f30edd92438483f3f4c368dff427d1a0805bd06a765",
+      "sspredrnet/model.py": "074387187e363a38a8204b065753d0b485e975e3f3476d7dd4506df2ca224978",
+      "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+      "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+      "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+      "sspredrnet/evaluate.py": "464155a4658c7240f2fcd49b5a01962a3203b2686ab250fc350e0eb9bb20d3fb",
+      "sspredrnet/checkpoint.py": "05ffb212da7e12e8a78a8ac2be2da1f102c1060a31e41396eeef0ba4bec3ca34"
+    },
+    "baseline_sha256": "8a383fcc609127a7c35bfb9c6a2ffe064ce5285f66d8525b3668385ec915928c",
+    "checkpoint_sha256": {
+      "best": "a832ba0ed2a7ad1f456d69ad5fd3840cbc58b2cf6fca463f398f66026d2b3d13",
+      "final": "a832ba0ed2a7ad1f456d69ad5fd3840cbc58b2cf6fca463f398f66026d2b3d13"
+    },
+    "selection_split": "val",
+    "test_opened": false
+  },
+  "checkpoint_and_full_16_epoch_history_verified_by_collector": true,
+  "official_57_1_selected_on_test_not_matched_protocol": true,
+  "native_adaptation_uses_unlabeled_candidates_new_method_does_not": true,
+  "historical_attention_cuda_primary_test_accuracy": 71.23571428571428,
+  "not_a_new_structured_model_accuracy": true
+}

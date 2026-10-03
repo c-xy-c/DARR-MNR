@@ -60,6 +60,12 @@ rank1，**不证明实际训练会恢复 rank8，也不证明准确率提升**�
 相等、激活重计算和上述参数排列检查。检查文件的 fixture 明确为合成数据。
 可训练参数为 2,275,350，冻结参数为 958,345。
 
+真实 Metal batch128 检查已完成：128 道官方训练题、七个配置，三个更新
+前后向均有限，输入不变，CPU/Metal RNG 恢复逐位相同。三步耗时约
+5.28/2.99/2.90 秒，driver 峰值约 7.72GB。这些是容量/数值检查，重复同一
+批训练题，不是完整 RAVEN 准确率；详见
+[v3-real-batch128-mps-preflight.json](v3-real-batch128-mps-preflight.json)。
+
 ## 固定新实验
 
 当前运行目录：`runs/structured-shine-rl-priority-metal-20261003-213645`。
@@ -75,14 +81,17 @@ rank1，**不证明实际训练会恢复 rank8，也不证明准确率提升**�
 训练的 native 子进程未中断；V3 coordinator 结束或出错时释放 V1。
 原队列在正式训练前明确重排，exit1、旧调度源码和重排记录全部保留；
 该 exit1 是主动调度中断，不是模型数值失败。详见
-[v3_priority_scheduling.json](v3_priority_scheduling.json)。**V3 没有
-完整训练准确率，也没有建立两个贡献的独立收益**。V2 队列因父套件失败
+[v3_priority_scheduling.json](v3_priority_scheduling.json)。原版对照和其完整
+评估已完成，V3 已接管 GPU 并通过真实 batch128 检查；主种子的完整初始
+验证复现同平台 anchor，正式优化已经开始。**V3 没有完整训练准确率，
+也没有建立两个贡献的独立收益**。V2 队列因父套件失败
 终止，只有 CPU 检查，没有正式 RAVEN 训练；其所有封存记录保留。
 
 ## 原版对照的数值修复
 
-原对照在第 8 轮第七个 batch 失败。恢复第 7 轮 checkpoint、数据加载器
-和 dropout RNG 后复现；第二个 PRB 出现一个精确零距离。AMP scale 从
+原对照在第 8 轮失败；原日志未记录失败 batch 索引。恢复第 7 轮 checkpoint、
+数据加载器和 dropout RNG 后，在第七个 batch 复现；第二个 PRB 出现一个
+精确零距离。AMP scale 从
 131072 降到 65536/32768/1 均不解决问题。
 
 `sqrt(sum(error**2))` 的组合反向在零处产生非有限梯度。新私有 autograd
@@ -97,3 +106,11 @@ rank1，**不证明实际训练会恢复 rank8，也不证明准确率提升**�
 `numerical_repair.json`，结果收集器验证迁移记录。诊断见
 [native_stable_l2_replay.json](native_stable_l2_replay.json) 和
 [packing_numerics_contracts.json](packing_numerics_contracts.json)。
+
+修复后的 native 对照已完成固定 16 轮，完整源码/config/checkpoint/history
+以及 best/final 的独立验证与测试通过收集器核验。验证最大值在第16轮，
+所以 best 和 final 是同一个 checkpoint：验证10025/14000=71.6071%，
+测试10006/14000=71.4714%。这不是 V3 成绩，也不能将其与历史 CUDA 的
+数字当作同平台配对比较。完整七配置和迁移记录见
+[native_completed_audit.json](native_completed_audit.json)。原版适配仍用
+未标注候选作为负例，V3 适配不使用；官方 57.1% 的测试选模协议也不同。

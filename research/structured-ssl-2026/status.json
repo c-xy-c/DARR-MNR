@@ -1,5 +1,5 @@
 {
-  "status": "native_zero_distance_backward_repaired_v1_resumed_v3_sealed_waiting",
+  "status": "native_control_completed_v3_real_metal_preflight_passed_primary_process_running",
   "full_raven_result_claimed": false,
   "current_model_test_accuracy": null,
   "reference_anchor": "research/ssl-attention-2026/results/seed12345/best.pt",
@@ -31,14 +31,15 @@
     "stable zero-distance L2 backward preserves failing batch loss bitwise and repairs gradient at original scale",
     "CPU nonzero L2 gradient comparison and gradcheck, finite zero subgradient",
     "v3 independent rl index ordering and synthetic B gradient asymmetry",
-    "v3 three isolated source export CPU preflights"
+    "v3 three isolated source export CPU preflights",
+    "native full 16 epochs and independently repeated best/final full val/test; config/source/checkpoint/history seals verified",
+    "v3 three real batch128 Metal updates with unchanged pixels and finite gradients, RNG restoration and FP32 validation forward"
   ],
   "missing": [
-    "completed resumed native and pending v1 controls/seeds",
-    "v3 real batch128 Metal preflight",
     "v3 full RAVEN primary/controls/three adaptation seeds",
-    "sealed best/final validation and eligible test, seven configurations",
-    "empirical nonregression and independent contribution evidence"
+    "sealed v3 best/final validation and eligible test, seven configurations",
+    "empirical nonregression and independent contribution evidence",
+    "remaining fixed v1 controls/seeds after v3"
   ],
   "remote_access_observation": {
     "host": "xj-member.bitahub.com",
@@ -77,7 +78,7 @@
     "stage": "experimental_v3_sealed_and_queued_no_v3_full_accuracy",
     "last_verified_remote_sha_before_current_changes": "0dcc131d9da0698eb06484e0fb525e168ff27fd6"
   },
-  "status_as_of_utc": "2026-10-03T13:43:48.444258+00:00",
+  "status_as_of_utc": "2026-10-03T14:33:47.605677+00:00",
   "execution": {
     "device": "mps",
     "batch_size": 128,
@@ -98,13 +99,13 @@
       "native": 9979
     },
     "historical_discrepancy_cause_fully_identified": false,
-    "phase": "original:resume_epoch8_with_finite_l2_backward",
+    "phase": "native_completed_pending_v1_jobs_waiting_for_v3",
     "continued_from_failed_run": "runs/structured-metal-calibrated-20261003-173653",
     "failure_reason": "undefined backward of exact-zero composed L2 distance; actual same-batch lower scale retries all failed",
     "repair_diagnostic": "native_stable_l2_replay.json",
     "checkpoint_states_preserved": true,
-    "coordinator_state": "suspended_while_native_child_finishes_then_v3_runs",
-    "training_child_pid": 15935
+    "coordinator_state": "suspended_after_native_completion_while_v3_runs",
+    "training_child_pid": null
   },
   "architecture_revision": "isolated-target-structured-feedback-shine-rl-v3",
   "v1_running_experiment": {
@@ -237,9 +238,9 @@
       "--resume-parent-pid",
       "15930"
     ],
-    "phase": "waiting_for_native_control_completion_and_gpu_release",
+    "phase": "primary-seed12345:training",
     "after_run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-metal-recovered-20261003-211738",
-    "formal_training_started": false,
+    "formal_training_started": true,
     "current_model_test_accuracy": null,
     "adaptation_epochs_each": 8,
     "adaptation_seeds": [
@@ -252,7 +253,7 @@
       "static_parameters"
     ],
     "source_and_cpu_preflights_sealed": true,
-    "real_batch128_metal_preflight": "queued_after_completed_parent_suite",
+    "real_batch128_metal_preflight": "passed_three_updates_on_128_official_training_puzzles",
     "empirical_nonregression_or_independent_benefits_established": false,
     "cpu_contracts_sha256": {
       "primary": "b96d44716bab5e8953f3ef9c855045ce11ed2566ccceab71ce9010f02b94d51e",
@@ -266,16 +267,33 @@
     "native_child_pid": 15935,
     "suspended_v1_coordinator_pid": 15930,
     "v1_coordinator_release_on_exit_configured": true,
-    "v1_coordinator_released": false
+    "v1_coordinator_released": false,
+    "training_process_pid": 33442,
+    "formal_optimizer_updates_verified": true,
+    "initial_full_validation_complete": true,
+    "preflight_artifact": "v3-real-batch128-mps-preflight.json",
+    "preflight_driver_peak_bytes": 7719124992,
+    "initial_validation_correct": 10012,
+    "last_training_progress": {
+      "phase": "training",
+      "epoch": 1,
+      "training_seen": 36864,
+      "training_total": 42000,
+      "mean_loss": 0.31470240538732874,
+      "elapsed_seconds": 833.3567580000381
+    }
   },
   "native_recovery_observation": {
-    "completed_epochs": 11,
-    "last_validation_accuracy": 71.58571428571429,
-    "last_validation_correct": 10022,
-    "best_validation_accuracy": 71.58571428571429,
-    "best_epoch": 11,
+    "completed_epochs": 16,
+    "last_validation_accuracy": 71.60714285714286,
+    "last_validation_correct": 10025,
+    "best_validation_accuracy": 71.60714285714286,
+    "best_epoch": 16,
     "failed_epoch8_replayed_and_completed": true,
-    "test_opened": false
+    "test_opened": true,
+    "best_test_accuracy": 71.47142857142858,
+    "final_test_accuracy": 71.47142857142858,
+    "full_evaluation_and_seals_verified": true
   },
   "revision_v3_previous_queue": {
     "run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-metal-20261003-212041",
