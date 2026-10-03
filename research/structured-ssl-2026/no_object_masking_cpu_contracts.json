@@ -1,0 +1,43 @@
+{
+  "fixture": "synthetic contours and tensors",
+  "full_raven_evaluation": false,
+  "device": "cpu",
+  "torch": "2.11.0",
+  "anchor_sha256": "de3ea68bdd26272a9991fa394a38aa5d1c0b4d55078d10a968f67cec0a1c5b88",
+  "trainable_parameters": 2182902,
+  "frozen_parameters": 958345,
+  "initial_scores_bitwise_equal_to_anchor": true,
+  "heldout_target_cannot_change_visible_encoding_or_compilation": true,
+  "object_masking_keeps_four_complete_visible_panels": true,
+  "fixed_object_targets_are_fp32_and_bitwise_equal_under_autocast": true,
+  "ssl_rejects_candidates": true,
+  "frozen_anchor_buffers_unchanged": true,
+  "all_trainable_parameters_have_finite_gradients": true,
+  "gradient_norms": {
+    "perception": 0.08377115428447723,
+    "compiler": 0.03026561252772808,
+    "pav": 0.28760549426078796,
+    "masked_object": 0.0
+  },
+  "losses": [
+    0.728776752948761,
+    0.6654297113418579,
+    0.6395509839057922
+  ],
+  "training_statistics": {
+    "retrieval": 0.5284231901168823,
+    "completion": 1.1112779378890991,
+    "masked_object": 2.0291872024536133,
+    "reference_error": 0.3529779016971588,
+    "eligible_queries": 8,
+    "retrieval_correct": 6,
+    "proposal_overflow_panels": 0
+  },
+  "candidate_permutation_max_error": 0.0,
+  "target_object_permutation_max_error": 1.1920928955078125e-07,
+  "support_changes_dynamic_parameters_max": 0.08646350353956223,
+  "post_update_score_change_max": 2.559274435043335e-06,
+  "trained_gate": -0.000252002413617447,
+  "blank_panels_and_no_legal_negatives_finite": true,
+  "proposal_overflow_merges_and_records": true
+}

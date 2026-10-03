@@ -1,0 +1,91 @@
+# Object-masked SSL + support-compiled SER-PaV
+
+Experimental redesign, **without a complete RAVEN accuracy result yet**.
+The preceding small attention branch averaged 71.22% test accuracy. This
+package has 2,182,902 trainable parameters and freezes the preceding primary
+validation-selected model's 958,345 parameters. Capacity alone is not evidence
+of better reasoning. See the [design and fixed evaluation protocol](../research/structured-ssl-2026/design.md).
+
+## Architecture
+
+```mermaid
+flowchart TD
+  A[Known panel pixels] --> B[8px patches · width 96]
+  A --> C[Independent contour regions]
+  B --> D[Three Transformer levels]
+  C --> E[Masked mean + cross attention]
+  D --> E
+  E --> F[Object and scene tokens at three levels]
+  F --> G[Support row: 48 memory tokens per level]
+  G --> H[Four alternating depth/token attention layers]
+  H --> I[Three stages of rank8 P/G/V parameters]
+  F --> J[Query prefix decoder]
+  I --> K[Predict · verify · refine, repeated three times]
+  J --> K
+  K --> L[Dense prediction + object set + presence]
+  M[Candidate fixed teacher features and regions] --> N[Dense and transport discrepancy]
+  L --> N
+  O[Frozen attention anchor] --> P[Anchor + support evidence score]
+  N --> P
+```
+
+The SSL contribution trains raw pixel/object representations with complete
+region masking in the first five known panels, plus the existing one-direction
+known-sixth completion ranking. The SER-PaV contribution compiles complete
+support rows into stage/role-specific low-rank weights and uses support
+reconstruction errors to refine the next query prediction. Region targets and
+dense targets use the immutable CNN. Candidate order cannot affect compilation.
+
+Regions are exterior contour proposals, **not discovered semantic objects**.
+Given image-only proposals and layout priors, this is a self-supervised
+adaptation. Historical anchor pretraining used candidate negatives. No answer
+candidates/answer indices/XML enter the new adaptation. The new predictor sees
+only five panels; its auxiliary masking task also excludes the sixth panel.
+There is no bidirectional row task or collapse regularizer.
+
+Concrete 2026 adaptations:
+
+- Object-centric LeJEPA §4.1: masked mean, cross-attention and residual pooling.
+  SAM and SIGReg are not adopted.
+- Causal-JEPA §4: whole-entity masking and fixed latent targets, adapted to
+  static known RAVEN panels. This is not a causal identification claim.
+- SHINE §3.3–3.4: multi-depth memory, alternating attention and actual dynamic
+  low-rank parameter generation. This does not reproduce its LLM system.
+
+## Commands
+
+From repository root, use the already measured primary seed12345 anchor:
+
+```bash
+python -m structured_ssl.check_contracts \
+  --anchor research/ssl-attention-2026/results/seed12345/best.pt \
+  --device cpu --output structured-preflight.json
+
+python -m structured_ssl.train \
+  --dataset-root /path/to/RAVEN --run-dir runs/structured-raven8-seed12345 \
+  --anchor research/ssl-attention-2026/results/seed12345/best.pt \
+  --epochs 8 --seed 12345
+
+python -m structured_ssl.evaluate \
+  --dataset-root /path/to/RAVEN --run-dir runs/structured-raven8-seed12345 --split val
+
+python -m structured_ssl.evaluate \
+  --dataset-root /path/to/RAVEN --run-dir runs/structured-raven8-seed12345 --split test
+```
+
+Full training requires CUDA and exactly 42,000/14,000 train/validation puzzles.
+Test opens only after the selected best passes the complete validation audit.
+Best/final source and checkpoint hashes are sealed. Resume with unchanged
+arguments and `--resume`. Evaluation refuses to overwrite an existing result.
+No gain is accepted from a zero gate or an unchanged answer set. Reports include
+all seven layouts, final/best, helped/hurt and an isolated support intervention.
+
+CPU contracts in [cpu_contracts.json](../research/structured-ssl-2026/cpu_contracts.json)
+use synthetic shapes, verify real gradients and candidate/object permutations,
+and explicitly have `full_raven_evaluation: false`. They do not verify CUDA
+memory use, mixed precision or benchmark accuracy.
+
+The reference test score is 71.2357%; earlier original continuation final
+reached 71.41%. Neither number is a new result of this redesign. A matched
+original continuation, two isolated contribution controls and multiple
+adaptation seeds remain required by the full experiment protocol.

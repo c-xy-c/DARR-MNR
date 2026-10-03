@@ -96,3 +96,12 @@ overall gain; they do not establish better perception or semantic rule discovery
 See [the 2026 paper-based design](research/ssl-attention-2026/design.md),
 [full results and controls](research/ssl-attention-2026/results.md), and
 [training/evaluation commands](attention_ssl/README.md).
+
+[structured_ssl/](structured_ssl/) contains an experimental, more substantial
+redesign: a trainable three-level pixel/object encoder, complete-object masking
+on visible known panels, and three-stage support-compiled P/G/V updates with
+alternating depth/token attention. It adds 2,182,902 trainable parameters and
+preserves the measured attention anchor. Synthetic CPU boundary, gradient and
+permutation checks passed; **no full RAVEN accuracy is available for this
+redesign yet**. See [the two contribution definitions](research/structured-ssl-2026/contributions.md)
+and [source-grounded 2026 design and experiment protocol](research/structured-ssl-2026/design.md).
