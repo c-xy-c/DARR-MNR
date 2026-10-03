@@ -142,18 +142,39 @@ def pixel_duplicates(images):
     return labels[:, None].eq(labels[None])
 
 
-def target_objects(features, masks, geometry, valid):
-    # The fixed target encoder cannot move to make prediction loss easier.
-    with torch.autocast(device_type=features.device.type, enabled=False):
-        n, panels = features.shape[:2]
+def target_objects(teacher, images, masks, boxes, geometry, valid):
+    """Encode each bbox on a white panel before pooling its region features.
+
+    Pixels, coordinates and scale inside the box stay unchanged. Context outside
+    it cannot affect the appearance target. Overlapping boxes can still include
+    another object's pixels; exterior contours are not semantic segmentation.
+    Chunking bounds teacher activations without changing targets or gradients.
+    """
+    with torch.no_grad(), torch.autocast(device_type=images.device.type, enabled=False):
+        n, panels = images.shape[:2]
         pooled_masks = F.avg_pool2d(masks.float().reshape(n * panels * OBJECTS, 1, 10, 10), 2)
-        weights = pooled_masks.reshape(n, panels, OBJECTS, 25)
+        weights = pooled_masks.reshape(-1, 25)
         weights = weights / weights.sum(-1, keepdim=True).clamp_min(1e-6)
-        appearance = weights @ F.relu(features.float()).transpose(2, 3)
+        appearance = torch.zeros(n * panels * OBJECTS, 32, device=images.device)
+        active = valid.flatten().nonzero().flatten()
+        flat_images, flat_boxes = images.float().flatten(0, 1), boxes.reshape(-1, 4)
+        grid = torch.arange(80, device=images.device)
+        for start in range(0, len(active), 128):
+            ids = active[start:start + 128]
+            x0, y0, x1, y1 = flat_boxes[ids].unbind(-1)
+            inside = ((grid[None, None, :] >= x0[:, None, None]) &
+                      (grid[None, None, :] < x1[:, None, None]) &
+                      (grid[None, :, None] >= y0[:, None, None]) &
+                      (grid[None, :, None] < y1[:, None, None]))
+            isolated = flat_images[ids // OBJECTS].masked_fill(~inside, 1.)
+            features = teacher.features(isolated[:, None, None])[:, 0]
+            pooled = (weights[ids, None] @ F.relu(features).transpose(1, 2)).squeeze(1)
+            appearance.index_copy_(0, ids, pooled)
+        appearance = appearance.reshape(n, panels, OBJECTS, 32)
         return torch.cat((appearance, geometry.float()), -1) * valid[..., None]
 
 
-def set_energy(predicted, presence, targets, valid):
+def object_transport(predicted, presence, targets, valid):
     """Balanced entropic transport includes null targets for count prediction.
 
     Predicted and target object ordering may differ. Cost uses fixed appearance,
@@ -176,7 +197,56 @@ def set_energy(predicted, presence, targets, valid):
             u = marginal - torch.logsumexp(log_kernel + v[..., None, :], -1)
             v = marginal - torch.logsumexp(log_kernel + u[..., :, None], -2)
         transport = (log_kernel + u[..., :, None] + v[..., None, :]).exp()
-        return (transport * cost).sum((-1, -2))
+        return cost, transport
+
+
+def set_energy(predicted, presence, targets, valid):
+    cost, transport = object_transport(predicted, presence, targets, valid)
+    return (transport * cost).sum((-1, -2))
+
+
+def support_residuals(prediction, dense_target, object_target, valid):
+    """Preserve all spatial errors and align object errors by the scoring plan.
+
+    Local and pooled dense residuals follow the deployed normalized energy.
+    Object values are transported into predicted-slot order; empty targets
+    contribute occupancy error, not arbitrary appearance/geometry values.
+    """
+    dense, objects, presence = prediction
+    with torch.autocast(device_type=dense.device.type, enabled=False):
+        dense, truth = dense.float(), F.relu(dense_target.float())
+        local = (F.normalize(dense, dim=1, eps=1e-3) -
+                 F.normalize(truth, dim=1, eps=1e-3)).transpose(1, 2)
+        pooled = (F.normalize(dense.mean(-1), dim=1, eps=1e-3) -
+                  F.normalize(truth.mean(-1), dim=1, eps=1e-3))
+        dense_residual = torch.cat((local, pooled[:, None].expand(-1, 25, -1)), -1)
+        _, transport = object_transport(objects, presence, object_target[:, None], valid[:, None])
+        assignment = transport[:, 0]
+        assignment = assignment / assignment.sum(-1, keepdim=True).clamp_min(1e-8)
+        occupancy = (assignment @ valid.float().unsqueeze(-1)).squeeze(-1)
+        target_values = torch.cat((F.normalize(object_target[..., :32].float(), dim=-1, eps=1e-3),
+                                   object_target[..., 32:].float()), -1) * valid[..., None]
+        matched = assignment @ target_values
+        predicted_values = torch.cat((F.normalize(objects[..., :32].float(), dim=-1, eps=1e-3),
+                                      objects[..., 32:].float()), -1)
+        difference = predicted_values * occupancy[..., None] - matched
+        object_residual = torch.cat((difference, (presence.float().sigmoid() - occupancy)[..., None]), -1)
+        return dense_residual, object_residual
+
+
+class SupportFeedback(nn.Module):
+    """Query states attend to support states with structured errors as values."""
+    def __init__(self):
+        super().__init__()
+        self.dense = nn.Linear(64, WIDTH, bias=False)
+        self.objects = nn.Linear(39, WIDTH, bias=False)
+        self.norm = nn.LayerNorm(WIDTH)
+        self.attention = nn.MultiheadAttention(WIDTH, 6, batch_first=True, bias=False)
+
+    def forward(self, state, reference, residuals):
+        values = torch.cat((self.dense(residuals[0]), self.objects(residuals[1])), 1)
+        update, _ = self.attention(self.norm(state), self.norm(reference), values, need_weights=False)
+        return update
 
 
 class IterativePaV(nn.Module):
@@ -190,7 +260,7 @@ class IterativePaV(nn.Module):
         self.dense = nn.ModuleList([nn.Linear(WIDTH, 32) for _ in range(STAGES)])
         self.objects = nn.ModuleList([nn.Linear(WIDTH, 38) for _ in range(STAGES)])
         self.presence = nn.ModuleList([nn.Linear(WIDTH, 1) for _ in range(STAGES)])
-        self.feedback = nn.ModuleList([nn.Linear(32, WIDTH) for _ in range(STAGES - 1)])
+        self.feedback = nn.ModuleList([SupportFeedback() for _ in range(STAGES - 1)])
 
     def initial(self, prefix, valid):
         n = len(prefix)
@@ -202,7 +272,8 @@ class IterativePaV(nn.Module):
         return (self.dense[stage](state[:, :25]).transpose(1, 2),
                 self.objects[stage](state[:, 25:]), self.presence[stage](state[:, 25:]).squeeze(-1))
 
-    def forward(self, support, support_valid, support_target, prefix, prefix_valid, *, factors=None):
+    def forward(self, support, support_valid, support_target, support_objects, support_object_valid,
+                prefix, prefix_valid, *, factors=None):
         if factors is None:
             factors = self.compiler(support, support_valid)
         query = self.initial(prefix, prefix_valid)
@@ -220,13 +291,13 @@ class IterativePaV(nn.Module):
             support_prediction = self.decode(verified_reference, stage)
             outputs.append(prediction)
             priors.append(self.decode(prior, stage))
-            error = support_prediction[0].float().mean(-1) - F.relu(support_target).float().mean(-1)
-            reference_errors.append(error.square().mean(-1))
+            residuals = support_residuals(support_prediction, support_target, support_objects, support_object_valid)
+            reference_errors.append(residuals[0].square().mean((1, 2)) + .25 * residuals[1].square().mean((1, 2)))
             if stage < STAGES - 1:
-                measured = self.feedback[stage](error).unsqueeze(1)
                 # Compile once; support reconstruction discrepancy refines the
                 # next query stage without candidate-dependent feedback.
                 for name, state in (('query', query), ('reference', reference)):
+                    measured = self.feedback[stage](state, verified_reference, residuals)
                     gate = dynamic(state, weights[:, 1]).sigmoid()
                     refined = state - .1 * gate * dynamic(measured, weights[:, 2])
                     if name == 'query':
@@ -281,14 +352,16 @@ class StructuredCompletion(nn.Module):
                                  flat['geometry'].flatten(0, 1), flat['valid'].flatten(0, 1))
         return levels.reshape(n, count, STAGES, OBJECTS + 1, WIDTH), flat
 
-    def targets(self, pack, features):
+    def targets(self, pack):
         flat = {k: v.flatten(0, 1) for k, v in pack.items()}
-        return target_objects(features, flat['masks'], flat['geometry'], flat['valid']), flat['valid']
+        return target_objects(self.anchor, flat['views'], flat['masks'], flat['boxes'],
+                              flat['geometry'], flat['valid']), flat['valid']
 
     def row(self, levels, visible, features, objects, valid, support, prefix, targets, *, order=None):
         selected = torch.arange(len(levels), device=levels.device) if order is None else order
         predictions, priors, reference_error, factors = self.pav(
             levels[selected, support], visible['valid'][selected, support], features[selected, support][:, 2],
+            objects[selected, support][:, 2], valid[selected, support][:, 2],
             levels[:, prefix], visible['valid'][:, prefix])
         # Existing attention anchor uses the real support even in intervention.
         with torch.no_grad(), torch.autocast(device_type=features.device.type, enabled=False):
@@ -312,7 +385,7 @@ class StructuredCompletion(nn.Module):
             raise ValueError('ranking requires sixteen panels')
         features = self.anchor.features(pack['views'])
         levels, visible = self.encode(pack, 8)  # Candidates never enter perception/context compilation.
-        objects, valid = self.targets(pack, features)
+        objects, valid = self.targets(pack)
         scores = [self.row(levels, visible, features, objects, valid, support, slice(6, 8), slice(8, 16))[0]
                   for support in (slice(0, 3), slice(3, 6))]
         return sum(scores).reshape(len(pack['views']), 2, 8).mean(1)
@@ -363,7 +436,7 @@ class StructuredCompletion(nn.Module):
         if tuple(pack['views'].shape[1:]) != (2, 6, 80, 80):
             raise ValueError('SSL accepts exactly the six known panels')
         features = self.anchor.features(pack['views'])
-        objects, valid = self.targets(pack, features)
+        objects, valid = self.targets(pack)
         levels, visible = self.encode(pack, 5)  # The true sixth never enters a predictor.
         n, device = len(features), features.device
         ids = torch.arange(n, device=device)

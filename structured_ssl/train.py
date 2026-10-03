@@ -109,6 +109,9 @@ def main():
     train_generator = torch.Generator().manual_seed(args.seed)
     val_generator = torch.Generator().manual_seed(args.seed + 1)
     config = {**vars(args), 'schema_version': 1, 'method': 'structured-object-support-pav',
+              'architecture_revision': 'isolated-target-structured-feedback-v2',
+              'object_teacher_target': 'bbox_isolated_white_canvas_mask_pooled_frozen_cnn',
+              'support_feedback': '25_local_and_pooled_dense_residuals_10_transport_aligned_object_presence_residuals',
               'execution': execution_record(device), 'perception_activation_checkpointing': True,
               'historical_anchor_validation_correct': expected_anchor_correct,
               'platform_anchor_validation_correct': platform_correct,

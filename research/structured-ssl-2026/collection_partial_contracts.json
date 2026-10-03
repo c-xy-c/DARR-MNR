@@ -1,0 +1,20 @@
+{
+  "fixture": "actual completed-epoch validation records and mutated copies",
+  "full_raven_test_result": false,
+  "validated_epoch_metrics": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "negative_metric_cases_rejected": [
+    "wrong_total",
+    "wrong_correct_count",
+    "wrong_macro_accuracy",
+    "missing_layout",
+    "invalid_layout_accuracy"
+  ],
+  "missing_suite_results_remain_pending": true,
+  "complete_six_job_aggregation_exercised": false
+}

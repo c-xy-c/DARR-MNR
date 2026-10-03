@@ -35,7 +35,7 @@ def evaluate(model, dataset_root, split, device, workers):
             pack = to_device(pack, device)
             features = model.anchor.features(pack['views'])
             levels, visible = model.encode(pack, 8)
-            objects, valid = model.targets(pack, features)
+            objects, valid = model.targets(pack)
             ids = torch.arange(len(levels), device=device)
             groups = configs.repeat_interleave(2).to(device)
             order = ids.clone()

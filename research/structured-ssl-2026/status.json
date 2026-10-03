@@ -1,12 +1,12 @@
 {
-  "status": "calibrated_metal_suite_running",
+  "status": "v1_calibrated_metal_suite_running_v2_revision_preflight_and_queue",
   "full_raven_result_claimed": false,
   "current_model_test_accuracy": null,
   "reference_anchor": "research/ssl-attention-2026/results/seed12345/best.pt",
   "reference_anchor_test_accuracy": 71.23571428571428,
   "reference_three_seed_mean_test_accuracy": 71.21666666666667,
   "historical_original_continuation_final_test_accuracy": 71.41428571428571,
-  "trainable_parameters": 2182902,
+  "trainable_parameters": 2270454,
   "frozen_parameters": 958345,
   "papers": "papers.json",
   "contributions": "contributions.md",
@@ -32,7 +32,9 @@
     "completed full RAVEN main and matched controls",
     "completed multiple adaptation seeds",
     "sealed full validation/test with best/final and seven configurations",
-    "empirical nonregression and independent contribution evidence"
+    "empirical nonregression and independent contribution evidence",
+    "v2 real batch128 Metal preflight",
+    "v2 complete primary/controls/three seeds with empirical accuracy"
   ],
   "remote_access_observation": {
     "host": "xj-member.bitahub.com",
@@ -44,12 +46,12 @@
   },
   "source_sha256": {
     "structured_ssl/__init__.py": "fad28d655f5693e57664ddc8179659e235fcc6b3011e2a3734dd8ffb8d3fb37b",
-    "structured_ssl/check_contracts.py": "b741af87049b253154803aee306c13baf58858081ce4f06e41478225d17a3ec0",
+    "structured_ssl/check_contracts.py": "a5e4600f4ddbeddf997af9f34c347f2fdd1aac5d3d7955eb3cbf04dc33a8eb23",
     "structured_ssl/data.py": "0d87a1dfda73dbc498399a3d1851946fe11d942c54f5c595d77d1f013a01e3ac",
-    "structured_ssl/evaluate.py": "393cd69b4beebd038f3832c2c15670d0c03bffb934742a9d25bc29e4cde1d49b",
-    "structured_ssl/model.py": "9af8d4abafc3e51c9a660f9e9774627dab21d0c123a5c9f60a7e060e3a772804",
+    "structured_ssl/evaluate.py": "96978bce4d50d9e568f28afa4835f25aaeaf82de9f460d8b17a72c946d3aa353",
+    "structured_ssl/model.py": "81b89718a5d58e5f5925aaffd062625831fbec826be5a087822c665597cb23bd",
     "structured_ssl/runtime.py": "d542503b0d8e26d7d7461f30edd92438483f3f4c368dff427d1a0805bd06a765",
-    "structured_ssl/train.py": "895f2816fe5140e722b0f3d295303088ba98904f77599b7200f8921bd662fe95"
+    "structured_ssl/train.py": "e61e6786abd1ae20c2970f0a97c6619f095376c9afa04903d2ea770f5d79f919"
   },
   "check_artifact_sha256": {
     "cpu_contracts.json": "28e67206391e5c4728d75aa1d329feb09005264418c71614af532adcbb538d44",
@@ -68,9 +70,9 @@
     "remote": "git@github.com:c-xy-c/DARR-MNR.git",
     "branch": "codex/component-program-ssl",
     "ssh_authenticated_account": "wozhendetainanle",
-    "stage": "experimental_implementation_no_full_accuracy"
+    "stage": "experimental_v2_implementation_and_queued_experiment_no_v2_full_accuracy"
   },
-  "status_as_of_utc": "2026-10-03T09:42:02.213686+00:00",
+  "status_as_of_utc": "2026-10-03T11:42:12.361231+00:00",
   "execution": {
     "device": "mps",
     "batch_size": 128,
@@ -92,5 +94,69 @@
     },
     "historical_discrepancy_cause_fully_identified": false,
     "phase": "training"
+  },
+  "architecture_revision": "isolated-target-structured-feedback-v2",
+  "v1_running_experiment": {
+    "run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-metal-calibrated-20261003-173653",
+    "architecture_revision": "whole_panel_region_targets_mean_support_feedback_v1",
+    "completed_primary_epochs": 7,
+    "best_epoch": 1,
+    "best_validation_accuracy": 71.22857142857143,
+    "latest_epoch": 7,
+    "latest_validation_correct": 9751,
+    "latest_validation_accuracy": 69.65,
+    "same_platform_anchor_validation_accuracy": 71.51428571428572,
+    "current_model_test_accuracy": null,
+    "selection_split": "val",
+    "fixed_queue_and_source_exports_preserved": true
+  },
+  "revision_v2": {
+    "run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-isolated-metal-20261003-193803",
+    "queue_process_pid": 85000,
+    "caffeinate_pid": 85001,
+    "phase": "waiting_for_parent_suite",
+    "current_model_test_accuracy": null,
+    "full_accuracy_result": false,
+    "real_batch128_metal_preflight": "queued_after_parent_suite",
+    "adaptation_epochs_each": 8,
+    "adaptation_seeds": [
+      12345,
+      12346,
+      12347
+    ],
+    "contribution_controls": [
+      "no_object_masking",
+      "static_parameters"
+    ],
+    "native_control": "reuse_identical_completed_parent_16_epoch_control_after_seal_and_source_verification",
+    "historical_v1_check_artifacts_not_v2_accuracy": true,
+    "check_artifact_sha256": {
+      "collector_complete_contracts.json": "8c1d52cbc1b89118c63d7bd1ba370b690a5d9757aa202d55c052702a8fec4f59",
+      "cpu_contracts.json": "45ac08cde328360f718e23fe7e4dcdbfdbdb15fc2e8922f943b54fb1e57f5ec6",
+      "mps_contracts.json": "9bec4e8834121ffb56c8e9029ff849dc5f2b9861806ebbffc916751d3a73fbea",
+      "validation_interventions.json": "97b342938495d6191cb74f2c7830daa7250175e148c35f150bcd0e1e0bb7b475"
+    },
+    "source_sha256": {
+      "structured_ssl/model.py": "81b89718a5d58e5f5925aaffd062625831fbec826be5a087822c665597cb23bd",
+      "structured_ssl/data.py": "0d87a1dfda73dbc498399a3d1851946fe11d942c54f5c595d77d1f013a01e3ac",
+      "structured_ssl/train.py": "e61e6786abd1ae20c2970f0a97c6619f095376c9afa04903d2ea770f5d79f919",
+      "structured_ssl/evaluate.py": "96978bce4d50d9e568f28afa4835f25aaeaf82de9f460d8b17a72c946d3aa353",
+      "attention_ssl/model.py": "b0b92b8da4ec6450cb12578a8ee6528ae85bb71d274b9af08e14922c25254f47",
+      "program_ssl/model.py": "4ea98923999b755f0152ba7220be63cb1fb370330921205466fae623f6bb225b",
+      "structured_ssl/runtime.py": "d542503b0d8e26d7d7461f30edd92438483f3f4c368dff427d1a0805bd06a765",
+      "program_ssl/data.py": "2e445c5aa496507db5af5ef320aed1508c39b5ea38984b938195305b921a238a",
+      "sspredrnet/model.py": "fd5a739e244a0a0a374cffe2fafa6aafad443aecc47c50a355bc286c061efa0b",
+      "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+      "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+      "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+      "sspredrnet/checkpoint.py": "05ffb212da7e12e8a78a8ac2be2da1f102c1060a31e41396eeef0ba4bec3ca34"
+    },
+    "empirical_nonregression_or_independent_benefits_established": false,
+    "sealed_source_and_control_preflights_verified": true,
+    "three_cpu_source_export_contracts_sha256": {
+      "primary": "45ac08cde328360f718e23fe7e4dcdbfdbdb15fc2e8922f943b54fb1e57f5ec6",
+      "no_object_masking": "36e54e9adf2210a0e10c46ebb141ef6a57a0a1cec5ff73618ecbc65fa2c60737",
+      "static_parameters": "efbdfcd9dbb3eb8a76d53e992ad41cbfd14df8b062e0a8a91b121f4352a44e48"
+    }
   }
 }

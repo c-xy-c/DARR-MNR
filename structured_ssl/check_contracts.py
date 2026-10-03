@@ -9,7 +9,7 @@ import numpy as np
 import torch
 
 from .data import proposal_pack, proposals, to_device
-from .model import StructuredCompletion, set_energy, pixel_duplicates
+from .model import StructuredCompletion, set_energy, pixel_duplicates, support_residuals
 
 
 def fixture():
@@ -66,12 +66,45 @@ def main():
         assert torch.equal(factors, factors_after)
         swap_effect = float((factors - factors.roll(2, 0)).abs().max())
         assert swap_effect > 0
-        features = model.anchor.features(short['views'])
-        fixed_objects, _ = model.targets(short, features)
+        fixed_objects, _ = model.targets(short)
         with torch.autocast(device_type=device.type, dtype=torch.float16 if device.type == 'cuda' else torch.bfloat16):
-            protected_objects, _ = model.targets(short, features)
+            protected_objects, _ = model.targets(short)
         assert protected_objects.dtype == torch.float32
         assert torch.equal(protected_objects, fixed_objects), 'AMP changed immutable teacher targets'
+        outside_changed = {k: v.clone() for k, v in short.items()}
+        x0, y0, x1, y1 = short['boxes'][0, 0, 0, 0].tolist()
+        outside = torch.ones(80, 80, dtype=torch.bool, device=device)
+        outside[y0:y1, x0:x1] = False
+        outside_changed['views'][0, 0, 0].masked_fill_(outside, 1.)
+        assert torch.equal(short['views'][0, 0, 0, y0:y1, x0:x1],
+                           outside_changed['views'][0, 0, 0, y0:y1, x0:x1])
+        modified_objects, _ = model.targets(outside_changed)
+        assert torch.equal(fixed_objects[0, 0, 0], modified_objects[0, 0, 0]), 'outside pixels changed isolated target'
+        dense_truth = torch.zeros(2, 32, 25, device=device)
+        dense_truth[:, torch.arange(25), torch.arange(25)] = 1
+        predicted_objects = torch.randn(2, 10, 38, device=device)
+        predicted_presence = torch.randn(2, 10, device=device)
+        support_targets = torch.randn(2, 10, 38, device=device)
+        support_valid = torch.rand(2, 10, device=device) > .5
+        aligned = support_residuals((dense_truth, predicted_objects, predicted_presence),
+                                    dense_truth, support_targets, support_valid)
+        permuted = support_residuals((dense_truth.roll(1, -1), predicted_objects, predicted_presence),
+                                     dense_truth, support_targets, support_valid)
+        assert aligned[0].eq(0).all()
+        assert permuted[0][..., :32].abs().sum() > 0, 'spatial permutation escaped full feedback'
+        assert permuted[0][..., 32:].eq(0).all(), 'fixture must preserve the pooled component'
+        object_order = torch.randperm(10, device=device)
+        reordered_residuals = support_residuals((dense_truth, predicted_objects, predicted_presence),
+            dense_truth, support_targets[:, object_order], support_valid[:, object_order])
+        residual_permutation_error = float((aligned[1] - reordered_residuals[1]).abs().max())
+        assert residual_permutation_error < 1e-5, 'support feedback depends on target-object order'
+        absent = support_residuals((dense_truth, predicted_objects, predicted_presence),
+                                   dense_truth, support_targets, torch.zeros_like(support_valid))
+        assert torch.equal(absent[1][..., -1], predicted_presence.sigmoid())
+        assert absent[1][..., :38].eq(0).all(), 'null targets created appearance errors'
+        feedback_state = torch.randn(2, 35, 96, device=device)
+        zero_residuals = (torch.zeros(2, 25, 64, device=device), torch.zeros(2, 10, 39, device=device))
+        assert model.pav.feedback[0](feedback_state, feedback_state, zero_residuals).eq(0).all()
         captured = []
         handle = model.perception.register_forward_pre_hook(lambda _, inputs: captured.append(inputs[0].clone()))
         model.masked_loss(short, fixed_objects)
@@ -165,6 +198,12 @@ def main():
               'ssl_does_not_mutate_input_pixels_or_proposals': True,
               'exact_pixel_groups_match_hamming_zero_including_signed_zero': True,
               'fixed_object_targets_are_fp32_and_bitwise_equal_under_autocast': True,
+              'architecture_revision': 'isolated-target-structured-feedback-v2',
+              'bbox_outside_intervention_preserves_object_target_bitwise': True,
+              'structured_feedback_detects_spatial_permutation_with_identical_mean': True,
+              'structured_feedback_target_object_permutation_max_error': residual_permutation_error,
+              'null_object_targets_only_contribute_presence_feedback': True,
+              'zero_structured_error_produces_zero_attention_feedback': True,
               'ssl_rejects_candidates': True, 'frozen_anchor_buffers_unchanged': True,
               'all_trainable_parameters_have_finite_gradients': True,
               'activation_checkpointing_preserves_outputs_and_gradients': True,

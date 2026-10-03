@@ -1,0 +1,53 @@
+{
+  "fixture": "synthetic contours and tensors",
+  "full_raven_evaluation": false,
+  "device": "mps",
+  "torch": "2.11.0",
+  "anchor_sha256": "de3ea68bdd26272a9991fa394a38aa5d1c0b4d55078d10a968f67cec0a1c5b88",
+  "trainable_parameters": 2270454,
+  "frozen_parameters": 958345,
+  "initial_scores_bitwise_equal_to_anchor": true,
+  "heldout_target_cannot_change_visible_encoding_or_compilation": true,
+  "object_masking_keeps_four_complete_visible_panels": true,
+  "ssl_does_not_mutate_input_pixels_or_proposals": true,
+  "exact_pixel_groups_match_hamming_zero_including_signed_zero": true,
+  "fixed_object_targets_are_fp32_and_bitwise_equal_under_autocast": true,
+  "architecture_revision": "isolated-target-structured-feedback-v2",
+  "bbox_outside_intervention_preserves_object_target_bitwise": true,
+  "structured_feedback_detects_spatial_permutation_with_identical_mean": true,
+  "structured_feedback_target_object_permutation_max_error": 3.5762786865234375e-07,
+  "null_object_targets_only_contribute_presence_feedback": true,
+  "zero_structured_error_produces_zero_attention_feedback": true,
+  "ssl_rejects_candidates": true,
+  "frozen_anchor_buffers_unchanged": true,
+  "all_trainable_parameters_have_finite_gradients": true,
+  "activation_checkpointing_preserves_outputs_and_gradients": true,
+  "activation_checkpointing_gradient_max_error": 0.0,
+  "gradient_norms": {
+    "perception": 0.23821702599525452,
+    "compiler": 0.038705013692379,
+    "pav": 0.30785536766052246,
+    "masked_object": 0.5454735159873962
+  },
+  "losses": [
+    0.9272999167442322,
+    0.8024406433105469,
+    0.7272995710372925
+  ],
+  "training_statistics": {
+    "retrieval": 0.5284215807914734,
+    "completion": 1.1266156435012817,
+    "masked_object": 0.8621644973754883,
+    "reference_error": 0.03387412056326866,
+    "eligible_queries": 8,
+    "retrieval_correct": 6,
+    "proposal_overflow_panels": 0
+  },
+  "candidate_permutation_max_error": 0.0,
+  "target_object_permutation_max_error": 3.5762786865234375e-07,
+  "support_changes_dynamic_parameters_max": 0.08646346628665924,
+  "post_update_score_change_max": 1.642853021621704e-06,
+  "trained_gate": 0.00011312928108964115,
+  "blank_panels_and_no_legal_negatives_finite": true,
+  "proposal_overflow_merges_and_records": true
+}

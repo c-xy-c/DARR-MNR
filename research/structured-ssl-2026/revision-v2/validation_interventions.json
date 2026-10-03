@@ -1,0 +1,62 @@
+{
+  "architecture_revision": "isolated-target-structured-feedback-v2",
+  "split": "val",
+  "test_opened": false,
+  "full_raven_evaluation": false,
+  "anchor_sha256": "de3ea68bdd26272a9991fa394a38aa5d1c0b4d55078d10a968f67cec0a1c5b88",
+  "source_sha256": {
+    "structured_ssl/model.py": "81b89718a5d58e5f5925aaffd062625831fbec826be5a087822c665597cb23bd",
+    "structured_ssl/data.py": "0d87a1dfda73dbc498399a3d1851946fe11d942c54f5c595d77d1f013a01e3ac",
+    "structured_ssl/train.py": "e61e6786abd1ae20c2970f0a97c6619f095376c9afa04903d2ea770f5d79f919",
+    "structured_ssl/evaluate.py": "96978bce4d50d9e568f28afa4835f25aaeaf82de9f460d8b17a72c946d3aa353",
+    "attention_ssl/model.py": "b0b92b8da4ec6450cb12578a8ee6528ae85bb71d274b9af08e14922c25254f47",
+    "program_ssl/model.py": "4ea98923999b755f0152ba7220be63cb1fb370330921205466fae623f6bb225b",
+    "structured_ssl/runtime.py": "d542503b0d8e26d7d7461f30edd92438483f3f4c368dff427d1a0805bd06a765",
+    "program_ssl/data.py": "2e445c5aa496507db5af5ef320aed1508c39b5ea38984b938195305b921a238a",
+    "sspredrnet/model.py": "fd5a739e244a0a0a374cffe2fafa6aafad443aecc47c50a355bc286c061efa0b",
+    "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+    "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+    "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+    "sspredrnet/checkpoint.py": "05ffb212da7e12e8a78a8ac2be2da1f102c1060a31e41396eeef0ba4bec3ca34"
+  },
+  "diagnosis_sha256": "b82156d56c99b1512a279d2bf1f4ac68e6f7cdfb697dc73c1b11a039bc16e78e",
+  "interventions": [
+    {
+      "configuration": "distribute_four",
+      "validation_index": 2000,
+      "outside_changed_pixels": 1482,
+      "historical_v1_appearance_relative_l2_change": 0.10843222588300705,
+      "revised_target_bitwise_unchanged": true,
+      "revised_appearance_relative_l2_change": 0.0
+    },
+    {
+      "configuration": "distribute_four",
+      "validation_index": 2002,
+      "outside_changed_pixels": 323,
+      "historical_v1_appearance_relative_l2_change": 0.0762847512960434,
+      "revised_target_bitwise_unchanged": true,
+      "revised_appearance_relative_l2_change": 0.0
+    },
+    {
+      "configuration": "distribute_nine",
+      "validation_index": 4000,
+      "outside_changed_pixels": 621,
+      "historical_v1_appearance_relative_l2_change": 0.21530281007289886,
+      "revised_target_bitwise_unchanged": true,
+      "revised_appearance_relative_l2_change": 0.0
+    },
+    {
+      "configuration": "distribute_nine",
+      "validation_index": 4001,
+      "outside_changed_pixels": 1451,
+      "historical_v1_appearance_relative_l2_change": 0.12474125623703003,
+      "revised_target_bitwise_unchanged": true,
+      "revised_appearance_relative_l2_change": 0.0
+    }
+  ],
+  "limitations": [
+    "Targets still preserve location and scale, not proven semantic attributes.",
+    "Pixels of overlapping objects inside a bbox remain visible to the teacher.",
+    "Locality repair is not evidence of improved RAVEN accuracy."
+  ]
+}

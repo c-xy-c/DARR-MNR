@@ -1,0 +1,8 @@
+{
+  "fixture": "synthetic sealed artifacts only; no trained checkpoints or RAVEN accuracy",
+  "full_raven_evaluation": false,
+  "complete_six_job_aggregation": true,
+  "three_seed_and_native_control_comparisons": true,
+  "failed_validation_is_verified_but_has_null_test": true,
+  "rejected_checkpoint_tampering_detected": true
+}

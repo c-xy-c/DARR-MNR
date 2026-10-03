@@ -2,7 +2,7 @@
 
 Experimental redesign, **without a complete RAVEN accuracy result yet**.
 The preceding small attention branch averaged 71.22% test accuracy. This
-package has 2,182,902 trainable parameters and freezes the preceding primary
+package's v2 revision has 2,270,454 trainable parameters and freezes the preceding primary
 validation-selected model's 958,345 parameters. Capacity alone is not evidence
 of better reasoning. See the [design and fixed evaluation protocol](../research/structured-ssl-2026/design.md).
 
@@ -21,6 +21,11 @@ flowchart TD
   H --> I[Three stages of rank8 P/G/V parameters]
   F --> J[Query prefix decoder]
   I --> K[Predict · verify · refine, repeated three times]
+  K --> Q[Support: 25 local + pooled spatial residuals]
+  K --> R[Support: 10 transport-aligned object + presence residuals]
+  Q --> S[Query attention: support states as keys, residuals as values]
+  R --> S
+  S --> K
   J --> K
   K --> L[Dense prediction + object set + presence]
   M[Candidate fixed teacher features and regions] --> N[Dense and transport discrepancy]
@@ -33,8 +38,14 @@ The SSL contribution trains raw pixel/object representations with complete
 region masking in the first five known panels, plus the existing one-direction
 known-sixth completion ranking. The SER-PaV contribution compiles complete
 support rows into stage/role-specific low-rank weights and uses support
-reconstruction errors to refine the next query prediction. Region targets and
-dense targets use the immutable CNN. Candidate order cannot affect compilation.
+reconstruction errors to refine the next query prediction. For v2, each region's
+bbox is independently placed on a white panel before the immutable CNN encodes
+and pools it. Pixels outside that bbox cannot affect its target. Location/scale
+remain in appearance, and overlapping objects inside a bbox remain a limitation.
+Dense targets retain the original whole-panel teacher space. Support verification
+keeps all 25 positions, the pooled dense residual, and transport-aligned object
+appearance/geometry/presence; attention transports these errors into query states.
+Candidate order cannot affect compilation.
 
 Regions are exterior contour proposals, **not discovered semantic objects**.
 Given image-only proposals and layout priors, this is a self-supervised
@@ -94,10 +105,19 @@ use synthetic shapes, verify real gradients and candidate/object permutations,
 and explicitly have `full_raven_evaluation: false`. They do not verify CUDA
 memory use, mixed precision or benchmark accuracy.
 
-The official archive hash and all split counts were verified locally. Three
+The official archive hash and all split counts were verified locally. The v1 three
 Metal updates on 128 actual training puzzles used about 7.46 GB of driver
 allocation, with finite FP16 gradients, unchanged inputs, and successful CPU/
 Metal RNG replay. This capacity check is not a complete epoch or accuracy result.
+V2 has CPU/Metal synthetic mechanism checks and four actual validation locality
+interventions. Its real batch128 preflight and full experiment run separately;
+v1 memory/timing figures must not be attributed to v2.
+
+The v1 Metal run is preserved in
+`runs/structured-metal-calibrated-20261003-173653`. Its best through epoch6 is
+71.2286% validation (epoch1), below the same-platform frozen anchor's 71.5143%.
+V2 corrects two measured information losses; no v2 accuracy gain is established.
+See [revision details](../research/structured-ssl-2026/revision-v2.md).
 
 The matched native continuation is available as:
 

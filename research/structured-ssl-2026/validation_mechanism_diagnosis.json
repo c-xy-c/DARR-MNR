@@ -1,0 +1,89 @@
+{
+  "split": "val",
+  "test_opened": false,
+  "full_benchmark_result": false,
+  "anchor_sha256": "de3ea68bdd26272a9991fa394a38aa5d1c0b4d55078d10a968f67cec0a1c5b88",
+  "cnn_theoretical_max_receptive_field_px": 151,
+  "image_size_px": 80,
+  "object_locality_interventions": [
+    {
+      "configuration": "distribute_four",
+      "validation_index": 2000,
+      "target_bbox_pixels_bitwise_preserved": true,
+      "target_geometry_bitwise_preserved": true,
+      "outside_changed_pixels": 1482,
+      "appearance_relative_l2_change": 0.10843222588300705,
+      "appearance_normalized_squared_change": 0.007228880655020475
+    },
+    {
+      "configuration": "distribute_four",
+      "validation_index": 2002,
+      "target_bbox_pixels_bitwise_preserved": true,
+      "target_geometry_bitwise_preserved": true,
+      "outside_changed_pixels": 323,
+      "appearance_relative_l2_change": 0.0762847512960434,
+      "appearance_normalized_squared_change": 0.005808282643556595
+    },
+    {
+      "configuration": "distribute_nine",
+      "validation_index": 4000,
+      "target_bbox_pixels_bitwise_preserved": true,
+      "target_geometry_bitwise_preserved": true,
+      "outside_changed_pixels": 621,
+      "appearance_relative_l2_change": 0.21530281007289886,
+      "appearance_normalized_squared_change": 0.021859686821699142
+    },
+    {
+      "configuration": "distribute_nine",
+      "validation_index": 4001,
+      "target_bbox_pixels_bitwise_preserved": true,
+      "target_geometry_bitwise_preserved": true,
+      "outside_changed_pixels": 1451,
+      "appearance_relative_l2_change": 0.12474125623703003,
+      "appearance_normalized_squared_change": 0.009752556681632996
+    }
+  ],
+  "spatial_permutation_counterexample": {
+    "mean_feedback_error": 0.0,
+    "deployed_dense_discrepancy": 0.9999998807907104
+  },
+  "observed_complete_epoch_validation": [
+    {
+      "epoch": 1,
+      "correct": 9972,
+      "total": 14000,
+      "gate": 0.13620051741600037,
+      "masked_loss": 0.2089729408082508,
+      "completion_loss": 0.3262875598044622
+    },
+    {
+      "epoch": 2,
+      "correct": 9905,
+      "total": 14000,
+      "gate": 0.28312405943870544,
+      "masked_loss": 0.15291178208305722,
+      "completion_loss": 0.19936673980667477
+    },
+    {
+      "epoch": 3,
+      "correct": 9834,
+      "total": 14000,
+      "gate": 0.3896769881248474,
+      "masked_loss": 0.13460155246371314,
+      "completion_loss": 0.17972176059654782
+    },
+    {
+      "epoch": 4,
+      "correct": 9776,
+      "total": 14000,
+      "gate": 0.47429946064949036,
+      "masked_loss": 0.1241273302804856,
+      "completion_loss": 0.16965672779650914
+    }
+  ],
+  "limitations": [
+    "Four locality interventions are not a whole-dataset causal attribution.",
+    "A mean-feedback counterexample demonstrates blindness, not the cause of all mistakes.",
+    "No alternative objective or network has been trained/evaluated by this script."
+  ]
+}

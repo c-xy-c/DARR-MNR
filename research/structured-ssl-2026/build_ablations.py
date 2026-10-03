@@ -32,6 +32,8 @@ def export(repository, destination, variant):
                         '        support = torch.zeros_like(support)\n'
                         '        support_valid = torch.ones_like(support_valid)\n'
                         '        support_target = torch.zeros_like(support_target)\n'
+                        '        support_objects = torch.zeros_like(support_objects)\n'
+                        '        support_object_valid = torch.zeros_like(support_object_valid)\n'
                         '        if factors is None:\n            factors = self.compiler(support, support_valid)')
                     source = replace_once(source,
                         '        n = len(support)\n        padding = torch.cat',
