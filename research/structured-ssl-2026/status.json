@@ -1,5 +1,5 @@
 {
-  "status": "local_metal_full_suite_started_initial_validation",
+  "status": "local_initial_validation_failed_paired_platform_audit_running",
   "full_raven_result_claimed": false,
   "current_model_test_accuracy": null,
   "reference_anchor": "research/ssl-attention-2026/results/seed12345/best.pt",
@@ -25,6 +25,7 @@
     "Metal/CPU/loader RNG restoration bitwise replay"
   ],
   "missing": [
+    "resolve full-validation anchor discrepancy before local adaptation",
     "completed full RAVEN main and matched controls",
     "completed multiple adaptation seeds",
     "sealed full validation/test with best/final and seven configurations",
@@ -62,7 +63,7 @@
     "ssh_authenticated_account": "wozhendetainanle",
     "stage": "experimental_implementation_no_full_accuracy"
   },
-  "status_as_of_utc": "2026-10-03T09:11:16.695829+00:00",
+  "status_as_of_utc": "2026-10-03T09:15:13.880825+00:00",
   "execution": {
     "device": "mps",
     "batch_size": 128,
@@ -70,6 +71,9 @@
     "run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-metal-20261003-170906",
     "suite_process_pid": 40205,
     "fixed_preregistered_jobs": 6,
-    "note": "Metal platform disclosed separately from historical CUDA; full initial validation must replay anchor count before adaptation."
+    "note": "Metal platform disclosed separately from historical CUDA; full initial validation must replay anchor count before adaptation.",
+    "first_launch_exit_code": 1,
+    "training_updates_completed": 0,
+    "initial_failure": "Metal initial complete validation did not replay historical anchor correct count; audit in progress. Original record preserved."
   }
 }
