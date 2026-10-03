@@ -94,6 +94,8 @@ def main():
     if output.exists():
         raise FileExistsError('preserve existing evaluation record')
     seal = json.loads((root / 'training_complete.json').read_text())
+    if digest(root / 'config.json') != seal['config_sha256']:
+        raise RuntimeError('sealed execution protocol changed')
     if seal.get('schema_version') != 1 or seal.get('method') != 'structured-object-support-pav':
         raise RuntimeError('structured-completion sealed training required')
     if source_hashes() != seal['source_sha256']:

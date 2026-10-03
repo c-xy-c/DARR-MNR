@@ -78,6 +78,11 @@ Full training supports CUDA or explicit `--device mps` and requires exactly
 Metal runs retain batch128, FP16 adaptation, FP32 teacher/evaluation, and capture
 Metal RNG for resume. Perception activation checkpointing preserves the
 architecture and loss; CPU outputs and gradients match without recomputation.
+Metal additionally requires `--platform-validation` pointing to the recorded
+complete validation of its immutable anchor. Both CPU and Metal produced
+10012/14000 for the same preceding attention checkpoint, versus its historical
+CUDA record of 10014. That two-puzzle discrepancy remains disclosed; its cause
+has not been fully identified. This is baseline calibration, not a new model gain.
 Test opens only after the selected best passes the complete validation audit.
 Best/final source and checkpoint hashes are sealed. Resume with unchanged
 arguments and `--resume`. Evaluation refuses to overwrite an existing result.
@@ -108,6 +113,9 @@ with separately sealed primary and contribution-control source exports. It runs
 the primary, the native continuation, two controls and two further adaptation
 seeds sequentially. A failed primary validation gate defers that test without
 changing the fixed designs or training budgets.
+The suite root includes `reference-anchor-validation.json` and
+`reference-native-validation.json`; initial validation must exactly replay the
+corresponding measured platform count before any optimizer updates.
 
 The reference test score is 71.2357%; earlier original continuation final
 reached 71.41%. Neither number is a new result of this redesign. A matched

@@ -1,0 +1,25 @@
+{
+  "split": "val",
+  "test_opened": false,
+  "torch": "2.11.0",
+  "anchor_sha256": "8a383fcc609127a7c35bfb9c6a2ffe064ce5285f66d8525b3668385ec915928c",
+  "expected_prior_validation_correct": 9979,
+  "mps": {
+    "accuracy_macro": 71.27142857142857,
+    "accuracy_micro": 71.27142857142857,
+    "by_configuration": {
+      "center_single": 96.85,
+      "distribute_four": 46.6,
+      "distribute_nine": 34.0,
+      "in_center_single_out_center_single": 91.9,
+      "in_distribute_four_out_center_single": 36.95,
+      "left_center_single_right_center_single": 96.0,
+      "up_center_single_down_center_single": 96.6
+    },
+    "correct": 9978,
+    "total": 14000
+  },
+  "new_training_updates": 0,
+  "full_raven_adaptation_result": false,
+  "cpu_full_validation_replayed": false
+}

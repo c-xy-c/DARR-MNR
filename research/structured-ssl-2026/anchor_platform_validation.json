@@ -1,0 +1,40 @@
+{
+  "split": "val",
+  "test_opened": false,
+  "torch": "2.11.0",
+  "anchor_sha256": "de3ea68bdd26272a9991fa394a38aa5d1c0b4d55078d10a968f67cec0a1c5b88",
+  "expected_prior_validation_correct": 10014,
+  "cpu_replays_prior_correct_count": false,
+  "cpu": {
+    "correct": 10012,
+    "total": 14000,
+    "accuracy_macro": 71.51428571428572,
+    "by_configuration": {
+      "center_single": 97.1,
+      "distribute_four": 46.75,
+      "distribute_nine": 34.0,
+      "in_center_single_out_center_single": 92.2,
+      "in_distribute_four_out_center_single": 37.55,
+      "left_center_single_right_center_single": 96.25,
+      "up_center_single_down_center_single": 96.75
+    }
+  },
+  "mps": {
+    "correct": 10012,
+    "total": 14000,
+    "accuracy_macro": 71.51428571428572,
+    "by_configuration": {
+      "center_single": 97.1,
+      "distribute_four": 46.75,
+      "distribute_nine": 34.0,
+      "in_center_single_out_center_single": 92.2,
+      "in_distribute_four_out_center_single": 37.55,
+      "left_center_single_right_center_single": 96.25,
+      "up_center_single_down_center_single": 96.75
+    }
+  },
+  "changed_predictions": [],
+  "max_score_difference": 3.0666589736938477e-05,
+  "max_normalized_input_difference": 0.0,
+  "different_hardware_rounding_is_not_an_accuracy_gain": true
+}

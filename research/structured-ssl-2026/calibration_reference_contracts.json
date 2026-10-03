@@ -1,0 +1,15 @@
+{
+  "full_raven_adaptation_result": false,
+  "platform_reference_checkpoint_split_and_total_guards": true,
+  "negative_cases_rejected": [
+    "wrong_checkpoint",
+    "test_opened",
+    "wrong_split",
+    "incomplete_validation",
+    "wrong_historical_count"
+  ],
+  "mps_requires_premeasured_reference": true,
+  "cuda_historical_reference_unchanged": true,
+  "metal_anchor_correct": 10012,
+  "metal_native_correct": 9978
+}

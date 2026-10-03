@@ -1,0 +1,14 @@
+{
+  "split": "val",
+  "total": 14000,
+  "gate": 0.0,
+  "seed": 12345,
+  "structured_correct": 10012,
+  "anchor_correct": 10012,
+  "nonfinite_records": [],
+  "changed_records": [],
+  "max_finite_score_difference": 0.0,
+  "test_opened": false,
+  "device": "mps",
+  "full_raven_adaptation_result": false
+}

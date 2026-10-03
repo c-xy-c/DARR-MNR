@@ -19,7 +19,7 @@ import numpy as np
 import torch
 
 from sspredrnet.checkpoint import save_checkpoint
-from structured_ssl.runtime import resolve_device, execution_record, rng_state, restore_rng
+from structured_ssl.runtime import resolve_device, execution_record, rng_state, restore_rng, validation_reference
 from sspredrnet.data import CONFIGS, Raven, loader, normalize
 from sspredrnet.evaluate import score
 from sspredrnet.model import SSPredRNet, prediction_loss
@@ -115,6 +115,7 @@ def main():
     parser.add_argument('--seed', type=int, default=12345)
     parser.add_argument('--lr', type=float, default=3e-5)
     parser.add_argument('--device', default='cuda:0')
+    parser.add_argument('--platform-validation')
     parser.add_argument('--resume', action='store_true')
     args = parser.parse_args()
     if args.epochs != 16 or args.batch_size < 1 or args.workers < 0 or not math.isfinite(args.lr) or args.lr <= 0:
@@ -122,6 +123,7 @@ def main():
     device = resolve_device(args.device)
     if digest(args.baseline) != FOUNDATION_SHA256:
         raise RuntimeError('baseline differs from the preregistered native foundation')
+    platform_correct, platform_sha256 = validation_reference(args.platform_validation, args.baseline, 9979, device)
     root = Path(args.run_dir)
     if not args.resume:
         root.mkdir(parents=True, exist_ok=False)
@@ -151,6 +153,9 @@ def main():
     val_generator = torch.Generator().manual_seed(args.seed + 1)
     config = {**vars(args), 'method': 'original-prb-continuation', 'schema_version': 1,
               'execution': execution_record(device),
+              'historical_baseline_validation_correct': 9979,
+              'platform_baseline_validation_correct': platform_correct,
+              'platform_validation_sha256': platform_sha256,
               'source_epoch': source_epoch, 'source_training_selection_budget_epochs': prior_budget,
               'total_training_selection_budget_epochs': prior_budget + args.epochs,
               'baseline_sha256': FOUNDATION_SHA256, 'source_sha256': source_hashes(),
@@ -182,9 +187,9 @@ def main():
         model.eval()
         initial = score(model, args.dataset_root, 'val', device, batch_size=args.batch_size,
                         workers=args.workers, generator=val_generator)
-        if initial['correct'] != 9979:
-            raise RuntimeError('declared foundation validation did not replay')
         (root / 'initial_validation.json').write_text(json.dumps(initial, indent=2) + '\n')
+        if initial['correct'] != platform_correct:
+            raise RuntimeError('declared foundation platform validation did not replay')
         print(json.dumps({'initial_validation': initial, 'config': config}), flush=True)
     for epoch in range(start, args.epochs):
         started, samples, summed = time.monotonic(), 0, 0.
@@ -235,6 +240,7 @@ def main():
     if batchnorm_hash(model) != config['frozen_batchnorm_buffers_sha256']:
         raise RuntimeError('native continuation changed frozen BatchNorm buffers')
     seal = {'method': config['method'], 'epochs': args.epochs, 'best_epoch': best_epoch,
+            'config_sha256': digest(root / 'config.json'),
             'source_sha256': source_hashes(), 'baseline_sha256': FOUNDATION_SHA256,
             'checkpoint_sha256': {name: digest(root / f'{name}.pt') for name in ('best', 'final')},
             'selection_split': 'val', 'test_opened': False}

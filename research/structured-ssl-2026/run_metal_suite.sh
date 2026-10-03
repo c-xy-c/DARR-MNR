@@ -24,7 +24,8 @@ adapt() {
     printf '%s\n' "$variant-seed$seed:training" > "$meta/phase.txt"
     "$task_python" -u -m structured_ssl.train --dataset-root "$dataset_root" \
         --run-dir "$run" --anchor "$anchor_checkpoint" --epochs 8 --seed "$seed" \
-        --device mps --workers 2 > "$run.console.log" 2>&1
+        --device mps --workers 2 --platform-validation "$run_root/reference-anchor-validation.json" \
+        > "$run.console.log" 2>&1
     printf '%s\n' "$variant-seed$seed:validation_audit" > "$meta/phase.txt"
     "$task_python" -u -m structured_ssl.evaluate --dataset-root "$dataset_root" \
         --run-dir "$run" --split val --device mps --workers 2 >> "$run.console.log" 2>&1
@@ -46,6 +47,7 @@ cd "$source_dir"
 "$task_python" -u research/structured-ssl-2026/original_continuation.py \
     --dataset-root "$dataset_root" --run-dir "$run_root/original-seed12345" \
     --baseline "$foundation" --epochs 16 --seed 12345 --device mps --workers 2 \
+    --platform-validation "$run_root/reference-native-validation.json" \
     > "$run_root/original-seed12345.console.log" 2>&1
 adapt no_object_masking 12345 "$run_root/source-no_object_masking"
 adapt static_parameters 12345 "$run_root/source-static_parameters"

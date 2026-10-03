@@ -16,7 +16,7 @@ from sspredrnet.checkpoint import save_checkpoint
 from sspredrnet.data import CONFIGS, loader
 from .data import ObjectRaven, to_device
 from .model import StructuredCompletion
-from .runtime import resolve_device, execution_record, rng_state, restore_rng
+from .runtime import resolve_device, execution_record, rng_state, restore_rng, validation_reference
 
 
 SOURCE_FILES = ('structured_ssl/model.py', 'structured_ssl/data.py', 'structured_ssl/train.py',
@@ -70,6 +70,7 @@ def main():
     parser.add_argument('--seed', type=int, default=12345)
     parser.add_argument('--lr', type=float, default=3e-4)
     parser.add_argument('--device', default='cuda:0')
+    parser.add_argument('--platform-validation')
     parser.add_argument('--resume', action='store_true')
     args = parser.parse_args()
     if args.epochs < 1 or args.batch_size < 1 or args.workers < 0 or not math.isfinite(args.lr) or args.lr <= 0:
@@ -92,6 +93,8 @@ def main():
     if digest(args.anchor) != anchor_seal['checkpoint_sha256']['best']:
         raise RuntimeError('anchor must be its validation-selected checkpoint')
     expected_anchor_correct = anchor_validation['checkpoints']['best']['full']['correct']
+    platform_correct, platform_sha256 = validation_reference(args.platform_validation, args.anchor,
+                                                             expected_anchor_correct, device)
     anchor = torch.load(args.anchor, map_location=device, weights_only=False)
     model.load_anchor(anchor['model'])
     anchor_config = json.loads(Path(args.anchor).with_name('config.json').read_text())
@@ -107,6 +110,9 @@ def main():
     val_generator = torch.Generator().manual_seed(args.seed + 1)
     config = {**vars(args), 'schema_version': 1, 'method': 'structured-object-support-pav',
               'execution': execution_record(device), 'perception_activation_checkpointing': True,
+              'historical_anchor_validation_correct': expected_anchor_correct,
+              'platform_anchor_validation_correct': platform_correct,
+              'platform_validation_sha256': platform_sha256,
               'source_epoch': source_epoch, 'anchor_checkpoint_epoch': anchor['epoch'],
               'anchor_training_selection_budget_epochs': selection_budget,
               'total_training_selection_budget_epochs': selection_budget + args.epochs,
@@ -143,9 +149,9 @@ def main():
         (root / 'config.json').write_text(json.dumps(config, indent=2) + '\n')
         model.eval()
         initial = score(model, args.dataset_root, 'val', device, args.batch_size, args.workers, val_generator)
-        if initial['correct'] != expected_anchor_correct:
-            raise RuntimeError('initial complete validation did not replay the declared anchor')
         (root / 'initial_validation.json').write_text(json.dumps(initial, indent=2) + '\n')
+        if initial['correct'] != platform_correct:
+            raise RuntimeError(f"initial validation {initial['correct']} did not replay platform anchor {platform_correct}")
         print(json.dumps({'config': config, 'initial_validation': initial}), flush=True)
     for epoch in range(start, args.epochs):
         started, samples, summed, metrics = time.monotonic(), 0, 0., {}
@@ -202,6 +208,7 @@ def main():
     if anchor_hash(model) != config['frozen_anchor_sha256']:
         raise RuntimeError('anchor changed during adaptation')
     seal = {'schema_version': 1, 'method': config['method'], 'source_sha256': source_hashes(),
+            'config_sha256': digest(root / 'config.json'),
             'anchor_sha256': config['anchor_sha256'], 'frozen_anchor_sha256': config['frozen_anchor_sha256'],
             'checkpoint_sha256': {name: digest(root / f'{name}.pt') for name in ('best', 'final')},
             'best_epoch': best_epoch, 'epochs': args.epochs, 'test_opened': False}
