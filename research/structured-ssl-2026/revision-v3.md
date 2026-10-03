@@ -62,13 +62,20 @@ rank1，**不证明实际训练会恢复 rank8，也不证明准确率提升**�
 
 ## 固定新实验
 
-运行目录：`runs/structured-shine-rl-metal-20261003-212041`。
+当前运行目录：`runs/structured-shine-rl-priority-metal-20261003-213645`。
+原封存目录 `runs/structured-shine-rl-metal-20261003-212041` 保留；其源码和
+三份 CPU 检查逐字节复制到新目录，源文件 hash 和登记预算全部相同。
 主模型种子 12345/12346/12347；同容量对照为 `no_object_masking` 和
 `static_parameters`，各八轮。完整 42k 训练、14k 验证、batch128、Metal。
 完整验证选择 best；final 单独报告。主模型未通过不退步/支持生效门槛时
 推迟测试；已登记对照可报告下降。不能用测试集决定架构或超参数。
 
-源码在训练前封存。队列当前等待原固定套件的恢复和完成；**V3 没有
+源码在训练前封存。仅调整 GPU 顺序：原版 16 轮对照及其完整评估结束后
+先运行 V3，再继续 V1 尚未启动的固定实验。V1 coordinator 暂缓，但正在
+训练的 native 子进程未中断；V3 coordinator 结束或出错时释放 V1。
+原队列在正式训练前明确重排，exit1、旧调度源码和重排记录全部保留；
+该 exit1 是主动调度中断，不是模型数值失败。详见
+[v3_priority_scheduling.json](v3_priority_scheduling.json)。**V3 没有
 完整训练准确率，也没有建立两个贡献的独立收益**。V2 队列因父套件失败
 终止，只有 CPU 检查，没有正式 RAVEN 训练；其所有封存记录保留。
 
@@ -86,7 +93,7 @@ rank1，**不证明实际训练会恢复 rank8，也不证明准确率提升**�
 
 原失败目录、exit1 和日志保留。恢复目录为
 `runs/structured-metal-recovered-20261003-211738`；从完整第 7 轮继续完成
-既定 16 轮，然后完成原套件待运行的对照和种子。源码迁移写入
+既定 16 轮。其后先运行 V3，再完成原套件待运行的对照和种子；预算不变。源码迁移写入
 `numerical_repair.json`，结果收集器验证迁移记录。诊断见
 [native_stable_l2_replay.json](native_stable_l2_replay.json) 和
 [packing_numerics_contracts.json](packing_numerics_contracts.json)。

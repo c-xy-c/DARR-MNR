@@ -1,0 +1,126 @@
+{
+  "scheduling_only": true,
+  "from_queued_run": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-metal-20261003-212041",
+  "priority_run": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-priority-metal-20261003-213645",
+  "queued_source_sha256_unchanged": {
+    "primary": {
+      "attention_ssl/__init__.py": "5f415682495822d2012597cd932e93ac5898dc6f17b137ca6146360071f2bba6",
+      "attention_ssl/check_contracts.py": "497efdde2363dec3a6315ebebad4cc41c4776c4615bda7ef80f392dfdd271470",
+      "attention_ssl/evaluate.py": "012f9c5c7b35dbbc846336aa7bd520601a7dfd4e1d50111f8763cb5084a27236",
+      "attention_ssl/model.py": "b0b92b8da4ec6450cb12578a8ee6528ae85bb71d274b9af08e14922c25254f47",
+      "attention_ssl/train.py": "6ec85b0b239e4e7a93b7a01bac010016c5aa8bfb53acbf85b8257a3598c9c995",
+      "program_ssl/__init__.py": "d71b2d1187e2a42f1f5b58d69a0a911800a7eb059077cbb774df965dcf636455",
+      "program_ssl/check_contracts.py": "8ce5db6eeb5c6958df36a9cef7feb126d1c22005aefebb5f1718dcd1b237aa31",
+      "program_ssl/data.py": "2e445c5aa496507db5af5ef320aed1508c39b5ea38984b938195305b921a238a",
+      "program_ssl/evaluate.py": "f6ad090129ac10ebaac450ba010236b5e54d3b65e56514ae533be754fcaa80b9",
+      "program_ssl/feature_cache.py": "59fc3cca71d436e41511c7a3e3c93659a3f543508e1afa38118c25e054eeaa25",
+      "program_ssl/model.py": "4ea98923999b755f0152ba7220be63cb1fb370330921205466fae623f6bb225b",
+      "program_ssl/train.py": "2ce328084105b9b7640fad72696845392445503d0a1af81fbcdf58034b1776f0",
+      "research/structured-ssl-2026/collect_results.py": "a467fd59654aa5ff7b3f20b41cc681fc028180bfa84a07a99df14571d5f395a2",
+      "research/structured-ssl-2026/original_continuation.py": "171b9097252fb6e20a5e8cfb3fd666b603773cc101c8f43fda2437e13c06e95b",
+      "research/structured-ssl-2026/profile_mps.py": "b620380a23411a353f4df2ad069bd04910236168c98e0030da89ba3aba8cb110",
+      "sspredrnet/__init__.py": "8183b313c84b9e052655cbd4074dcff1134a50f062b14d98e46b9ca218ac7a6a",
+      "sspredrnet/checkpoint.py": "05ffb212da7e12e8a78a8ac2be2da1f102c1060a31e41396eeef0ba4bec3ca34",
+      "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+      "sspredrnet/evaluate.py": "464155a4658c7240f2fcd49b5a01962a3203b2686ab250fc350e0eb9bb20d3fb",
+      "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+      "sspredrnet/model.py": "074387187e363a38a8204b065753d0b485e975e3f3476d7dd4506df2ca224978",
+      "sspredrnet/train.py": "e42d93ee5d956132ce3a36d08f72d874bc1445cf80aa4e9fbec42b8ed3c00c67",
+      "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+      "structured_ssl/__init__.py": "f2caf0d06be65b728d19e06f01c80b3654e654d82cbab32b49ffebb20c80ee06",
+      "structured_ssl/check_contracts.py": "f772e6e1d32647ceb8c11b0c53e4bdce2003e2220ba19620cc84943b02ee1154",
+      "structured_ssl/data.py": "0d87a1dfda73dbc498399a3d1851946fe11d942c54f5c595d77d1f013a01e3ac",
+      "structured_ssl/evaluate.py": "96978bce4d50d9e568f28afa4835f25aaeaf82de9f460d8b17a72c946d3aa353",
+      "structured_ssl/model.py": "d96544a77b4bbda5f3ea3d2e5b474e3a27e2952923eacc22186cc10e1bb88c8c",
+      "structured_ssl/runtime.py": "d542503b0d8e26d7d7461f30edd92438483f3f4c368dff427d1a0805bd06a765",
+      "structured_ssl/train.py": "d2453e7e8b8fe692ea24f0ca6aaf8068f56fe03d6c356fc4a35e8da761070c10"
+    },
+    "no_object_masking": {
+      "attention_ssl/__init__.py": "5f415682495822d2012597cd932e93ac5898dc6f17b137ca6146360071f2bba6",
+      "attention_ssl/check_contracts.py": "497efdde2363dec3a6315ebebad4cc41c4776c4615bda7ef80f392dfdd271470",
+      "attention_ssl/evaluate.py": "012f9c5c7b35dbbc846336aa7bd520601a7dfd4e1d50111f8763cb5084a27236",
+      "attention_ssl/model.py": "b0b92b8da4ec6450cb12578a8ee6528ae85bb71d274b9af08e14922c25254f47",
+      "attention_ssl/train.py": "6ec85b0b239e4e7a93b7a01bac010016c5aa8bfb53acbf85b8257a3598c9c995",
+      "program_ssl/__init__.py": "d71b2d1187e2a42f1f5b58d69a0a911800a7eb059077cbb774df965dcf636455",
+      "program_ssl/check_contracts.py": "8ce5db6eeb5c6958df36a9cef7feb126d1c22005aefebb5f1718dcd1b237aa31",
+      "program_ssl/data.py": "2e445c5aa496507db5af5ef320aed1508c39b5ea38984b938195305b921a238a",
+      "program_ssl/evaluate.py": "f6ad090129ac10ebaac450ba010236b5e54d3b65e56514ae533be754fcaa80b9",
+      "program_ssl/feature_cache.py": "59fc3cca71d436e41511c7a3e3c93659a3f543508e1afa38118c25e054eeaa25",
+      "program_ssl/model.py": "4ea98923999b755f0152ba7220be63cb1fb370330921205466fae623f6bb225b",
+      "program_ssl/train.py": "2ce328084105b9b7640fad72696845392445503d0a1af81fbcdf58034b1776f0",
+      "sspredrnet/__init__.py": "8183b313c84b9e052655cbd4074dcff1134a50f062b14d98e46b9ca218ac7a6a",
+      "sspredrnet/checkpoint.py": "05ffb212da7e12e8a78a8ac2be2da1f102c1060a31e41396eeef0ba4bec3ca34",
+      "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+      "sspredrnet/evaluate.py": "464155a4658c7240f2fcd49b5a01962a3203b2686ab250fc350e0eb9bb20d3fb",
+      "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+      "sspredrnet/model.py": "074387187e363a38a8204b065753d0b485e975e3f3476d7dd4506df2ca224978",
+      "sspredrnet/train.py": "e42d93ee5d956132ce3a36d08f72d874bc1445cf80aa4e9fbec42b8ed3c00c67",
+      "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+      "structured_ssl/__init__.py": "f2caf0d06be65b728d19e06f01c80b3654e654d82cbab32b49ffebb20c80ee06",
+      "structured_ssl/check_contracts.py": "a512eab19bc6d49437fa5708a862e868647e3f8cce0c548e88140382ed670f30",
+      "structured_ssl/data.py": "0d87a1dfda73dbc498399a3d1851946fe11d942c54f5c595d77d1f013a01e3ac",
+      "structured_ssl/evaluate.py": "bfa16d25acdae0b7f6d02069c76a6fcf922b9fc008dac11d57ea841a95f7fd11",
+      "structured_ssl/model.py": "36c0b6ff65826d00d4ee53de4a8ca8baf6f1fd9dbac7d3445ae62fe3087bd968",
+      "structured_ssl/runtime.py": "d542503b0d8e26d7d7461f30edd92438483f3f4c368dff427d1a0805bd06a765",
+      "structured_ssl/train.py": "8587e492a540bf4ef9e6c757640a1c1618d6fd1687b8c6bad136239399ab3047"
+    },
+    "static_parameters": {
+      "attention_ssl/__init__.py": "5f415682495822d2012597cd932e93ac5898dc6f17b137ca6146360071f2bba6",
+      "attention_ssl/check_contracts.py": "497efdde2363dec3a6315ebebad4cc41c4776c4615bda7ef80f392dfdd271470",
+      "attention_ssl/evaluate.py": "012f9c5c7b35dbbc846336aa7bd520601a7dfd4e1d50111f8763cb5084a27236",
+      "attention_ssl/model.py": "b0b92b8da4ec6450cb12578a8ee6528ae85bb71d274b9af08e14922c25254f47",
+      "attention_ssl/train.py": "6ec85b0b239e4e7a93b7a01bac010016c5aa8bfb53acbf85b8257a3598c9c995",
+      "program_ssl/__init__.py": "d71b2d1187e2a42f1f5b58d69a0a911800a7eb059077cbb774df965dcf636455",
+      "program_ssl/check_contracts.py": "8ce5db6eeb5c6958df36a9cef7feb126d1c22005aefebb5f1718dcd1b237aa31",
+      "program_ssl/data.py": "2e445c5aa496507db5af5ef320aed1508c39b5ea38984b938195305b921a238a",
+      "program_ssl/evaluate.py": "f6ad090129ac10ebaac450ba010236b5e54d3b65e56514ae533be754fcaa80b9",
+      "program_ssl/feature_cache.py": "59fc3cca71d436e41511c7a3e3c93659a3f543508e1afa38118c25e054eeaa25",
+      "program_ssl/model.py": "4ea98923999b755f0152ba7220be63cb1fb370330921205466fae623f6bb225b",
+      "program_ssl/train.py": "2ce328084105b9b7640fad72696845392445503d0a1af81fbcdf58034b1776f0",
+      "sspredrnet/__init__.py": "8183b313c84b9e052655cbd4074dcff1134a50f062b14d98e46b9ca218ac7a6a",
+      "sspredrnet/checkpoint.py": "05ffb212da7e12e8a78a8ac2be2da1f102c1060a31e41396eeef0ba4bec3ca34",
+      "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+      "sspredrnet/evaluate.py": "464155a4658c7240f2fcd49b5a01962a3203b2686ab250fc350e0eb9bb20d3fb",
+      "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+      "sspredrnet/model.py": "074387187e363a38a8204b065753d0b485e975e3f3476d7dd4506df2ca224978",
+      "sspredrnet/train.py": "e42d93ee5d956132ce3a36d08f72d874bc1445cf80aa4e9fbec42b8ed3c00c67",
+      "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+      "structured_ssl/__init__.py": "f2caf0d06be65b728d19e06f01c80b3654e654d82cbab32b49ffebb20c80ee06",
+      "structured_ssl/check_contracts.py": "d68dd006a37ca68dbe27e031f26d9284cd32ea487f15211d3cde37dd2d387d60",
+      "structured_ssl/data.py": "0d87a1dfda73dbc498399a3d1851946fe11d942c54f5c595d77d1f013a01e3ac",
+      "structured_ssl/evaluate.py": "bfa16d25acdae0b7f6d02069c76a6fcf922b9fc008dac11d57ea841a95f7fd11",
+      "structured_ssl/model.py": "aef44e2ea8f0d01f488c1982cdbf20ca5a1b6fecf96b270a9494dc2e55f1e717",
+      "structured_ssl/runtime.py": "d542503b0d8e26d7d7461f30edd92438483f3f4c368dff427d1a0805bd06a765",
+      "structured_ssl/train.py": "aa579db2148c2731d7eff43069644d39c39795ddad0a1f5fe5ac9d232387bf3e"
+    }
+  },
+  "preregistered_jobs_unchanged": {
+    "primary": {
+      "seeds": [
+        12345,
+        12346,
+        12347
+      ],
+      "epochs_each": 8
+    },
+    "original": {
+      "seeds": [
+        12345
+      ],
+      "epochs_each": 16
+    },
+    "contribution_controls": {
+      "variants": [
+        "no_object_masking",
+        "static_parameters"
+      ],
+      "seed": 12345,
+      "epochs_each": 8
+    }
+  },
+  "native_training_not_interrupted": true,
+  "v1_pending_jobs_retained_after_v3": true,
+  "test_based_design_or_selection": false,
+  "formal_v3_training_started": false,
+  "observation_utc": "2026-10-03T13:38:17.132175+00:00"
+}

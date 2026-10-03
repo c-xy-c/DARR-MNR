@@ -1,4 +1,4 @@
-"""Seal the current revision, then run after the current Metal suite.
+"""Run an already sealed revision after the native control, then release v1.
 
 The common native control is reused only after checking its completed seals and
 unchanged source. All five new adaptation jobs run in separate source exports.
@@ -10,11 +10,11 @@ import json
 import os
 from pathlib import Path
 import shutil
+import signal
 import subprocess
 import sys
 import time
 
-from build_ablations import export
 from structured_ssl import ARCHITECTURE_REVISION
 
 
@@ -31,15 +31,39 @@ def hashes(root):
     return {str(p.relative_to(root)): digest(p) for p in sorted(root.rglob('*.py'))}
 
 
+def process(pid):
+    value = subprocess.run(['ps', '-p', str(pid), '-o', 'state=,command='],
+                           capture_output=True, text=True)
+    if value.returncode:
+        return None
+    state, command = value.stdout.strip().split(None, 1)
+    return state, command
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--after-run-root', type=Path, required=True)
     parser.add_argument('--run-root', type=Path, required=True)
     parser.add_argument('--dataset-root', type=Path, required=True)
     parser.add_argument('--anchor', type=Path, required=True)
+    parser.add_argument('--sealed-queue-root', type=Path, required=True)
+    parser.add_argument('--native-control-pid', type=int, required=True)
+    parser.add_argument('--resume-parent-pid', type=int, required=True)
     args = parser.parse_args()
     repository = Path(__file__).resolve().parents[2]
     parent, root = args.after_run_root.resolve(), args.run_root.resolve()
+    queued = args.sealed_queue_root.resolve()
+    queued_manifest = json.loads((queued / 'launch_manifest.json').read_text())
+    parent_process = process(args.resume_parent_pid)
+    native_process = process(args.native_control_pid)
+    if (parent_process is None or 'T' not in parent_process[0]
+            or 'resume_suite.py' not in parent_process[1] or str(parent) not in parent_process[1]
+            or native_process is None or 'original_continuation.py' not in native_process[1]
+            or str(parent) not in native_process[1]
+            or queued_manifest['architecture_revision'] != ARCHITECTURE_REVISION
+            or queued_manifest['after_run_root'] != str(parent)):
+        raise RuntimeError('requires the preserved sealed queue, suspended v1 coordinator and live native child')
+    parent_command = parent_process[1]
     prior = json.loads((parent / 'launch_manifest.json').read_text())
     if prior['execution_device'] != 'mps' or prior['batch_size'] != 128 or prior['workers'] != 2:
         raise RuntimeError('requires the locked batch128 Metal parent protocol')
@@ -58,23 +82,23 @@ def main():
         with log.open('a') as stream:
             subprocess.run([sys.executable, '-u', *command], cwd=source, env=environment,
                            stdout=stream, stderr=subprocess.STDOUT, check=True)
+    def terminate_signal(_, __):
+        raise KeyboardInterrupt('priority coordinator interrupted')
+    signal.signal(signal.SIGTERM, terminate_signal)
     try:
-        set_phase('sealing_sources')
+        set_phase('copying_unchanged_sealed_revision_and_cpu_preflights')
         primary = root / 'source-primary'
-        primary.mkdir()
-        for package in ('structured_ssl', 'attention_ssl', 'program_ssl', 'sspredrnet'):
-            destination = primary / package
-            destination.mkdir()
-            for file in (repository / package).glob('*.py'):
-                shutil.copyfile(file, destination / file.name)
-        research = primary / 'research/structured-ssl-2026'
-        research.mkdir(parents=True)
-        for name in ('original_continuation.py', 'profile_mps.py', 'collect_results.py'):
-            shutil.copyfile(repository / 'research/structured-ssl-2026' / name, research / name)
-        sources = {'primary': primary}
-        for variant in ('no_object_masking', 'static_parameters'):
+        sources = {}
+        for variant in ('primary', 'no_object_masking', 'static_parameters'):
             sources[variant] = root / ('source-' + variant)
-            export(repository, sources[variant], variant)
+            shutil.copytree(queued / sources[variant].name, sources[variant])
+            if hashes(sources[variant]) != queued_manifest['source_sha256'][variant]:
+                raise RuntimeError('previously sealed revision source changed')
+            artifact = variant + '-cpu-contracts.json'
+            contract = json.loads((queued / artifact).read_text())
+            if contract['architecture_revision'] != ARCHITECTURE_REVISION or not contract['all_trainable_parameters_have_finite_gradients']:
+                raise RuntimeError('previous sealed CPU preflight is incomplete')
+            shutil.copyfile(queued / artifact, root / artifact)
         references = {}
         for name in ('reference-anchor-validation.json', 'reference-native-validation.json'):
             shutil.copyfile(parent / name, root / name)
@@ -94,27 +118,31 @@ def main():
                     'native_control_execution': 'reuse_identical_completed_parent_control',
                     'source_sha256': locked, 'reference_sha256': references,
                     'queue_script_sha256': digest(__file__),
+                    'rescheduled_from_queue_root': str(queued),
+                    'unchanged_prior_source_sha256': queued_manifest['source_sha256'],
+                    'scheduling': 'native_control_then_v3_then_pending_v1_jobs',
+                    'suspended_parent_pid': args.resume_parent_pid,
+                    'native_control_pid': args.native_control_pid,
                     'no_test_based_design_or_seed_selection': True,
                     'full_raven_result_claimed': False}
         write(root / 'launch_manifest.json', manifest)
-        for variant, source in sources.items():
-            set_phase(variant + ':cpu_preflight')
-            run(['-m', 'structured_ssl.check_contracts', '--anchor', str(args.anchor.resolve()),
-                 '--device', 'cpu', '--output', str(root / (variant + '-cpu-contracts.json'))],
-                source, root / 'preflight.console.log')
-        set_phase('waiting_for_parent_suite')
-        exit_file = parent / 'suite.launch/exit_code.txt'
-        while not exit_file.exists():
+        set_phase('waiting_for_native_control_completion_and_gpu_release')
+        native = parent / 'original-seed12345'
+        while True:
+            child = process(args.native_control_pid)
+            if child is None or child[0].startswith('Z'):
+                if not (native / 'evaluation.json').is_file():
+                    raise RuntimeError('native child exited without complete sealed evaluation')
+                break
+            if 'original_continuation.py' not in child[1] or str(parent) not in child[1]:
+                raise RuntimeError('native child PID was reused')
             time.sleep(30)
-        if exit_file.read_text().strip() != '0':
-            raise RuntimeError('parent suite failed; preserve records and repair it before revision training')
         for variant, source in sources.items():
             if hashes(source) != locked[variant]:
                 raise RuntimeError('revision source export changed while waiting')
-        set_phase('verify_completed_parent_suite')
+        set_phase('verify_completed_native_control_and_preserved_partial_v1_suite')
         run(['research/structured-ssl-2026/collect_results.py', '--run-root', str(parent),
              '--output', str(root / 'parent-suite-results.json')], primary, root / 'preflight.console.log')
-        native = parent / 'original-seed12345'
         native_seal = json.loads((native / 'training_complete.json').read_text())
         for name, expected in native_seal['source_sha256'].items():
             if digest(primary / name) != expected:
@@ -165,6 +193,12 @@ def main():
         raise
     else:
         (meta / 'exit_code.txt').write_text('0\n')
+    finally:
+        observed = process(args.resume_parent_pid)
+        if observed is not None and observed[1] == parent_command:
+            os.kill(args.resume_parent_pid, signal.SIGCONT)
+            write(meta / 'parent_released.json', {'pid': args.resume_parent_pid,
+                  'remaining_v1_jobs_resumed': True, 'fixed_budgets_and_sources_unchanged': True})
 
 
 if __name__ == '__main__':

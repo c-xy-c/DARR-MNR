@@ -77,7 +77,7 @@
     "stage": "experimental_v3_sealed_and_queued_no_v3_full_accuracy",
     "last_verified_remote_sha_before_current_changes": "0dcc131d9da0698eb06484e0fb525e168ff27fd6"
   },
-  "status_as_of_utc": "2026-10-03T13:25:17.849256+00:00",
+  "status_as_of_utc": "2026-10-03T13:43:48.444258+00:00",
   "execution": {
     "device": "mps",
     "batch_size": 128,
@@ -102,7 +102,9 @@
     "continued_from_failed_run": "runs/structured-metal-calibrated-20261003-173653",
     "failure_reason": "undefined backward of exact-zero composed L2 distance; actual same-batch lower scale retries all failed",
     "repair_diagnostic": "native_stable_l2_replay.json",
-    "checkpoint_states_preserved": true
+    "checkpoint_states_preserved": true,
+    "coordinator_state": "suspended_while_native_child_finishes_then_v3_runs",
+    "training_child_pid": 15935
   },
   "architecture_revision": "isolated-target-structured-feedback-shine-rl-v3",
   "v1_running_experiment": {
@@ -212,10 +214,10 @@
     "running_and_queued_design_modified": false
   },
   "revision_v3": {
-    "run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-metal-20261003-212041",
-    "queue_pid": 16990,
-    "caffeinate_pid": 16991,
-    "console_log": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-metal-20261003-212041.launch.log",
+    "run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-priority-metal-20261003-213645",
+    "queue_pid": 22064,
+    "caffeinate_pid": 22065,
+    "console_log": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-priority-metal-20261003-213645.launch.log",
     "command": [
       "/private/tmp/sspredrnet-cleanup-env-20261003/bin/python",
       "-u",
@@ -223,13 +225,19 @@
       "--after-run-root",
       "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-metal-recovered-20261003-211738",
       "--run-root",
-      "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-metal-20261003-212041",
+      "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-priority-metal-20261003-213645",
       "--dataset-root",
       "/Users/lichengtai/Documents/lct/sspredrnet-data/RAVEN-10000",
       "--anchor",
-      "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/research/ssl-attention-2026/results/seed12345/best.pt"
+      "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/research/ssl-attention-2026/results/seed12345/best.pt",
+      "--sealed-queue-root",
+      "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-metal-20261003-212041",
+      "--native-control-pid",
+      "15935",
+      "--resume-parent-pid",
+      "15930"
     ],
-    "phase": "waiting_for_parent_suite",
+    "phase": "waiting_for_native_control_completion_and_gpu_release",
     "after_run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-metal-recovered-20261003-211738",
     "formal_training_started": false,
     "current_model_test_accuracy": null,
@@ -250,15 +258,68 @@
       "primary": "b96d44716bab5e8953f3ef9c855045ce11ed2566ccceab71ce9010f02b94d51e",
       "no_object_masking": "59e0d8df5417087b7cea07809eda11db350a48c8a1d2cdd0af67c67195b46064",
       "static_parameters": "10e230e9238d5ade85b15a98423eed9bd00cbfcf31bcb42bea224d749632be6b"
-    }
+    },
+    "rescheduled_from": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-metal-20261003-212041",
+    "source_exports_bitwise_same_as_previous_queue": true,
+    "cpu_preflights_copied_bitwise_without_repetition": true,
+    "scheduling": "native_control_then_v3_then_pending_v1_jobs",
+    "native_child_pid": 15935,
+    "suspended_v1_coordinator_pid": 15930,
+    "v1_coordinator_release_on_exit_configured": true,
+    "v1_coordinator_released": false
   },
   "native_recovery_observation": {
-    "completed_epochs": 8,
-    "last_validation_accuracy": 71.30714285714285,
-    "last_validation_correct": 9983,
-    "best_validation_accuracy": 71.44285714285714,
-    "best_epoch": 4,
+    "completed_epochs": 11,
+    "last_validation_accuracy": 71.58571428571429,
+    "last_validation_correct": 10022,
+    "best_validation_accuracy": 71.58571428571429,
+    "best_epoch": 11,
     "failed_epoch8_replayed_and_completed": true,
     "test_opened": false
+  },
+  "revision_v3_previous_queue": {
+    "run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-metal-20261003-212041",
+    "queue_pid": 16990,
+    "caffeinate_pid": 16991,
+    "console_log": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-metal-20261003-212041.launch.log",
+    "command": [
+      "/private/tmp/sspredrnet-cleanup-env-20261003/bin/python",
+      "-u",
+      "research/structured-ssl-2026/queue_revision.py",
+      "--after-run-root",
+      "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-metal-recovered-20261003-211738",
+      "--run-root",
+      "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-metal-20261003-212041",
+      "--dataset-root",
+      "/Users/lichengtai/Documents/lct/sspredrnet-data/RAVEN-10000",
+      "--anchor",
+      "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/research/ssl-attention-2026/results/seed12345/best.pt"
+    ],
+    "phase": "rescheduled_before_formal_training",
+    "after_run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-metal-recovered-20261003-211738",
+    "formal_training_started": false,
+    "current_model_test_accuracy": null,
+    "adaptation_epochs_each": 8,
+    "adaptation_seeds": [
+      12345,
+      12346,
+      12347
+    ],
+    "contribution_controls": [
+      "no_object_masking",
+      "static_parameters"
+    ],
+    "source_and_cpu_preflights_sealed": true,
+    "real_batch128_metal_preflight": "queued_after_completed_parent_suite",
+    "empirical_nonregression_or_independent_benefits_established": false,
+    "cpu_contracts_sha256": {
+      "primary": "b96d44716bab5e8953f3ef9c855045ce11ed2566ccceab71ce9010f02b94d51e",
+      "no_object_masking": "59e0d8df5417087b7cea07809eda11db350a48c8a1d2cdd0af67c67195b46064",
+      "static_parameters": "10e230e9238d5ade85b15a98423eed9bd00cbfcf31bcb42bea224d749632be6b"
+    },
+    "exit_code": 1,
+    "queue_process_running": false,
+    "rescheduling_record": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-metal-20261003-212041/suite.launch/rescheduling.json",
+    "preserved_original_queue_source": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-metal-20261003-212041/suite.launch/original_queue_source.py"
   }
 }
