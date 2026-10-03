@@ -6,7 +6,8 @@ from sspredrnet.energy import operator_energy as dense_energy
 from .constants import WIDTH, STAGES, OBJECTS
 from .perception import ObjectPerception, MaskedObjectPredictor, target_objects
 from .pav import IterativePaV
-from .objectives import set_energy, completion_ssl
+from .energy import set_energy
+from .objectives import completion_ssl
 
 
 class StructuredCompletion(nn.Module):

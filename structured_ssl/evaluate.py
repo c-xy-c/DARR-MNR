@@ -8,22 +8,11 @@ import torch
 from sspredrnet.data import CONFIGS, loader
 from .data import ObjectRaven, to_device
 from .model import StructuredCompletion
+from .metrics import summary
 from .provenance import anchor_hash, digest, source_hashes
 from .runtime import resolve_device
 from .policy import validation_allows_test, MINIMUM_ACCURACY_PERCENT
 
-
-def summary(predictions, labels, configs):
-    correct, total = [], []
-    for index in range(7):
-        mask = configs == index
-        correct.append(int(((predictions == labels) & mask).sum()))
-        total.append(int(mask.sum()))
-    if total != [2000] * 7:
-        raise RuntimeError(f'incomplete evaluation split: {total}')
-    accuracies = {name: 100 * n / t for name, n, t in zip(CONFIGS, correct, total)}
-    return {'correct': sum(correct), 'total': sum(total), 'by_configuration': accuracies,
-            'accuracy_macro': sum(accuracies.values()) / 7}
 
 
 def evaluate(model, dataset_root, split, device, workers):

@@ -1,8 +1,9 @@
 # Structured object SSL and support-compiled SER-PaV
 
 Current architecture: `isolated-target-structured-feedback-shine-rl-v3`.
-It has **2,275,350 trainable** and **958,345 frozen** parameters. The full v3
-RAVEN experiment is in progress; test accuracy has not been measured.
+It has **2,275,350 trainable** and **958,345 frozen** parameters. The primary V3
+seed has completed: validation-selected best **71.2786% test**,
+final **69.6429% test**. Controls and two further seeds remain in progress.
 
 ## Responsibilities
 
@@ -13,7 +14,9 @@ RAVEN experiment is in progress; test accuracy has not been measured.
 | `blocks.py` | Shared self-attention and cross-attention blocks |
 | `perception.py` | Three encoder levels, isolated fixed targets and masked-object head |
 | `pav.py` | Support memory, SHINE rl factor packing, three-stage P/G/V and residual feedback |
-| `objectives.py` | Known-cell retrieval, object masking, transport error and support residuals |
+| `energy.py` | Dense/object discrepancy and transport-aligned support residuals |
+| `objectives.py` | Known-cell retrieval and complete-object masking losses |
+| `metrics.py` | Shared complete seven-layout selection/evaluation statistics |
 | `model.py` | Compose perception, PaV and frozen scoring anchor |
 | `train.py` | Optimization, validation selection, exact resume and completion seal |
 | `evaluate.py` | Best/final ranking and isolated support intervention |
@@ -84,9 +87,10 @@ declines too. No test result selects a checkpoint, architecture or seed.
 Refactoring keeps checkpoint names and CPU numerical behavior unchanged; old
 training seals still require their original sources. Running jobs use independent
 source exports under `runs/`. This checkout's cleanup does not modify those
-exports, their objectives, checkpoints or logs. A coordinator already loaded in
-memory retains its recorded admission policy; any policy handoff must be recorded
-outside the sealed training code.
+exports, their objectives, checkpoints or logs. The user-directed 70% evaluation
+admission was recorded separately before this revision's first test and executes
+the unchanged training export. The V3 suite continues with two controls and two
+further seeds; the unused V1 queue has been retired.
 
 For full research sources and limitations, see [design](../research/structured-ssl-2026/design.md),
 [v3 revision](../research/structured-ssl-2026/revision-v3.md) and

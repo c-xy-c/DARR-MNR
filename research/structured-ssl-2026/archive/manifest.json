@@ -1,0 +1,145 @@
+{
+  "created_at_utc": "2026-10-03T18:24:37.658127+00:00",
+  "current_method": "isolated-target-structured-feedback-shine-rl-v3",
+  "archive_reference_commit": "5475c323137381d4f75ff533d74434a81857d719",
+  "historical_file_bytes_preserved": [
+    {
+      "prior_path": "research/structured-ssl-2026/design.md",
+      "archive_path": "research/structured-ssl-2026/archive/v1/design.md",
+      "sha256": "0c97acfbf74964a6f834a3192a069a28b10683715e18a5454f1e92d0eaa5dcd9"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/v1_primary_diagnosis.md",
+      "archive_path": "research/structured-ssl-2026/archive/v1/v1_primary_diagnosis.md",
+      "sha256": "b5a1397bbf66fa7e973cf174d2345c61d217058d4e5ce6e4913fea6a8cecd220"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/validation_failure_diagnosis.md",
+      "archive_path": "research/structured-ssl-2026/archive/v1/validation_failure_diagnosis.md",
+      "sha256": "096838082c84b8cfb97cdbffa1c4485f41d449f4af43501c05f3d4f5e6005530"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/negative_difficulty_diagnosis.md",
+      "archive_path": "research/structured-ssl-2026/archive/v1/negative_difficulty_diagnosis.md",
+      "sha256": "62f412128b979bea70cac0ce861301ff5cdcf32e6fa5d784e5f1647b269dcca5"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/cpu_contracts.json",
+      "archive_path": "research/structured-ssl-2026/archive/v1/cpu_contracts.json",
+      "sha256": "28e67206391e5c4728d75aa1d329feb09005264418c71614af532adcbb538d44"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/no_object_masking_cpu_contracts.json",
+      "archive_path": "research/structured-ssl-2026/archive/v1/no_object_masking_cpu_contracts.json",
+      "sha256": "42ecb1c7247e0e994879662e75a58c206eaa5682184c88fd0d1121652bb0ba57"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/static_parameters_cpu_contracts.json",
+      "archive_path": "research/structured-ssl-2026/archive/v1/static_parameters_cpu_contracts.json",
+      "sha256": "7633b679e76b739ec528ef5b4655cdee154c40f1b959c4750145288e0a149eda"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/mps_contracts.json",
+      "archive_path": "research/structured-ssl-2026/archive/v1/mps_contracts.json",
+      "sha256": "f3e27364efd0deff8f2fcbaf0ba37f5e20dd7cd13c3141d8bad099f61c950e40"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/mps_real_batch_feasibility.json",
+      "archive_path": "research/structured-ssl-2026/archive/v1/mps_real_batch_feasibility.json",
+      "sha256": "2eb04a9456094a2b485005683c192b29e6a72fa527d4e8908b69e5a85613e8a7"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/mps_feasibility.json",
+      "archive_path": "research/structured-ssl-2026/archive/v1/mps_feasibility.json",
+      "sha256": "040784aa8d0fa65c11e6ddc1da3fc1a4d4b53845dc5e87ea23af369d4c0541e3"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/mps_amp_feasibility.json",
+      "archive_path": "research/structured-ssl-2026/archive/v1/mps_amp_feasibility.json",
+      "sha256": "501bc7078e00d97eeb3d2b3fa273df9ba358b0b2795fe5ef98497bbd5be1d7c8"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/mps_checkpoint_feasibility.json",
+      "archive_path": "research/structured-ssl-2026/archive/v1/mps_checkpoint_feasibility.json",
+      "sha256": "1e7686799fc3d8f0c95d5373e0fb36427f46f71b7a3ba714040cb3de0a1e19f6"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/mps_exact_groups_feasibility.json",
+      "archive_path": "research/structured-ssl-2026/archive/v1/mps_exact_groups_feasibility.json",
+      "sha256": "b1b7d9323872f238b12e357a82a4812f8e9b4e72c6ea595cef68e50def572d96"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/compiler_rank_sample.json",
+      "archive_path": "research/structured-ssl-2026/archive/v1/compiler_rank_sample.json",
+      "sha256": "550f46e9fe5ce1ef8adcee80d4c76ddb36e9006fe686969679e0ce6c069c4578"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/v1_primary_validation_audit.json",
+      "archive_path": "research/structured-ssl-2026/archive/v1/v1_primary_validation_audit.json",
+      "sha256": "4c3aa1450a6767016a4f68cd494a18da3b3c5b438f87736874d335ea0b8c1b89"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/validation_mechanism_diagnosis.json",
+      "archive_path": "research/structured-ssl-2026/archive/v1/validation_mechanism_diagnosis.json",
+      "sha256": "b82156d56c99b1512a279d2bf1f4ac68e6f7cdfb697dc73c1b11a039bc16e78e"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/negative_difficulty_sample.json",
+      "archive_path": "research/structured-ssl-2026/archive/v1/negative_difficulty_sample.json",
+      "sha256": "0e1cb0ee0f4d7ae7d83741ee817b8431544078712e94ba3c0b579c237a42dfc9"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/collection_partial_contracts.json",
+      "archive_path": "research/structured-ssl-2026/archive/v1/collection_partial_contracts.json",
+      "sha256": "5b8988f3aad351b5649abd31088b00efbc11baf17c1f7c5e4e9a016c3157bda5"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/revision-v2.md",
+      "archive_path": "research/structured-ssl-2026/archive/v2/revision.md",
+      "sha256": "8e6795211dc365501311e43bf6fdbccce4f383586b1272595ccff00db7d29f6e"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/revision-v2/collector_complete_contracts.json",
+      "archive_path": "research/structured-ssl-2026/archive/v2/collector_complete_contracts.json",
+      "sha256": "8c1d52cbc1b89118c63d7bd1ba370b690a5d9757aa202d55c052702a8fec4f59"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/revision-v2/cpu_contracts.json",
+      "archive_path": "research/structured-ssl-2026/archive/v2/cpu_contracts.json",
+      "sha256": "45ac08cde328360f718e23fe7e4dcdbfdbdb15fc2e8922f943b54fb1e57f5ec6"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/revision-v2/mps_contracts.json",
+      "archive_path": "research/structured-ssl-2026/archive/v2/mps_contracts.json",
+      "sha256": "9bec4e8834121ffb56c8e9029ff849dc5f2b9861806ebbffc916751d3a73fbea"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/revision-v2/no_object_masking-export-cpu-contracts.json",
+      "archive_path": "research/structured-ssl-2026/archive/v2/no_object_masking-export-cpu-contracts.json",
+      "sha256": "36e54e9adf2210a0e10c46ebb141ef6a57a0a1cec5ff73618ecbc65fa2c60737"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/revision-v2/primary-export-cpu-contracts.json",
+      "archive_path": "research/structured-ssl-2026/archive/v2/primary-export-cpu-contracts.json",
+      "sha256": "45ac08cde328360f718e23fe7e4dcdbfdbdb15fc2e8922f943b54fb1e57f5ec6"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/revision-v2/static_parameters-export-cpu-contracts.json",
+      "archive_path": "research/structured-ssl-2026/archive/v2/static_parameters-export-cpu-contracts.json",
+      "sha256": "efbdfcd9dbb3eb8a76d53e992ad41cbfd14df8b062e0a8a91b121f4352a44e48"
+    },
+    {
+      "prior_path": "research/structured-ssl-2026/revision-v2/validation_interventions.json",
+      "archive_path": "research/structured-ssl-2026/archive/v2/validation_interventions.json",
+      "sha256": "97b342938495d6191cb74f2c7830daa7250175e148c35f150bcd0e1e0bb7b475"
+    }
+  ],
+  "retired_executable_scripts_recoverable_from_reference_commit": [
+    "queue_revision.py",
+    "resume_suite.py",
+    "replay_native_overflow.py",
+    "diagnose_validation.py",
+    "check_revision.py"
+  ],
+  "archive_is_evidence_not_current_runtime": true
+}

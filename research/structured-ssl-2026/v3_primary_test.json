@@ -1,0 +1,158 @@
+{
+  "split": "test",
+  "seal": {
+    "schema_version": 1,
+    "method": "structured-object-support-pav",
+    "source_sha256": {
+      "structured_ssl/__init__.py": "f2caf0d06be65b728d19e06f01c80b3654e654d82cbab32b49ffebb20c80ee06",
+      "structured_ssl/model.py": "d96544a77b4bbda5f3ea3d2e5b474e3a27e2952923eacc22186cc10e1bb88c8c",
+      "structured_ssl/data.py": "0d87a1dfda73dbc498399a3d1851946fe11d942c54f5c595d77d1f013a01e3ac",
+      "structured_ssl/train.py": "d2453e7e8b8fe692ea24f0ca6aaf8068f56fe03d6c356fc4a35e8da761070c10",
+      "structured_ssl/evaluate.py": "96978bce4d50d9e568f28afa4835f25aaeaf82de9f460d8b17a72c946d3aa353",
+      "attention_ssl/model.py": "b0b92b8da4ec6450cb12578a8ee6528ae85bb71d274b9af08e14922c25254f47",
+      "program_ssl/model.py": "4ea98923999b755f0152ba7220be63cb1fb370330921205466fae623f6bb225b",
+      "structured_ssl/runtime.py": "d542503b0d8e26d7d7461f30edd92438483f3f4c368dff427d1a0805bd06a765",
+      "program_ssl/data.py": "2e445c5aa496507db5af5ef320aed1508c39b5ea38984b938195305b921a238a",
+      "sspredrnet/model.py": "074387187e363a38a8204b065753d0b485e975e3f3476d7dd4506df2ca224978",
+      "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+      "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+      "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+      "sspredrnet/checkpoint.py": "05ffb212da7e12e8a78a8ac2be2da1f102c1060a31e41396eeef0ba4bec3ca34"
+    },
+    "config_sha256": "4f1f6c0737e74c9bc969c492b399fe95f401872d1f3e6419fe21df7a2fa423f3",
+    "anchor_sha256": "de3ea68bdd26272a9991fa394a38aa5d1c0b4d55078d10a968f67cec0a1c5b88",
+    "frozen_anchor_sha256": "2da66cd029fc0c20870f5af3cc7518ffff89faaf2a754262f148d4fdb0b3fa42",
+    "checkpoint_sha256": {
+      "best": "925a2b072e8078e475bb3b988bc01d823f87664ac2f519116dcb6c970e37c8c2",
+      "final": "e4ecdbe5916f58c41d22b182f1bfd75812f3c94186c97aee82661b91277d6875"
+    },
+    "best_epoch": 1,
+    "epochs": 8,
+    "test_opened": false
+  },
+  "torch": "2.11.0",
+  "device": "mps",
+  "checkpoints": {
+    "best": {
+      "full": {
+        "correct": 9979,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 96.95,
+          "distribute_four": 45.0,
+          "distribute_nine": 32.6,
+          "in_center_single_out_center_single": 92.15,
+          "in_distribute_four_out_center_single": 38.9,
+          "left_center_single_right_center_single": 96.6,
+          "up_center_single_down_center_single": 96.75
+        },
+        "accuracy_macro": 71.27857142857142
+      },
+      "anchor": {
+        "correct": 9975,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 96.9,
+          "distribute_four": 44.75,
+          "distribute_nine": 32.55,
+          "in_center_single_out_center_single": 92.15,
+          "in_distribute_four_out_center_single": 38.9,
+          "left_center_single_right_center_single": 96.7,
+          "up_center_single_down_center_single": 96.8
+        },
+        "accuracy_macro": 71.25
+      },
+      "swapped_support": {
+        "correct": 9970,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 96.95,
+          "distribute_four": 44.8,
+          "distribute_nine": 32.6,
+          "in_center_single_out_center_single": 92.1,
+          "in_distribute_four_out_center_single": 38.8,
+          "left_center_single_right_center_single": 96.55,
+          "up_center_single_down_center_single": 96.7
+        },
+        "accuracy_macro": 71.21428571428571
+      },
+      "changed_answers_vs_anchor": 83,
+      "changed_answers_vs_swapped_support": 27,
+      "helped": 31,
+      "hurt": 27,
+      "max_score_change_vs_anchor": 0.010962486267089844,
+      "max_factor_change_under_support_swap": 0.5216735005378723,
+      "gate": 0.11369045078754425,
+      "proposal_overflow_panels": 0,
+      "support_swap_preserves_entire_attention_anchor": true,
+      "nonregression_and_active_branch": true,
+      "epoch": 1,
+      "lineage_epoch": 25,
+      "meets_70_percent_target": true,
+      "accuracy_target_and_active_branch": true
+    },
+    "final": {
+      "full": {
+        "correct": 9750,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 96.9,
+          "distribute_four": 39.65,
+          "distribute_nine": 29.6,
+          "in_center_single_out_center_single": 91.35,
+          "in_distribute_four_out_center_single": 38.15,
+          "left_center_single_right_center_single": 95.65,
+          "up_center_single_down_center_single": 96.2
+        },
+        "accuracy_macro": 69.64285714285714
+      },
+      "anchor": {
+        "correct": 9975,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 96.9,
+          "distribute_four": 44.75,
+          "distribute_nine": 32.55,
+          "in_center_single_out_center_single": 92.15,
+          "in_distribute_four_out_center_single": 38.9,
+          "left_center_single_right_center_single": 96.7,
+          "up_center_single_down_center_single": 96.8
+        },
+        "accuracy_macro": 71.25
+      },
+      "swapped_support": {
+        "correct": 9721,
+        "total": 14000,
+        "by_configuration": {
+          "center_single": 96.8,
+          "distribute_four": 39.4,
+          "distribute_nine": 29.25,
+          "in_center_single_out_center_single": 91.2,
+          "in_distribute_four_out_center_single": 37.7,
+          "left_center_single_right_center_single": 95.75,
+          "up_center_single_down_center_single": 95.95
+        },
+        "accuracy_macro": 69.43571428571428
+      },
+      "changed_answers_vs_anchor": 1436,
+      "changed_answers_vs_swapped_support": 284,
+      "helped": 331,
+      "hurt": 556,
+      "max_score_change_vs_anchor": 1.5391088724136353,
+      "max_factor_change_under_support_swap": 0.7007116079330444,
+      "gate": 0.7045766711235046,
+      "proposal_overflow_panels": 0,
+      "support_swap_preserves_entire_attention_anchor": true,
+      "nonregression_and_active_branch": false,
+      "epoch": 8,
+      "lineage_epoch": 32,
+      "meets_70_percent_target": false,
+      "accuracy_target_and_active_branch": false
+    }
+  },
+  "evaluation_policy_sha256": "3d03a0552fdbe13a08e21657041f72b77355037888318a4f0af941c430e606ba",
+  "external_evaluator_sha256": "57beb6dc755b27b279913d0cea5bdfaa6a7cea32891f7f7680818a632c5f44b5",
+  "minimum_accuracy_percent": 70.0,
+  "trained_runtime_unchanged": true,
+  "admission_changed_by_direct_user_request": true
+}

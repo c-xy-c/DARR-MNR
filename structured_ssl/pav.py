@@ -5,7 +5,7 @@ from torch import nn
 from torch.nn import functional as F
 from .blocks import SelfBlock, CrossBlock
 from .constants import WIDTH, STAGES, RANK, OBJECTS
-from .objectives import support_residuals
+from .energy import support_residuals
 
 class MemoryCompiler(nn.Module):
     """SHINE-inspired depth/token attention produces coupled P/G/V factors.

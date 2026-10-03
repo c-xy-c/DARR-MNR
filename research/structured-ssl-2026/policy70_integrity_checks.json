@@ -1,0 +1,11 @@
+{
+  "unit_fixture_only": true,
+  "first_validation_maximum_preserved": true,
+  "rejected": [
+    "changed_source",
+    "changed_checkpoint",
+    "later_tied_validation_maximum",
+    "partial_epoch_count"
+  ],
+  "training_or_test_data_opened": false
+}

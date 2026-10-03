@@ -1,0 +1,9 @@
+{
+  "metrics_match_original_on_balanced_14000_predictions": true,
+  "train_and_evaluation_metrics_identical": true,
+  "incomplete_split_rejected": true,
+  "supported_document_links_valid": true,
+  "historical_archive_files_byte_preserved": 26,
+  "full_raven_evaluation": false,
+  "test_opened": false
+}

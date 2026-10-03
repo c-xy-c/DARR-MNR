@@ -1,0 +1,17 @@
+{
+  "checked_at_utc": "2026-10-03T18:39:53.448307+00:00",
+  "unchanged_launch_source_files": 84,
+  "pinned_policy_source_files_unchanged": 3,
+  "evaluation_policy_sha256": "3d03a0552fdbe13a08e21657041f72b77355037888318a4f0af941c430e606ba",
+  "completed_primary_and_native_collector_verified": true,
+  "pending_jobs": [
+    "primary-seed12346",
+    "primary-seed12347",
+    "no_object_masking-seed12345",
+    "static_parameters-seed12345"
+  ],
+  "coordinator_pid": 68802,
+  "training_child_pid": 89930,
+  "training_child_still_running": true,
+  "source_exports_or_training_not_modified": true
+}

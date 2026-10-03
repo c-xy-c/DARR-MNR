@@ -10,7 +10,8 @@ import torch
 
 from .data import proposal_pack, proposals, to_device
 from .model import StructuredCompletion
-from .objectives import set_energy, pixel_duplicates, support_residuals, masked_object_loss
+from .energy import set_energy, support_residuals
+from .objectives import pixel_duplicates, masked_object_loss
 from .pav import pack_factors, dynamic
 from .constants import STAGES, WIDTH, RANK
 from . import ARCHITECTURE_REVISION

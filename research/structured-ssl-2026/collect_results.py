@@ -91,6 +91,31 @@ def validate_training(run, source, expected_epochs, expected_seed, variant):
 
 def collect(run_root):
     manifest = read(run_root / 'launch_manifest.json')
+    external_policy = None
+    policy_path = run_root / 'evaluation_policy.json'
+    if policy_path.exists():
+        external_policy = read(policy_path)
+        if (external_policy['schema_version'] != 1
+                or external_policy['minimum_accuracy_percent'] != 70.
+                or external_policy['selection_split'] != 'val'
+                or not external_policy['active_support_branch_required']
+                or not external_policy['decided_before_first_revision_test']
+                or not external_policy['sealed_training_sources_unchanged']
+                or external_policy['original_launch_manifest_sha256'] != digest(run_root / 'launch_manifest.json')
+                or external_policy['fixed_preregistered_jobs'] != manifest['preregistered_jobs']):
+            raise RuntimeError('external user policy differs from its unchanged experiment')
+        for name, expected_hash in external_policy['policy_source_sha256'].items():
+            if digest(run_root / 'suite.policy70/source' / name) != expected_hash:
+                raise RuntimeError('external policy execution source changed')
+    def admission(report, config):
+        if external_policy is not None or 'evaluation_policy' in config:
+            if 'evaluation_policy' in config and config['evaluation_policy'] != {
+                    'minimum_accuracy_percent': 70., 'active_support_branch_required': True}:
+                raise RuntimeError('unexpected declared evaluation policy')
+            return (report['full']['correct'] >= 9800 and report['full']['total'] == 14000
+                    and report['changed_answers_vs_anchor'] > 0
+                    and report['changed_answers_vs_swapped_support'] > 0)
+        return report['nonregression_and_active_branch']
     expected = {
         'primary': {'seeds': [12345, 12346, 12347], 'epochs_each': 8},
         'original': {'seeds': [12345], 'epochs_each': 16},
@@ -137,22 +162,21 @@ def collect(run_root):
         validation = None if native else read(run / 'val_evaluation.json')
         if validation is not None and (validation['seal'] != seal or validation['device'] != config['device']):
             raise RuntimeError('validation audit seal/device mismatch')
+        if external_policy is not None and not native:
+            for evaluation in (validation, recorded):
+                if evaluation is not None and (
+                        evaluation['evaluation_policy_sha256'] != digest(policy_path)
+                        or evaluation['external_evaluator_sha256'] != external_policy['policy_source_sha256']['evaluate_sealed_policy.py']
+                        or not evaluation['trained_runtime_unchanged']):
+                    raise RuntimeError('evaluation did not execute the recorded policy and unchanged training export')
         if validation is not None:
             for checkpoint in ('best', 'final'):
                 if validation['checkpoints'][checkpoint]['anchor']['correct'] != config['platform_anchor_validation_correct']:
                     raise RuntimeError('validation changed its immutable attention anchor')
-            # Historical seals retain their recorded nonregression criterion.
-            # New runs declare the user's 70% criterion before training.
+            # Historical seals retain their original criterion unless a direct
+            # user change was recorded externally before this revision's test.
             best_report = validation['checkpoints']['best']
-            if 'evaluation_policy' in config:
-                declared = config['evaluation_policy']
-                if declared != {'minimum_accuracy_percent': 70., 'active_support_branch_required': True}:
-                    raise RuntimeError('unexpected declared evaluation policy')
-                passed = (100 * best_report['full']['correct'] / 14000 >= 70.
-                          and best_report['changed_answers_vs_anchor'] > 0
-                          and best_report['changed_answers_vs_swapped_support'] > 0)
-            else:
-                passed = best_report['nonregression_and_active_branch']
+            passed = admission(best_report, config)
             if rejected and passed:
                 raise RuntimeError('test was declared validation-rejected despite a passed gate')
             if variant == 'primary' and not rejected and not passed:
@@ -177,7 +201,7 @@ def collect(run_root):
                      'validation': metric(observed_validation),
                      'test': None if rejected else metric(observed_test)}
             if rejected:
-                entry['validation_gate_passed'] = result['nonregression_and_active_branch']
+                entry['validation_gate_passed'] = admission(result, config)
                 entry['delta_vs_anchor_validation_pp'] = (entry['validation']['accuracy'] -
                                                          metric(result['anchor'])['accuracy'])
             if not native and not rejected:
@@ -200,6 +224,7 @@ def collect(run_root):
                               'support_swap_test': metric(result['swapped_support']),
                               'gate': result['gate'],
                               'nonregression_and_active_branch': result['nonregression_and_active_branch']})
+                entry['meets_70_percent_target'] = entry['test']['correct'] >= 9800
             row['checkpoints'][checkpoint] = entry
         jobs[name] = row
     report = {'all_required_results_present': not pending, 'pending': pending, 'jobs': jobs,
@@ -213,6 +238,9 @@ def collect(run_root):
               'all_results_present_is_not_proof_of_research_goal_completion': True}
     if manifest.get('native_source_directory'):
         report['native_numerical_repair'] = read(run_root / 'original-seed12345/numerical_repair.json')
+    if external_policy is not None:
+        report['external_user_policy'] = external_policy
+        report['evaluation_policy_sha256'] = digest(policy_path)
     names = [f'primary-seed{seed}' for seed in (12345, 12346, 12347)]
     if all(name in jobs and jobs[name]['phase'] == 'evaluated' for name in names):
         report['primary_three_seed'] = {}
@@ -221,6 +249,7 @@ def collect(run_root):
             accuracies = [entry['test']['accuracy'] for entry in entries]
             report['primary_three_seed'][checkpoint] = {
                 'mean_accuracy': statistics.mean(accuracies), 'sample_std_pp': statistics.stdev(accuracies),
+                'all_seeds_meet_70_percent_target': all(entry['test']['correct'] >= 9800 for entry in entries),
                 'all_seeds_match_or_exceed_same_platform_anchor': all(entry['delta_vs_anchor_pp'] >= 0 for entry in entries),
                 'all_seeds_have_active_support_branch': all(entry['changed_answers_vs_anchor'] > 0 and
                     entry['changed_answers_vs_swapped_support'] > 0 for entry in entries)}

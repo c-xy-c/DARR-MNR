@@ -1,8 +1,8 @@
 """Explicit execution device and complete device RNG for sealed adaptation."""
 import torch
-import hashlib
 import json
 from pathlib import Path
+from sspredrnet.provenance import digest
 
 from sspredrnet.checkpoint import rng_state as inherited_rng_state
 from sspredrnet.checkpoint import restore_rng as inherited_restore_rng
@@ -33,12 +33,12 @@ def validation_reference(path, checkpoint, historical_correct, device):
         return historical_correct, None
     file = Path(path)
     reference = json.loads(file.read_text())
-    if (reference['anchor_sha256'] != hashlib.sha256(Path(checkpoint).read_bytes()).hexdigest()
+    if (reference['anchor_sha256'] != digest(checkpoint)
             or reference['split'] != 'val' or reference['test_opened'] is not False
             or reference['expected_prior_validation_correct'] != historical_correct
             or reference[device.type]['total'] != 14000):
         raise RuntimeError('platform validation reference does not match the declared frozen checkpoint')
-    return reference[device.type]['correct'], hashlib.sha256(file.read_bytes()).hexdigest()
+    return reference[device.type]['correct'], digest(file)
 
 
 def rng_state(train_generator, val_generator, *, device):

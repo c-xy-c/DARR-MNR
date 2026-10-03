@@ -12,9 +12,10 @@ import numpy as np
 import torch
 
 from sspredrnet.checkpoint import save_checkpoint
-from sspredrnet.data import CONFIGS, loader
+from sspredrnet.data import loader
 from .data import ObjectRaven, to_device
 from .model import StructuredCompletion
+from .metrics import summarize_counts
 from . import ARCHITECTURE_REVISION
 from .runtime import resolve_device, execution_record, rng_state, restore_rng, validation_reference
 from .policy import MINIMUM_ACCURACY_PERCENT
@@ -30,11 +31,7 @@ def score(model, dataset_root, split, device, batch_size, workers, generator):
                 mask = configs == index
                 totals[index] += int(mask.sum())
                 counts[index] += int(((predicted == labels) & mask).sum())
-    if totals != [2000] * 7:
-        raise RuntimeError(f'incomplete {split} split: {totals}')
-    accuracies = {name: 100 * correct / total for name, correct, total in zip(CONFIGS, counts, totals)}
-    return {'correct': sum(counts), 'total': sum(totals), 'by_configuration': accuracies,
-            'accuracy_macro': sum(accuracies.values()) / 7}
+    return summarize_counts(counts, totals)
 
 
 def main():
