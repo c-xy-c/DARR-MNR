@@ -78,5 +78,7 @@
     "2606.31668-paper.txt": "57cf58d19fe2b188142e8f3a8ed3e2cea47a297ee959f206da585843bdd5cbe3",
     "2607.02404-abstract.html": "95638c43537d80f84eb1cd55e1e48e7c75319a43d10336c80f069b2967fd34af",
     "2607.02404-paper.txt": "c4a6f6050963a0b81786cd7c2bdef0b1f4fd6646ceae524f2850cb0e9da4b13b"
-  }
+  },
+  "shine_official_code": "shine_source_manifest.json",
+  "shine_method_audit": "Appendix A.1/A.2, official released method rl, postnorm, zero layer/token identities; optional couple layers disabled"
 }

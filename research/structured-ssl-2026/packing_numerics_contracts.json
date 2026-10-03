@@ -1,0 +1,19 @@
+{
+  "fixture": "synthetic norm and memory tensors",
+  "full_raven_evaluation": false,
+  "packing": {
+    "independent_appendix_A2_rl_index_check": true,
+    "identical_tokens_rank_projection_spread": {
+      "ll": 0.0,
+      "rl": 3.3520541191101074
+    },
+    "identical_tokens_B_gradient_spread": {
+      "ll": 0.0,
+      "rl": 0.0013171292375773191
+    },
+    "rank_eight_or_accuracy_improvement_claimed": false
+  },
+  "l2_forward_bitwise_equal": true,
+  "l2_nonzero_gradient_matches_and_gradcheck_passed": true,
+  "l2_zero_subgradient_finite_and_zero": true
+}

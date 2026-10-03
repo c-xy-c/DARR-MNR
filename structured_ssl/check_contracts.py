@@ -9,7 +9,8 @@ import numpy as np
 import torch
 
 from .data import proposal_pack, proposals, to_device
-from .model import StructuredCompletion, set_energy, pixel_duplicates, support_residuals
+from .model import StructuredCompletion, set_energy, pixel_duplicates, support_residuals, pack_factors, dynamic, STAGES, WIDTH, RANK
+from . import ARCHITECTURE_REVISION
 
 
 def fixture():
@@ -24,6 +25,47 @@ def fixture():
     return {k: torch.stack([p[k] for p in packs]) for k in packs[0]}
 
 
+def packing_contract(device):
+    # Independent index construction from SHINE Appendix A.2 Eq.15. Do not
+    # use the production reshape to construct the expected ordering.
+    memory = torch.arange(STAGES * 48 * WIDTH, device=device, dtype=torch.float32).reshape(1, STAGES, 48, WIDTH) + 1
+    expected = torch.empty(1, STAGES, 3, 2, RANK, WIDTH, device=device)
+    for stage in range(STAGES):
+        flat = memory[0, stage].flatten()
+        for role in range(3):
+            start = role * 2 * RANK * WIDTH
+            for rank in range(RANK):
+                expected[0, stage, role, 0, rank] = flat[start + torch.arange(WIDTH, device=device) * RANK + rank]
+                expected[0, stage, role, 1, rank] = flat[start + RANK * WIDTH + rank * WIDTH + torch.arange(WIDTH, device=device)]
+    expected /= expected.square().sum(-1, keepdim=True).sqrt()
+    actual = pack_factors(memory)
+    assert torch.allclose(actual, expected, atol=1e-7, rtol=1e-6)
+    # Equal memory tokens still give a rank-one forward update. rl changes
+    # rank-coordinate projections and therefore can break B-gradient symmetry;
+    # it does not guarantee a trained operator will have rank eight.
+    generator = torch.Generator().manual_seed(87)
+    token = torch.randn(WIDTH, generator=generator).to(device)
+    raw = token.repeat(1, STAGES, 48, 1).requires_grad_()
+    queries = torch.randn(1, 7, WIDTH, generator=generator).to(device)
+    target = torch.randn(1, 7, WIDTH, generator=generator).to(device)
+    rl = pack_factors(raw)[:, 0, 0]
+    ll = torch.nn.functional.normalize(raw.reshape(1, STAGES, 3, 2, RANK, WIDTH).float(), dim=-1)[:, 0, 0]
+    gradients = {}
+    projections = {}
+    for name, factors in (('ll', ll), ('rl', rl)):
+        projection = queries @ factors[:, 0].transpose(1, 2)
+        projections[name] = float((projection - projection[..., :1]).abs().max().detach())
+        loss = (dynamic(queries, factors) - target).square().mean()
+        gradient = torch.autograd.grad(loss, raw, retain_graph=True)[0].reshape(1, STAGES, 3, 2, RANK, WIDTH)[:, 0, 0, 1]
+        gradients[name] = float((gradient - gradient[:, :1]).abs().max())
+    assert projections['ll'] < 1e-6 and gradients['ll'] < 1e-6
+    assert projections['rl'] > 1e-3 and gradients['rl'] > 1e-5
+    return {'independent_appendix_A2_rl_index_check': True,
+            'identical_tokens_rank_projection_spread': projections,
+            'identical_tokens_B_gradient_spread': gradients,
+            'rank_eight_or_accuracy_improvement_claimed': False}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--anchor', required=True)
@@ -33,6 +75,7 @@ def main():
     torch.set_num_threads(4)
     torch.manual_seed(12345)
     device = torch.device(args.device)
+    packing = packing_contract(device)
     model = StructuredCompletion().to(device)
     model.load_anchor(torch.load(args.anchor, map_location=device, weights_only=False)['model'])
     model.eval()
@@ -198,7 +241,8 @@ def main():
               'ssl_does_not_mutate_input_pixels_or_proposals': True,
               'exact_pixel_groups_match_hamming_zero_including_signed_zero': True,
               'fixed_object_targets_are_fp32_and_bitwise_equal_under_autocast': True,
-              'architecture_revision': 'isolated-target-structured-feedback-v2',
+              'architecture_revision': ARCHITECTURE_REVISION,
+              'compiler_packing_contract': packing,
               'bbox_outside_intervention_preserves_object_target_bitwise': True,
               'structured_feedback_detects_spatial_permutation_with_identical_mean': True,
               'structured_feedback_target_object_permutation_max_error': residual_permutation_error,

@@ -1,0 +1,65 @@
+{
+  "fixture": "synthetic contours and tensors",
+  "full_raven_evaluation": false,
+  "device": "cpu",
+  "torch": "2.11.0",
+  "anchor_sha256": "de3ea68bdd26272a9991fa394a38aa5d1c0b4d55078d10a968f67cec0a1c5b88",
+  "trainable_parameters": 2275350,
+  "frozen_parameters": 958345,
+  "initial_scores_bitwise_equal_to_anchor": true,
+  "heldout_target_cannot_change_visible_encoding_or_compilation": true,
+  "object_masking_keeps_four_complete_visible_panels": true,
+  "ssl_does_not_mutate_input_pixels_or_proposals": true,
+  "exact_pixel_groups_match_hamming_zero_including_signed_zero": true,
+  "fixed_object_targets_are_fp32_and_bitwise_equal_under_autocast": true,
+  "architecture_revision": "isolated-target-structured-feedback-shine-rl-v3",
+  "compiler_packing_contract": {
+    "independent_appendix_A2_rl_index_check": true,
+    "identical_tokens_rank_projection_spread": {
+      "ll": 0.0,
+      "rl": 3.3520541191101074
+    },
+    "identical_tokens_B_gradient_spread": {
+      "ll": 0.0,
+      "rl": 0.0013171292375773191
+    },
+    "rank_eight_or_accuracy_improvement_claimed": false
+  },
+  "bbox_outside_intervention_preserves_object_target_bitwise": true,
+  "structured_feedback_detects_spatial_permutation_with_identical_mean": true,
+  "structured_feedback_target_object_permutation_max_error": 4.76837158203125e-07,
+  "null_object_targets_only_contribute_presence_feedback": true,
+  "zero_structured_error_produces_zero_attention_feedback": true,
+  "ssl_rejects_candidates": true,
+  "frozen_anchor_buffers_unchanged": true,
+  "all_trainable_parameters_have_finite_gradients": true,
+  "activation_checkpointing_preserves_outputs_and_gradients": true,
+  "activation_checkpointing_gradient_max_error": 0.0,
+  "gradient_norms": {
+    "perception": 0.20928137004375458,
+    "compiler": 0.013397954404354095,
+    "pav": 0.30774182081222534,
+    "masked_object": 0.5238146781921387
+  },
+  "losses": [
+    0.929946780204773,
+    0.7993429899215698,
+    0.7269482016563416
+  ],
+  "training_statistics": {
+    "retrieval": 0.5284231901168823,
+    "completion": 1.1345882415771484,
+    "masked_object": 0.8506619930267334,
+    "reference_error": 0.034140076488256454,
+    "eligible_queries": 8,
+    "retrieval_correct": 6,
+    "proposal_overflow_panels": 0
+  },
+  "candidate_permutation_max_error": 0.0,
+  "target_object_permutation_max_error": 4.172325134277344e-07,
+  "support_changes_dynamic_parameters_max": 0.08863960951566696,
+  "post_update_score_change_max": 1.5087425708770752e-07,
+  "trained_gate": 2.9111659387126565e-05,
+  "blank_panels_and_no_legal_negatives_finite": true,
+  "proposal_overflow_merges_and_records": true
+}

@@ -1,4 +1,4 @@
-"""Seal v2 now, then run its fixed protocol after the current Metal suite.
+"""Seal the current revision, then run after the current Metal suite.
 
 The common native control is reused only after checking its completed seals and
 unchanged source. All five new adaptation jobs run in separate source exports.
@@ -15,6 +15,7 @@ import sys
 import time
 
 from build_ablations import export
+from structured_ssl import ARCHITECTURE_REVISION
 
 
 def digest(path):
@@ -82,7 +83,7 @@ def main():
         if digest(args.anchor) != reference['anchor_sha256'] or reference['test_opened']:
             raise RuntimeError('revision uses a different anchor or unsealed reference')
         locked = {variant: hashes(source) for variant, source in sources.items()}
-        manifest = {'architecture_revision': 'isolated-target-structured-feedback-v2',
+        manifest = {'architecture_revision': ARCHITECTURE_REVISION,
                     'run_root': str(root), 'after_run_root': str(parent),
                     'source_primary': str(primary), 'execution_device': 'mps',
                     'batch_size': 128, 'workers': 2,
@@ -129,7 +130,7 @@ def main():
             'copied_files_sha256': {p.name: digest(p) for p in sorted(native.iterdir()) if p.is_file()},
             'actual_new_native_training_epochs': 0, 'shared_completed_native_adaptation_epochs': 16,
             'same_selection_budget_epochs': 44})
-        set_phase('v2:real_batch128_metal_preflight')
+        set_phase('revision:real_batch128_metal_preflight')
         run(['research/structured-ssl-2026/profile_mps.py', '--anchor', str(args.anchor.resolve()),
              '--dataset-root', str(args.dataset_root.resolve()),
              '--output', str(root / 'real-batch128-mps-preflight.json')], primary, root / 'preflight.console.log')

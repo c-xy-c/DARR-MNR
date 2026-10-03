@@ -20,10 +20,10 @@ WIDTH, STAGES, RANK = 96, 3, 8
 
 
 class SelfBlock(nn.Module):
-    def __init__(self):
+    def __init__(self, *, norm_first=True):
         super().__init__()
         self.block = nn.TransformerEncoderLayer(WIDTH, 6, WIDTH * 4, dropout=0,
-                                                batch_first=True, norm_first=True, activation='gelu')
+                                                batch_first=True, norm_first=norm_first, activation='gelu')
 
     def forward(self, x, padding=None):
         return self.block(x, src_key_padding_mask=padding)
@@ -91,7 +91,10 @@ class MemoryCompiler(nn.Module):
         self.memory = nn.Parameter(torch.randn(STAGES, 48, WIDTH) * .02)
         self.column = nn.Parameter(torch.randn(3, WIDTH) * .02)
         self.extract = nn.ModuleList([CrossBlock() for _ in range(STAGES)])
-        self.axial = nn.ModuleList([SelfBlock() for _ in range(4)])
+        # SHINE adds identity after extraction; its released M2P uses post-norm.
+        self.layer_identity = nn.Parameter(torch.zeros(1, STAGES, 1, WIDTH))
+        self.token_identity = nn.Parameter(torch.zeros(1, 1, 48, WIDTH))
+        self.axial = nn.ModuleList([SelfBlock(norm_first=False) for _ in range(4)])
         self.output = nn.LayerNorm(WIDTH)
 
     def forward(self, support, valid):
@@ -102,14 +105,26 @@ class MemoryCompiler(nn.Module):
         for depth, block in enumerate(self.extract):
             observed = (support[:, :, depth] + self.column[None, :, None]).flatten(1, 2)
             memories.append(block(self.memory[depth][None].expand(n, -1, -1), observed, padding))
-        z = torch.stack(memories, 1)
+        z = torch.stack(memories, 1) + self.layer_identity + self.token_identity
         for index, block in enumerate(self.axial):
             if index % 2 == 0:
                 z = block(z.transpose(1, 2).reshape(n * 48, STAGES, WIDTH)).reshape(n, 48, STAGES, WIDTH).transpose(1, 2)
             else:
                 z = block(z.reshape(n * STAGES, 48, WIDTH)).reshape(n, STAGES, 48, WIDTH)
-        factors = self.output(z).reshape(n, STAGES, 3, 2, RANK, WIDTH)
-        return F.normalize(factors.float(), dim=-1, eps=1e-3)
+        return pack_factors(self.output(z))
+
+
+def pack_factors(memory):
+    """SHINE rl: A is width x rank, B is rank x width; executor reads A.T.
+
+    A complete memory token is not a complete column of A. Rank projections can
+    differ even when memory tokens initially look alike. Vector normalization
+    is our FP32 stability adaptation, not SHINE's original scale.
+    """
+    blocks = memory.reshape(len(memory), STAGES, 3, 2, RANK * WIDTH)
+    left = blocks[:, :, :, 0].reshape(-1, STAGES, 3, WIDTH, RANK).transpose(-1, -2)
+    right = blocks[:, :, :, 1].reshape(-1, STAGES, 3, RANK, WIDTH)
+    return F.normalize(torch.stack((left, right), 3).float(), dim=-1, eps=1e-3)
 
 
 def dynamic(x, factors):

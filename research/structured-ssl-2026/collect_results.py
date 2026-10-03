@@ -118,6 +118,16 @@ def collect(run_root):
                 continue
         source = run_root / ('source-primary' if variant in ('primary', 'original')
                              else 'source-' + variant)
+        if native and manifest.get('native_source_directory'):
+            source = run_root / manifest['native_source_directory']
+            migration = read(run / 'numerical_repair.json')
+            prior = Path(migration['from_run'])
+            if (migration['repair'] != 'exact_forward_l2_zero_subgradient'
+                    or digest(prior / 'last.pt') != migration['original_last_sha256']
+                    or digest(prior / 'config.json') != migration['original_config_sha256']
+                    or migration['modified_source_files'] != ['sspredrnet/model.py']
+                    or not migration['actual_failed_batch_bitwise_loss_and_finite_backward_verified']):
+                raise RuntimeError('native numerical migration lineage changed')
         # Native continuation has no experiment_variant field.
         config, seal, history = validate_training(run, source, epochs, seed,
                                                   'primary' if native else variant)
@@ -190,6 +200,8 @@ def collect(run_root):
               'adaptation_seeds_share_one_foundation': True,
               'new_method_excludes_candidates_but_native_control_uses_unlabeled_candidate_negatives': True,
               'all_results_present_is_not_proof_of_research_goal_completion': True}
+    if manifest.get('native_source_directory'):
+        report['native_numerical_repair'] = read(run_root / 'original-seed12345/numerical_repair.json')
     names = [f'primary-seed{seed}' for seed in (12345, 12346, 12347)]
     if all(name in jobs and jobs[name]['phase'] == 'evaluated' for name in names):
         report['primary_three_seed'] = {}

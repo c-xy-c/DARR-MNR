@@ -1,0 +1,35 @@
+{
+  "repository_commit": "fd606798c5d0e0f7d2c82df1204a83f8a1104036",
+  "files": [
+    {
+      "path": "metanetwork_family.py",
+      "url": "https://raw.githubusercontent.com/MuLabPKU/SHINE/fd606798c5d0e0f7d2c82df1204a83f8a1104036/metanetwork_family.py",
+      "local_path": "research/structured-ssl-2026/sources/shine-fd606798c5d0e0f7d2c82df1204a83f8a1104036-metanetwork_family.py.txt",
+      "sha256": "f71c0e3f12f3ec8a96d565792cd18608bbc4cf5721b5afa3df387c8a5cc91472"
+    },
+    {
+      "path": "utils/myinit.py",
+      "url": "https://raw.githubusercontent.com/MuLabPKU/SHINE/fd606798c5d0e0f7d2c82df1204a83f8a1104036/utils/myinit.py",
+      "local_path": "research/structured-ssl-2026/sources/shine-fd606798c5d0e0f7d2c82df1204a83f8a1104036-utils_myinit.py.txt",
+      "sha256": "9a357627e0844ec7522e04a41f3eca4d63e48911c4fd3ad9195363922e4d87d3"
+    },
+    {
+      "path": "LoraQwen.py",
+      "url": "https://raw.githubusercontent.com/MuLabPKU/SHINE/fd606798c5d0e0f7d2c82df1204a83f8a1104036/LoraQwen.py",
+      "local_path": "research/structured-ssl-2026/sources/shine-fd606798c5d0e0f7d2c82df1204a83f8a1104036-LoraQwen.py.txt",
+      "sha256": "cbe252cc2aa309220afb650b834a756cf883787e569d8b44cce15aba8e93ae70"
+    },
+    {
+      "path": "configs/Qwen3-0.6B.yaml",
+      "url": "https://raw.githubusercontent.com/MuLabPKU/SHINE/fd606798c5d0e0f7d2c82df1204a83f8a1104036/configs/Qwen3-0.6B.yaml",
+      "local_path": "research/structured-ssl-2026/sources/shine-fd606798c5d0e0f7d2c82df1204a83f8a1104036-configs_Qwen3-0.6B.yaml.txt",
+      "sha256": "224ba37ef9570499f2a38b6feef2ec9901f8a7af56aa621659436bb5d82ead67"
+    },
+    {
+      "path": "configs/Qwen3-8B.yaml",
+      "url": "https://raw.githubusercontent.com/MuLabPKU/SHINE/fd606798c5d0e0f7d2c82df1204a83f8a1104036/configs/Qwen3-8B.yaml",
+      "local_path": "research/structured-ssl-2026/sources/shine-fd606798c5d0e0f7d2c82df1204a83f8a1104036-configs_Qwen3-8B.yaml.txt",
+      "sha256": "0be48c63b983e17ac41f05c881ada79c02da9190b3d73ce11dea93c7ee6d4b66"
+    }
+  ]
+}

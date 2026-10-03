@@ -6,6 +6,25 @@ from torch.nn import functional as F
 from .layers import ConvNormAct, ResBlock
 
 
+class _FiniteL2(torch.autograd.Function):
+    """Keep the original distance; choose the zero subgradient at zero.
+
+    The composed sqrt(sum(error**2)) backward produces 0 * inf for identical
+    vectors. No epsilon is added to the forward score or margin objective.
+    """
+    @staticmethod
+    def forward(ctx, error):
+        distance = error.pow(2).sum(dim=1).sqrt()
+        ctx.save_for_backward(error, distance)
+        return distance
+
+    @staticmethod
+    def backward(ctx, gradient):
+        error, distance = ctx.saved_tensors
+        denominator = torch.where(distance > 0, distance, torch.ones_like(distance))
+        return error * (gradient / denominator)[:, None]
+
+
 class PredictiveBlock(nn.Module):
     def __init__(self, channels, downsample, *, last, dropout):
         super().__init__()
@@ -24,7 +43,7 @@ class PredictiveBlock(nn.Module):
         choices = F.relu(choices).mean(dim=[2, 3])
         predictions = predictions.mean(dim=[2, 3])
         error = F.normalize(choices, dim=1) - F.normalize(predictions, dim=1)
-        distance = error.pow(2).sum(dim=1).sqrt()
+        distance = _FiniteL2.apply(error)
         if self.last:
             return None, distance
         out = torch.cat((contexts, residual), dim=2)

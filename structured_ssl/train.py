@@ -16,10 +16,11 @@ from sspredrnet.checkpoint import save_checkpoint
 from sspredrnet.data import CONFIGS, loader
 from .data import ObjectRaven, to_device
 from .model import StructuredCompletion
+from . import ARCHITECTURE_REVISION
 from .runtime import resolve_device, execution_record, rng_state, restore_rng, validation_reference
 
 
-SOURCE_FILES = ('structured_ssl/model.py', 'structured_ssl/data.py', 'structured_ssl/train.py',
+SOURCE_FILES = ('structured_ssl/__init__.py', 'structured_ssl/model.py', 'structured_ssl/data.py', 'structured_ssl/train.py',
                 'structured_ssl/evaluate.py', 'attention_ssl/model.py', 'program_ssl/model.py',
                 'structured_ssl/runtime.py',
                 'program_ssl/data.py', 'sspredrnet/model.py', 'sspredrnet/layers.py',
@@ -109,7 +110,10 @@ def main():
     train_generator = torch.Generator().manual_seed(args.seed)
     val_generator = torch.Generator().manual_seed(args.seed + 1)
     config = {**vars(args), 'schema_version': 1, 'method': 'structured-object-support-pav',
-              'architecture_revision': 'isolated-target-structured-feedback-v2',
+              'architecture_revision': ARCHITECTURE_REVISION,
+              'parameter_packing': 'SHINE_rl_A_width_by_rank_B_rank_by_width',
+              'compiler_normalization': 'post_norm',
+              'compiler_memory_identity': 'learned_layer_and_token_positions_added_after_extraction_zero_initialized',
               'object_teacher_target': 'bbox_isolated_white_canvas_mask_pooled_frozen_cnn',
               'support_feedback': '25_local_and_pooled_dense_residuals_10_transport_aligned_object_presence_residuals',
               'execution': execution_record(device), 'perception_activation_checkpointing': True,

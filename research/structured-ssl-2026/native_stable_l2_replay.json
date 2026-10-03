@@ -1,0 +1,63 @@
+{
+  "fixture": "replay from actual native last checkpoint and full loader RNG",
+  "formal_run_modified": false,
+  "formal_checkpoint_sha256": "f2843c602b5d97482f4e38f54f00f1f782ada17d0b9dfc9c540543f2820f003c",
+  "replay_epoch": 8,
+  "diagnostic_discarded_updates": 6,
+  "failure": {
+    "batch_index": 6,
+    "loss": 0.02473854459822178,
+    "scale": 131072.0,
+    "zero_distance_counts": {
+      "1": {
+        "exact_zero_count": 0,
+        "total": 2304,
+        "dtype": "torch.float32"
+      },
+      "2": {
+        "exact_zero_count": 1,
+        "total": 2304,
+        "dtype": "torch.float32"
+      }
+    },
+    "same_batch_lower_scale_retries": [
+      {
+        "scale": 65536.0,
+        "loss": 0.02473854459822178,
+        "same_loss_bitwise": true,
+        "finite_gradient_norm": false
+      },
+      {
+        "scale": 32768.0,
+        "loss": 0.02473854459822178,
+        "same_loss_bitwise": true,
+        "finite_gradient_norm": false
+      },
+      {
+        "scale": 1.0,
+        "loss": 0.02473854459822178,
+        "same_loss_bitwise": true,
+        "finite_gradient_norm": false
+      }
+    ],
+    "stable_l2_same_batch_retry": {
+      "source_sha256": "074387187e363a38a8204b065753d0b485e975e3f3476d7dd4506df2ca224978",
+      "scale": 131072.0,
+      "same_loss_bitwise": true,
+      "finite_gradient_norm": true
+    }
+  },
+  "test_opened": false,
+  "full_raven_evaluation": false,
+  "source_sha256": {
+    "research/structured-ssl-2026/original_continuation.py": "171b9097252fb6e20a5e8cfb3fd666b603773cc101c8f43fda2437e13c06e95b",
+    "structured_ssl/runtime.py": "d542503b0d8e26d7d7461f30edd92438483f3f4c368dff427d1a0805bd06a765",
+    "sspredrnet/model.py": "fd5a739e244a0a0a374cffe2fafa6aafad443aecc47c50a355bc286c061efa0b",
+    "sspredrnet/layers.py": "2eca83d77a0be4a5bd48e521c07ad5c276d47b0a6c6b9577f6c43c0a4a9fca50",
+    "sspredrnet/views.py": "faf67d79a182fb0c6a0daf06497dce1a2707883da4e01994b92a6e8adfc2cf07",
+    "sspredrnet/data.py": "c900a7951d1fd8e923c7c2654a8f3761b8b99f2599bb05e2c9ec2dac0b325701",
+    "sspredrnet/evaluate.py": "464155a4658c7240f2fcd49b5a01962a3203b2686ab250fc350e0eb9bb20d3fb",
+    "sspredrnet/checkpoint.py": "05ffb212da7e12e8a78a8ac2be2da1f102c1060a31e41396eeef0ba4bec3ca34"
+  },
+  "diagnostic_sha256": "2f86dcf18ecf50abd1309666e77dcd4080992688bcea1c9cdc632663c7817d51"
+}

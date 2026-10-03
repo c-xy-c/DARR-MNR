@@ -1,12 +1,12 @@
 {
-  "status": "v1_primary_validation_rejected_fixed_controls_running_v2_waiting",
+  "status": "native_zero_distance_backward_repaired_v1_resumed_v3_sealed_waiting",
   "full_raven_result_claimed": false,
   "current_model_test_accuracy": null,
   "reference_anchor": "research/ssl-attention-2026/results/seed12345/best.pt",
   "reference_anchor_test_accuracy": 71.23571428571428,
   "reference_three_seed_mean_test_accuracy": 71.21666666666667,
   "historical_original_continuation_final_test_accuracy": 71.41428571428571,
-  "trainable_parameters": 2270454,
+  "trainable_parameters": 2275350,
   "frozen_parameters": 958345,
   "papers": "papers.json",
   "contributions": "contributions.md",
@@ -26,15 +26,19 @@
     "complete paired CPU/Metal attention anchor validation: 10012 each, no differing predictions",
     "complete zero-gate structured validation is bitwise equal to its anchor: all 14000 puzzles",
     "full Metal native foundation reference: 9978, before new training",
-    "platform calibration checkpoint/split/total guards"
+    "platform calibration checkpoint/split/total guards",
+    "actual native failure replay at identical model/pixels/dropout RNG; all lower scales still failed",
+    "stable zero-distance L2 backward preserves failing batch loss bitwise and repairs gradient at original scale",
+    "CPU nonzero L2 gradient comparison and gradcheck, finite zero subgradient",
+    "v3 independent rl index ordering and synthetic B gradient asymmetry",
+    "v3 three isolated source export CPU preflights"
   ],
   "missing": [
-    "completed full RAVEN main and matched controls",
-    "completed multiple adaptation seeds",
-    "sealed full validation/test with best/final and seven configurations",
-    "empirical nonregression and independent contribution evidence",
-    "v2 real batch128 Metal preflight",
-    "v2 complete primary/controls/three seeds with empirical accuracy"
+    "completed resumed native and pending v1 controls/seeds",
+    "v3 real batch128 Metal preflight",
+    "v3 full RAVEN primary/controls/three adaptation seeds",
+    "sealed best/final validation and eligible test, seven configurations",
+    "empirical nonregression and independent contribution evidence"
   ],
   "remote_access_observation": {
     "host": "xj-member.bitahub.com",
@@ -45,13 +49,13 @@
     "other_live_control_socket": "verified unrelated ThinkStation, documented RAVEN runtime absent; not used for experiment"
   },
   "source_sha256": {
-    "structured_ssl/__init__.py": "fad28d655f5693e57664ddc8179659e235fcc6b3011e2a3734dd8ffb8d3fb37b",
-    "structured_ssl/check_contracts.py": "a5e4600f4ddbeddf997af9f34c347f2fdd1aac5d3d7955eb3cbf04dc33a8eb23",
+    "structured_ssl/__init__.py": "f2caf0d06be65b728d19e06f01c80b3654e654d82cbab32b49ffebb20c80ee06",
+    "structured_ssl/check_contracts.py": "f772e6e1d32647ceb8c11b0c53e4bdce2003e2220ba19620cc84943b02ee1154",
     "structured_ssl/data.py": "0d87a1dfda73dbc498399a3d1851946fe11d942c54f5c595d77d1f013a01e3ac",
     "structured_ssl/evaluate.py": "96978bce4d50d9e568f28afa4835f25aaeaf82de9f460d8b17a72c946d3aa353",
-    "structured_ssl/model.py": "81b89718a5d58e5f5925aaffd062625831fbec826be5a087822c665597cb23bd",
+    "structured_ssl/model.py": "d96544a77b4bbda5f3ea3d2e5b474e3a27e2952923eacc22186cc10e1bb88c8c",
     "structured_ssl/runtime.py": "d542503b0d8e26d7d7461f30edd92438483f3f4c368dff427d1a0805bd06a765",
-    "structured_ssl/train.py": "e61e6786abd1ae20c2970f0a97c6619f095376c9afa04903d2ea770f5d79f919"
+    "structured_ssl/train.py": "d2453e7e8b8fe692ea24f0ca6aaf8068f56fe03d6c356fc4a35e8da761070c10"
   },
   "check_artifact_sha256": {
     "cpu_contracts.json": "28e67206391e5c4728d75aa1d329feb09005264418c71614af532adcbb538d44",
@@ -70,15 +74,16 @@
     "remote": "git@github.com:c-xy-c/DARR-MNR.git",
     "branch": "codex/component-program-ssl",
     "ssh_authenticated_account": "wozhendetainanle",
-    "stage": "experimental_v2_implementation_and_queued_experiment_no_v2_full_accuracy"
+    "stage": "experimental_v3_sealed_and_queued_no_v3_full_accuracy",
+    "last_verified_remote_sha_before_current_changes": "0dcc131d9da0698eb06484e0fb525e168ff27fd6"
   },
-  "status_as_of_utc": "2026-10-03T12:24:52.141864+00:00",
+  "status_as_of_utc": "2026-10-03T13:25:17.849256+00:00",
   "execution": {
     "device": "mps",
     "batch_size": 128,
     "workers": 2,
-    "run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-metal-calibrated-20261003-173653",
-    "suite_process_pid": 48749,
+    "run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-metal-recovered-20261003-211738",
+    "suite_process_pid": 15930,
     "fixed_preregistered_jobs": 6,
     "note": "Metal platform disclosed separately from historical CUDA; full initial validation must replay anchor count before adaptation.",
     "first_launch_exit_code": 1,
@@ -93,9 +98,13 @@
       "native": 9979
     },
     "historical_discrepancy_cause_fully_identified": false,
-    "phase": "original:training_and_locked_evaluation"
+    "phase": "original:resume_epoch8_with_finite_l2_backward",
+    "continued_from_failed_run": "runs/structured-metal-calibrated-20261003-173653",
+    "failure_reason": "undefined backward of exact-zero composed L2 distance; actual same-batch lower scale retries all failed",
+    "repair_diagnostic": "native_stable_l2_replay.json",
+    "checkpoint_states_preserved": true
   },
-  "architecture_revision": "isolated-target-structured-feedback-v2",
+  "architecture_revision": "isolated-target-structured-feedback-shine-rl-v3",
   "v1_running_experiment": {
     "run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-metal-calibrated-20261003-173653",
     "architecture_revision": "whole_panel_region_targets_mean_support_feedback_v1",
@@ -115,16 +124,19 @@
     "final_helped": 350,
     "final_hurt": 579,
     "final_correct_minus_swapped_support": 19,
-    "full_validation_audit_sha256": "4c3aa1450a6767016a4f68cd494a18da3b3c5b438f87736874d335ea0b8c1b89"
+    "full_validation_audit_sha256": "4c3aa1450a6767016a4f68cd494a18da3b3c5b438f87736874d335ea0b8c1b89",
+    "suite_phase": "resumed_in_new_run_directory_after_numerical_failure",
+    "suite_original_exit_code": 1,
+    "recovered_run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-metal-recovered-20261003-211738"
   },
   "revision_v2": {
     "run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-isolated-metal-20261003-193803",
     "queue_process_pid": 85000,
     "caffeinate_pid": 85001,
-    "phase": "waiting_for_parent_suite",
+    "phase": "terminated_before_formal_training_after_parent_failure",
     "current_model_test_accuracy": null,
     "full_accuracy_result": false,
-    "real_batch128_metal_preflight": "queued_after_parent_suite",
+    "real_batch128_metal_preflight": "not_started",
     "adaptation_epochs_each": 8,
     "adaptation_seeds": [
       12345,
@@ -164,7 +176,11 @@
       "primary": "45ac08cde328360f718e23fe7e4dcdbfdbdb15fc2e8922f943b54fb1e57f5ec6",
       "no_object_masking": "36e54e9adf2210a0e10c46ebb141ef6a57a0a1cec5ff73618ecbc65fa2c60737",
       "static_parameters": "efbdfcd9dbb3eb8a76d53e992ad41cbfd14df8b062e0a8a91b121f4352a44e48"
-    }
+    },
+    "queue_exit_code": 1,
+    "formal_training_started": false,
+    "queue_process_running": false,
+    "source_exports_and_preflight_records_preserved": true
   },
   "negative_difficulty_diagnosis": {
     "sampled_training_puzzles": 128,
@@ -194,5 +210,55 @@
     "artifact_sha256": "550f46e9fe5ce1ef8adcee80d4c76ddb36e9006fe686969679e0ce6c069c4578",
     "entire_model_rank_or_causal_failure_not_established": true,
     "running_and_queued_design_modified": false
+  },
+  "revision_v3": {
+    "run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-metal-20261003-212041",
+    "queue_pid": 16990,
+    "caffeinate_pid": 16991,
+    "console_log": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-metal-20261003-212041.launch.log",
+    "command": [
+      "/private/tmp/sspredrnet-cleanup-env-20261003/bin/python",
+      "-u",
+      "research/structured-ssl-2026/queue_revision.py",
+      "--after-run-root",
+      "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-metal-recovered-20261003-211738",
+      "--run-root",
+      "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-metal-20261003-212041",
+      "--dataset-root",
+      "/Users/lichengtai/Documents/lct/sspredrnet-data/RAVEN-10000",
+      "--anchor",
+      "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/research/ssl-attention-2026/results/seed12345/best.pt"
+    ],
+    "phase": "waiting_for_parent_suite",
+    "after_run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-metal-recovered-20261003-211738",
+    "formal_training_started": false,
+    "current_model_test_accuracy": null,
+    "adaptation_epochs_each": 8,
+    "adaptation_seeds": [
+      12345,
+      12346,
+      12347
+    ],
+    "contribution_controls": [
+      "no_object_masking",
+      "static_parameters"
+    ],
+    "source_and_cpu_preflights_sealed": true,
+    "real_batch128_metal_preflight": "queued_after_completed_parent_suite",
+    "empirical_nonregression_or_independent_benefits_established": false,
+    "cpu_contracts_sha256": {
+      "primary": "b96d44716bab5e8953f3ef9c855045ce11ed2566ccceab71ce9010f02b94d51e",
+      "no_object_masking": "59e0d8df5417087b7cea07809eda11db350a48c8a1d2cdd0af67c67195b46064",
+      "static_parameters": "10e230e9238d5ade85b15a98423eed9bd00cbfcf31bcb42bea224d749632be6b"
+    }
+  },
+  "native_recovery_observation": {
+    "completed_epochs": 8,
+    "last_validation_accuracy": 71.30714285714285,
+    "last_validation_correct": 9983,
+    "best_validation_accuracy": 71.44285714285714,
+    "best_epoch": 4,
+    "failed_epoch8_replayed_and_completed": true,
+    "test_opened": false
   }
 }
