@@ -1,0 +1,43 @@
+{
+  "launch_source_files_unchanged": 84,
+  "pinned_policy_files_unchanged": 3,
+  "verified_jobs": [
+    "primary-seed12345",
+    "original-seed12345",
+    "no_object_masking-seed12345",
+    "static_parameters-seed12345"
+  ],
+  "pending_jobs": [
+    "primary-seed12346",
+    "primary-seed12347"
+  ],
+  "active_child": {
+    "pid": 96151,
+    "command": [
+      "-m",
+      "structured_ssl.train",
+      "--dataset-root",
+      "/Users/lichengtai/Documents/lct/sspredrnet-data/RAVEN-10000",
+      "--run-dir",
+      "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-priority-metal-20261003-213645/primary-seed12346",
+      "--anchor",
+      "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/research/ssl-attention-2026/results/seed12345/best.pt",
+      "--epochs",
+      "8",
+      "--seed",
+      "12346",
+      "--batch-size",
+      "128",
+      "--workers",
+      "2",
+      "--lr",
+      ".0003",
+      "--device",
+      "mps",
+      "--platform-validation",
+      "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-priority-metal-20261003-213645/reference-anchor-validation.json"
+    ],
+    "source": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-priority-metal-20261003-213645/source-primary",
+    "started_at_utc": "2026-10-04T00:16:34.639259+00:00"
+  }
+}

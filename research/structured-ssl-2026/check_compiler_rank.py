@@ -13,7 +13,6 @@ import sys
 
 import numpy as np
 import torch
-from torch.nn import functional as F
 
 
 def digest(path):
@@ -42,6 +41,8 @@ def main():
         raise RuntimeError('sealed configuration changed')
     sys.path.insert(0, str(source))
     implementation = importlib.import_module('structured_ssl.model')
+    dimensions = (importlib.import_module('structured_ssl.constants')
+                  if (source / 'structured_ssl/constants.py').exists() else implementation)
     data = importlib.import_module('structured_ssl.data')
     if Path(implementation.__file__).resolve() != source / 'structured_ssl/model.py':
         raise RuntimeError('wrong implementation imported')
@@ -62,19 +63,24 @@ def main():
                 raise RuntimeError('checkpoint bytes changed')
             state = torch.load(file, map_location='cpu', weights_only=False)
             model.load_state_dict(state['model'], strict=True)
-            levels, visible = model.encode(pack, 6)
+            if hasattr(model, 'encode_context'):
+                context = model.encode_context(pack, 6)
+                levels, valid = context.levels, context.valid
+            else:  # Diagnosis of an immutable historical source export.
+                levels, visible = model.encode(pack, 6)
+                valid = visible['valid']
             matrices = []
             for row in (slice(0, 3), slice(3, 6)):
-                factors = model.pav.compiler(levels[:, row], visible['valid'][:, row])
+                factors = model.pav.compiler(levels[:, row], valid[:, row])
                 a, b = factors.unbind(3)
-                matrices.append(a.transpose(-1, -2) @ b / math.sqrt(implementation.RANK))
+                matrices.append(a.transpose(-1, -2) @ b / math.sqrt(dimensions.RANK))
             maps = torch.stack(matrices, 1)  # Component x support row x stage x role x 96 x 96.
-            singular = torch.linalg.svdvals(maps)[..., :implementation.RANK]
+            singular = torch.linalg.svdvals(maps)[..., :dimensions.RANK]
             distribution = singular / singular.sum(-1, keepdim=True).clamp_min(1e-8)
             effective_rank = (-(distribution * distribution.clamp_min(1e-12).log()).sum(-1)).exp()
             dominant_energy = singular[..., 0].square() / singular.square().sum(-1).clamp_min(1e-8)
             rows = {}
-            for stage in range(implementation.STAGES):
+            for stage in range(dimensions.STAGES):
                 for role, name in enumerate(('P', 'G', 'V')):
                     vectors = maps[:, :, stage, role].flatten(2)
                     differences, correlations = [], []
@@ -92,7 +98,7 @@ def main():
             records[checkpoint] = {'epoch': state['epoch'], 'maps': rows}
     result = {'fixture': '21 sampled validation puzzles, three per layout, both complete support rows',
               'validation_indices': indices, 'seed': 23456, 'teacher_device': 'cpu',
-              'declared_rank': implementation.RANK, 'effective_rank_definition': 'exp entropy of top8 singular values',
+              'declared_rank': dimensions.RANK, 'effective_rank_definition': 'exp entropy of top8 singular values',
               'support_variation_comparison': 'cyclic different puzzle within same layout and component',
               'run_dir': str(run), 'source_root': str(source), 'seal': seal,
               'diagnostic_source_sha256': digest(__file__), 'checkpoints': records,

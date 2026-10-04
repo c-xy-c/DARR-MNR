@@ -2,6 +2,7 @@
 import math
 import torch
 from torch.nn import functional as F
+from sspredrnet.energy import operator_energy as dense_energy
 from .constants import OBJECTS
 
 
@@ -35,6 +36,20 @@ def object_transport(predicted, presence, targets, valid):
 def set_energy(predicted, presence, targets, valid):
     cost, transport = object_transport(predicted, presence, targets, valid)
     return (transport * cost).sum((-1, -2))
+
+
+def prediction_energies(predictions, priors, targets):
+    """Average the same dense/object discrepancy over all prediction stages."""
+    conditional, unconditional = [], []
+    for predicted, prior in zip(predictions, priors):
+        stage_energies = []
+        for dense, objects, presence in (predicted, prior):
+            dense_error = dense_energy(dense[:, None], targets.dense)[:, 0]
+            objects_error = set_energy(objects, presence, targets.objects, targets.valid)
+            stage_energies.append(dense_error + .25 * objects_error)
+        conditional.append(stage_energies[0])
+        unconditional.append(stage_energies[1])
+    return torch.stack(conditional).mean(0), torch.stack(unconditional).mean(0)
 
 
 

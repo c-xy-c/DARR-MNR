@@ -5,7 +5,7 @@ from pathlib import Path
 
 import torch
 
-from sspredrnet.data import CONFIGS, loader
+from sspredrnet.data import loader
 from .data import ObjectRaven, to_device
 from .model import StructuredCompletion
 from .metrics import summary
@@ -23,29 +23,21 @@ def evaluate(model, dataset_root, split, device, workers):
         for pack, answers, configs in loader(ObjectRaven(dataset_root, split), 128, workers,
                                              torch.Generator().manual_seed(12347)):
             pack = to_device(pack, device)
-            features = model.anchor.features(pack['views'])
-            levels, visible = model.encode(pack, 8)
-            objects, valid = model.targets(pack)
-            ids = torch.arange(len(levels), device=device)
+            teacher = model.fixed_targets(pack)
+            context = model.encode_context(pack, 8)
+            ids = torch.arange(len(context.levels), device=device)
             groups = configs.repeat_interleave(2).to(device)
             order = ids.clone()
             for layout in range(7):
                 for component in range(2):
                     members = ids[(groups == layout) & (ids.remainder(2) == component)]
                     order[members] = members.roll(1)
-            current, reference, swapped = [], [], []
-            for support in (slice(0, 3), slice(3, 6)):
-                observed, _, evidence = model.row(levels, visible, features, objects, valid,
-                                                   support, slice(6, 8), slice(8, 16))
-                exchanged, _, counterfactual = model.row(levels, visible, features, objects, valid,
-                                                        support, slice(6, 8), slice(8, 16), order=order)
-                assert torch.equal(evidence['anchor'], counterfactual['anchor'])
-                max_factor_change = max(max_factor_change, float((evidence['factors'] - counterfactual['factors']).abs().max()))
-                current.append(observed)
-                reference.append(evidence['anchor'])
-                swapped.append(exchanged)
-            current, reference, swapped = [(sum(scores).reshape(len(answers), 2, 8).mean(1))
-                                           for scores in (current, reference, swapped)]
+            current, evidence = model.rank(context, teacher, len(answers))
+            swapped, counterfactual = model.rank(context, teacher, len(answers), order=order)
+            reference = evidence['anchor']
+            assert torch.equal(reference, counterfactual['anchor'])
+            for factors, exchanged in zip(evidence['factors'], counterfactual['factors']):
+                max_factor_change = max(max_factor_change, float((factors - exchanged).abs().max()))
             max_change = max(max_change, float((current - reference).abs().max()))
             for name, value in (('full', current.argmin(1)), ('anchor', reference.argmin(1)),
                                 ('swapped', swapped.argmin(1)), ('answers', answers), ('configs', configs)):

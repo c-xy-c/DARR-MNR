@@ -3,6 +3,7 @@ import torch
 from torch.nn import functional as F
 from sspredrnet.energy import operator_energy as dense_energy
 from .constants import WIDTH, STAGES, OBJECTS
+from .representations import PanelTargets
 
 
 def pixel_duplicates(images):
@@ -68,9 +69,9 @@ def masked_object_loss(model, pack, target_objects_fixed):
 def completion_ssl(model, pack, configurations):
     if tuple(pack['views'].shape[1:]) != (2, 6, 80, 80):
         raise ValueError('SSL accepts exactly the six known panels')
-    features = model.anchor.features(pack['views'])
-    objects, valid = model.targets(pack)
-    levels, visible = model.encode(pack, 5)  # The true sixth never enters a predictor.
+    teacher = model.fixed_targets(pack)
+    features, objects, valid = teacher.dense, teacher.objects, teacher.valid
+    context = model.encode_context(pack, 5)  # The true sixth never enters a predictor.
     n, device = len(features), features.device
     ids = torch.arange(n, device=device)
     configs = configurations.repeat_interleave(2)
@@ -90,8 +91,8 @@ def completion_ssl(model, pack, configurations):
     columns = torch.cat((features[:, :5], target[selected]), 1)
     target_set = torch.cat((objects[:, :5], objects[:, 5][selected]), 1)
     target_valid = torch.cat((valid[:, :5], valid[:, 5][selected]), 1)
-    scores, energy, details = model.row(levels, visible, columns, target_set, target_valid,
-                                       slice(0, 3), slice(3, 5), slice(5, None))
+    scores, energy, details = model.score_row(context, PanelTargets(columns, target_set, target_valid),
+        support=slice(0, 3), prefix=slice(3, 5), completion=slice(5, None))
     logits = (-scores / model.temperature).masked_fill(~legal, -torch.inf)
     retrieval = F.cross_entropy(logits, torch.zeros(n, dtype=torch.long, device=device))
     completion = energy[:, 0].mean()

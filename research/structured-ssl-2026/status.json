@@ -44,16 +44,14 @@
     "device": "mps",
     "run_root": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-priority-metal-20261003-213645",
     "suite_pid": 68802,
-    "active_job": "no_object_masking-seed12345",
-    "active_training_child_pid": 89930,
+    "active_job": "primary-seed12346",
+    "active_training_child_pid": 96151,
     "training_source_exports_unchanged": true,
     "one_off_evaluation_policy_record": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-priority-metal-20261003-213645/evaluation_policy.json",
     "legacy_v1_coordinator_retired": 15930,
     "v3_only_scope_record": "/Users/lichengtai/Documents/lct/DARR-MNR-sspredrnet/runs/structured-shine-rl-priority-metal-20261003-213645/suite.policy70/v3_only_scope.json"
   },
   "pending": [
-    "no_object_masking-seed12345",
-    "static_parameters-seed12345",
     "primary-seed12346",
     "primary-seed12347"
   ],
@@ -65,5 +63,12 @@
     "Historical anchor training used unlabeled candidate negatives; V3 adaptation excludes candidates.",
     "Metal and historical CUDA predictions differ; same-platform comparisons are reported.",
     "Independent SSL and SER-PaV benefits await controls."
-  ]
+  ],
+  "completed_jobs": [
+    "primary-seed12345",
+    "original-seed12345",
+    "no_object_masking-seed12345",
+    "static_parameters-seed12345"
+  ],
+  "refactor_evidence": "v3-contract-refactor.md"
 }

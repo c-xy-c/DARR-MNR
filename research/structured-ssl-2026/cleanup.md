@@ -1,5 +1,8 @@
 # V3 runtime cleanup, 2026-10-04
 
+The later [representation and ranking refactor](v3-contract-refactor.md) builds
+on this cleanup and records its own reference and verification artifacts.
+
 Reference: Git commit `5475c323137381d4f75ff533d74434a81857d719`.
 The current implementation and supported commands retain V3.
 

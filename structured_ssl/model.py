@@ -2,11 +2,11 @@
 import torch
 from torch import nn
 from attention_ssl.model import AttentionCompletion
-from sspredrnet.energy import operator_energy as dense_energy
 from .constants import WIDTH, STAGES, OBJECTS
 from .perception import ObjectPerception, MaskedObjectPredictor, target_objects
 from .pav import IterativePaV
-from .energy import set_energy
+from .energy import prediction_energies
+from .representations import VisibleContext, PanelTargets
 from .objectives import completion_ssl
 
 
@@ -29,50 +29,56 @@ class StructuredCompletion(nn.Module):
         self.anchor.eval()
         return self
 
-    def encode(self, pack, count):
+    def encode_context(self, pack, count):
         flat = {k: v.flatten(0, 1)[:, :count] for k, v in pack.items()}
         n = len(flat['views'])
         levels = self.perception(flat['views'].flatten(0, 1), flat['masks'].flatten(0, 1),
                                  flat['geometry'].flatten(0, 1), flat['valid'].flatten(0, 1))
-        return levels.reshape(n, count, STAGES, OBJECTS + 1, WIDTH), flat
+        return VisibleContext(levels.reshape(n, count, STAGES, OBJECTS + 1, WIDTH), flat['valid'])
 
-    def targets(self, pack):
+    def fixed_targets(self, pack):
+        dense = self.anchor.features(pack['views'])
         flat = {k: v.flatten(0, 1) for k, v in pack.items()}
-        return target_objects(self.anchor, flat['views'], flat['masks'], flat['boxes'],
-                              flat['geometry'], flat['valid']), flat['valid']
+        objects = target_objects(self.anchor, flat['views'], flat['masks'], flat['boxes'],
+                                 flat['geometry'], flat['valid'])
+        return PanelTargets(dense, objects, flat['valid'])
 
-    def row(self, levels, visible, features, objects, valid, support, prefix, targets, *, order=None):
-        selected = torch.arange(len(levels), device=levels.device) if order is None else order
+    def score_row(self, context, teacher, *, support, prefix, completion, order=None):
+        selected = torch.arange(len(context.levels), device=context.levels.device) if order is None else order
+        observed = context.select(support, selected)
+        reference = teacher.select(support, selected)
+        query = context.select(prefix)
         predictions, priors, reference_error, factors = self.pav(
-            levels[selected, support], visible['valid'][selected, support], features[selected, support][:, 2],
-            objects[selected, support][:, 2], valid[selected, support][:, 2],
-            levels[:, prefix], visible['valid'][:, prefix])
+            observed.levels, observed.valid, reference.dense[:, 2],
+            reference.objects[:, 2], reference.valid[:, 2], query.levels, query.valid)
         # Existing attention anchor uses the real support even in intervention.
-        with torch.no_grad(), torch.autocast(device_type=features.device.type, enabled=False):
-            anchor, _, _ = self.anchor.row_scores(features[:, support], features[:, prefix], features[:, targets])
-        conditional, unconditional = [], []
-        for predicted, prior in zip(predictions, priors):
-            stage_energies = []
-            for output in (predicted, prior):
-                dense, representation, presence = output
-                dense_error = dense_energy(dense[:, None], features[:, targets])[:, 0]
-                objects_error = set_energy(representation, presence, objects[:, targets], valid[:, targets])
-                stage_energies.append(dense_error + .25 * objects_error)
-            conditional.append(stage_energies[0])
-            unconditional.append(stage_energies[1])
-        conditional, unconditional = torch.stack(conditional).mean(0), torch.stack(unconditional).mean(0)
+        with torch.no_grad(), torch.autocast(device_type=teacher.dense.device.type, enabled=False):
+            anchor, _, _ = self.anchor.row_scores(teacher.dense[:, support], teacher.dense[:, prefix],
+                                                 teacher.dense[:, completion])
+        conditional, unconditional = prediction_energies(predictions, priors, teacher.select(completion))
         score = anchor + self.evidence_weight * self.gate.tanh() * (conditional - unconditional)
         return score, conditional, {'anchor': anchor, 'factors': factors, 'reference_error': reference_error}
+
+    def rank(self, context, teacher, batch_size, *, order=None):
+        """Both support rows and both component views share one ranking path."""
+        if context.levels.shape[1] != 8 or teacher.dense.shape[1] != 16:
+            raise ValueError('ranking requires eight visible panels and sixteen fixed targets')
+        scores, anchors, factors = [], [], []
+        for support in (slice(0, 3), slice(3, 6)):
+            observed, _, evidence = self.score_row(context, teacher, support=support,
+                prefix=slice(6, 8), completion=slice(8, 16), order=order)
+            scores.append(observed)
+            anchors.append(evidence['anchor'])
+            factors.append(evidence['factors'])
+        return (sum(scores).reshape(batch_size, 2, 8).mean(1),
+                {'anchor': sum(anchors).reshape(batch_size, 2, 8).mean(1), 'factors': tuple(factors)})
 
     def forward(self, pack):
         if tuple(pack['views'].shape[1:]) != (2, 16, 80, 80):
             raise ValueError('ranking requires sixteen panels')
-        features = self.anchor.features(pack['views'])
-        levels, visible = self.encode(pack, 8)  # Candidates never enter perception/context compilation.
-        objects, valid = self.targets(pack)
-        scores = [self.row(levels, visible, features, objects, valid, support, slice(6, 8), slice(8, 16))[0]
-                  for support in (slice(0, 3), slice(3, 6))]
-        return sum(scores).reshape(len(pack['views']), 2, 8).mean(1)
+        teacher = self.fixed_targets(pack)
+        context = self.encode_context(pack, 8)  # Candidates never enter trainable context.
+        return self.rank(context, teacher, len(pack['views']))[0]
 
     def ssl(self, pack, configurations):
         return completion_ssl(self, pack, configurations)

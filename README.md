@@ -47,8 +47,7 @@ alone does not establish a benefit from either new contribution. Reports also
 include the frozen anchor, changed answers and a support intervention.
 
 V3 primary seed12345 has completed: validation-selected best **71.28% test**;
-final epoch8 **69.64% test**. Contribution controls and two additional seeds are
-still running. The two contributions' independent gains remain unproven.
+final epoch8 **69.64% test**. Both contribution controls have completed; two additional seeds remain pending. The two contributions' independent gains remain unproven.
 The [native control audit](research/structured-ssl-2026/native_completed_audit.json)
 records 71.47% test accuracy after 16 epochs of original-reasoner continuation.
 This control uses unlabeled candidate negatives; the new adaptation excludes

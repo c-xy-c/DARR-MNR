@@ -3,7 +3,7 @@
 Current architecture: `isolated-target-structured-feedback-shine-rl-v3`.
 It has **2,275,350 trainable** and **958,345 frozen** parameters. The primary V3
 seed has completed: validation-selected best **71.2786% test**,
-final **69.6429% test**. Controls and two further seeds remain in progress.
+final **69.6429% test**. Both controls have completed; two further seeds remain pending.
 
 ## Responsibilities
 
@@ -13,6 +13,7 @@ final **69.6429% test**. Controls and two further seeds remain in progress.
 | `constants.py` | Fixed v3 widths, stages, rank and region count |
 | `blocks.py` | Shared self-attention and cross-attention blocks |
 | `perception.py` | Three encoder levels, isolated fixed targets and masked-object head |
+| `representations.py` | Explicit visible-context and fixed-target data contracts |
 | `pav.py` | Support memory, SHINE rl factor packing, three-stage P/G/V and residual feedback |
 | `energy.py` | Dense/object discrepancy and transport-aligned support residuals |
 | `objectives.py` | Known-cell retrieval and complete-object masking losses |
@@ -27,6 +28,12 @@ final **69.6429% test**. Controls and two further seeds remain in progress.
 The original reasoner and its attention completion remain necessary parts of
 the frozen anchor. The old discrete program runtime has been removed. Its
 measured comparator exists only under `research/ssl-attention-2026`.
+
+`encode_context` returns only trainable visible levels and validity.
+`fixed_targets` returns fixed dense/object targets and validity. `score_row`
+requires named support/prefix/completion roles; `rank` is the shared two-row,
+two-component ranking path used by inference and evaluation. The retired
+`encode`, `targets` and positional `row` interfaces have no runtime aliases.
 
 ## Training and inference
 
@@ -89,8 +96,8 @@ training seals still require their original sources. Running jobs use independen
 source exports under `runs/`. This checkout's cleanup does not modify those
 exports, their objectives, checkpoints or logs. The user-directed 70% evaluation
 admission was recorded separately before this revision's first test and executes
-the unchanged training export. The V3 suite continues with two controls and two
-further seeds; the unused V1 queue has been retired.
+the unchanged training export. Both V3 controls have completed, and the two
+further seeds remain pending; the unused V1 queue has been retired.
 
 For full research sources and limitations, see [design](../research/structured-ssl-2026/design.md),
 [v3 revision](../research/structured-ssl-2026/revision-v3.md) and

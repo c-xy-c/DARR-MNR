@@ -105,17 +105,17 @@ def main():
         assert pixel_duplicates(zero_fixture).all()
         initial, anchor = model(pack), model.anchor(pack['views'])
         assert torch.equal(initial, anchor)
-        before, _ = model.encode(short, 5)
-        after, _ = model.encode(altered, 5)
+        before = model.encode_context(short, 5).levels
+        after = model.encode_context(altered, 5).levels
         assert torch.equal(before, after), 'held-out target changed visible representation'
         factors = model.pav.compiler(before[:, :3], short['valid'].flatten(0, 1)[:, :3])
         factors_after = model.pav.compiler(after[:, :3], altered['valid'].flatten(0, 1)[:, :3])
         assert torch.equal(factors, factors_after)
         swap_effect = float((factors - factors.roll(2, 0)).abs().max())
         assert swap_effect > 0
-        fixed_objects, _ = model.targets(short)
+        fixed_objects = model.fixed_targets(short).objects
         with torch.autocast(device_type=device.type, dtype=torch.float16 if device.type == 'cuda' else torch.bfloat16):
-            protected_objects, _ = model.targets(short)
+            protected_objects = model.fixed_targets(short).objects
         assert protected_objects.dtype == torch.float32
         assert torch.equal(protected_objects, fixed_objects), 'AMP changed immutable teacher targets'
         outside_changed = {k: v.clone() for k, v in short.items()}
@@ -125,7 +125,7 @@ def main():
         outside_changed['views'][0, 0, 0].masked_fill_(outside, 1.)
         assert torch.equal(short['views'][0, 0, 0, y0:y1, x0:x1],
                            outside_changed['views'][0, 0, 0, y0:y1, x0:x1])
-        modified_objects, _ = model.targets(outside_changed)
+        modified_objects = model.fixed_targets(outside_changed).objects
         assert torch.equal(fixed_objects[0, 0, 0], modified_objects[0, 0, 0]), 'outside pixels changed isolated target'
         dense_truth = torch.zeros(2, 32, 25, device=device)
         dense_truth[:, torch.arange(25), torch.arange(25)] = 1
